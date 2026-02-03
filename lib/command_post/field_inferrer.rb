@@ -11,7 +11,7 @@ module CommandPost
       datetime: :datetime,
       time: :time,
       json: :json,
-      jsonb: :json
+      jsonb: :json,
     }.freeze
 
     def self.call(model)
@@ -21,11 +21,11 @@ module CommandPost
     def initialize(model)
       @model = model
       @belongs_to_map = model.reflect_on_all_associations(:belongs_to)
-                             .reject(&:polymorphic?)
-                             .each_with_object({}) { |a, m| m[a.foreign_key.to_s] = a }
+        .reject(&:polymorphic?)
+        .index_by { |a| a.foreign_key.to_s }
       @shadowed_columns = model.reflect_on_all_associations(:has_many)
-                               .concat(model.reflect_on_all_associations(:has_one))
-                               .map { |a| a.name.to_s }.to_set
+        .concat(model.reflect_on_all_associations(:has_one))
+        .to_set { |a| a.name.to_s }
     end
 
     def call

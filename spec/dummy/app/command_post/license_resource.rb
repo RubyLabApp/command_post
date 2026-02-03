@@ -20,8 +20,8 @@ class LicenseResource < CommandPost::Resource
     licenses.pluck(:license_key)
   end
 
-  index_fields :license_key, :status, :user, :expires_at
-  form_fields :license_type, :status, :max_devices, :user
+  index_fields :license_key, :status, :expires_at
+  form_fields :license_type, :status, :max_devices
 
   menu priority: 1, icon: "key", group: "Licensing"
 end

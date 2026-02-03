@@ -1,5 +1,6 @@
-# Test resources are now in spec/dummy/app/command_post/
-# This file provides helper methods for specs
+# Aliases for test resources to maintain backwards compatibility in specs
+TestUserResource = UserResource
+TestLicenseResource = LicenseResource
 
 module TestResourceHelpers
   def register_test_resources

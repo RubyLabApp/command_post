@@ -23,6 +23,11 @@ module CommandPost
       @fields = form_fields
     end
 
+    def edit
+      @record = @resource_class.model.find(params[:id])
+      @fields = form_fields
+    end
+
     def create
       @record = @resource_class.model.new(resource_params)
 
@@ -32,13 +37,8 @@ module CommandPost
                     notice: "#{@resource_class.model.model_name.human} created."
       else
         @fields = form_fields
-        render :new, status: :unprocessable_entity
+        render :new, status: :unprocessable_content
       end
-    end
-
-    def edit
-      @record = @resource_class.model.find(params[:id])
-      @fields = form_fields
     end
 
     def update
@@ -50,7 +50,7 @@ module CommandPost
                     notice: "#{@resource_class.model.model_name.human} updated."
       else
         @fields = form_fields
-        render :edit, status: :unprocessable_entity
+        render :edit, status: :unprocessable_content
       end
     end
 
@@ -97,10 +97,10 @@ module CommandPost
 
     def check_action_allowed
       crud_action = case action_name.to_sym
-      when :new, :create then :create
-      when :edit, :update then :update
-      when :destroy then :destroy
-      end
+                    when :new, :create then :create
+                    when :edit, :update then :update
+                    when :destroy then :destroy
+                    end
       head(:forbidden) and return unless @resource_class.action_allowed?(crud_action)
     end
 
@@ -117,7 +117,7 @@ module CommandPost
       if @resource_class.form_field_names
         @resource_class.resolved_fields.select { |f| f.name.in?(@resource_class.form_field_names) }
       else
-        @resource_class.resolved_fields.reject { |f| f.name.in?([ :id, :created_at, :updated_at ]) }
+        @resource_class.resolved_fields.reject { |f| f.name.in?(%i[id created_at updated_at]) }
       end
     end
 
@@ -125,7 +125,7 @@ module CommandPost
       permitted = form_fields.map do |field|
         field.type == :belongs_to ? field.options[:foreign_key] : field.name
       end
-      params.require(:record).permit(*permitted)
+      params.expect(record: [*permitted])
     end
 
     def apply_filters(scope)
@@ -141,15 +141,13 @@ module CommandPost
         value = params.dig(:filters, filter[:name])
         next if value.blank?
 
-        if filter[:type] == :boolean
-          value = ActiveModel::Type::Boolean.new.cast(value)
-        end
+        value = ActiveModel::Type::Boolean.new.cast(value) if filter[:type] == :boolean
 
         scope = if filter[:scope]
                   filter[:scope].call(value, scope)
-        else
+                else
                   scope.where(filter[:name] => value)
-        end
+                end
       end
       scope
     end
@@ -185,7 +183,12 @@ module CommandPost
       sort_col = params[:sort].to_s
       valid_columns = @resource_class.model.column_names
       sort_col = CommandPost.configuration.default_sort.to_s unless valid_columns.include?(sort_col)
-      sort_dir = %w[asc desc].include?(params[:direction].to_s.downcase) ? params[:direction] : CommandPost.configuration.default_sort_direction
+      sort_dir = if %w[asc
+                       desc].include?(params[:direction].to_s.downcase)
+                   params[:direction]
+                 else
+                   CommandPost.configuration.default_sort_direction
+                 end
       scope.order(sort_col => sort_dir)
     end
 

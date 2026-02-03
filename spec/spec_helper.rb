@@ -14,9 +14,9 @@ SimpleCov.start "rails" do
   minimum_coverage_by_file 80
 
   formatter SimpleCov::Formatter::MultiFormatter.new([
-    SimpleCov::Formatter::HTMLFormatter,
-    SimpleCov::Formatter::Console
-  ])
+                                                       SimpleCov::Formatter::HTMLFormatter,
+                                                       SimpleCov::Formatter::Console,
+                                                     ])
 end
 
 RSpec.configure do |config|

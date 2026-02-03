@@ -17,13 +17,9 @@ module CommandPost
     end
 
     def display_record_label(record, display_method = nil)
-      if display_method.is_a?(Proc)
-        return display_method.call(record)
-      end
+      return display_method.call(record) if display_method.is_a?(Proc)
 
-      if display_method.is_a?(Symbol) || display_method.is_a?(String)
-        return record.public_send(display_method)
-      end
+      return record.public_send(display_method) if display_method.is_a?(Symbol) || display_method.is_a?(String)
 
       DISPLAY_METHODS.each do |method|
         return record.public_send(method) if record.respond_to?(method) && record.public_send(method).present?
@@ -39,14 +35,14 @@ module CommandPost
       case filter[:type]
       when :select
         if model.defined_enums.key?(column_name)
-          model.defined_enums[column_name].keys.map { |k| [ k.humanize, k ] }
+          model.defined_enums[column_name].keys.map { |k| [k.humanize, k] }
         elsif filter[:options]
           filter[:options]
         else
-          model.distinct.pluck(column_name).compact.sort.map { |v| [ v.to_s.humanize, v ] }
+          model.distinct.pluck(column_name).compact.sort.map { |v| [v.to_s.humanize, v] }
         end
       when :boolean
-        [ [ "Yes", "true" ], [ "No", "false" ] ]
+        [%w[Yes true], %w[No false]]
       else
         []
       end
@@ -78,7 +74,8 @@ module CommandPost
       color = colors[value.to_sym] || :gray
       color_classes = badge_color_classes(color)
 
-      content_tag(:span, value.to_s.humanize, class: "inline-flex px-2 py-1 text-xs font-semibold rounded-full #{color_classes}")
+      content_tag(:span, value.to_s.humanize,
+                  class: "inline-flex px-2 py-1 text-xs font-semibold rounded-full #{color_classes}")
     end
 
     def badge_color_classes(color)

@@ -17,7 +17,7 @@ module CommandPost
       pink: "bg-pink-100 text-pink-800",
       orange: "bg-orange-100 text-orange-800",
       teal: "bg-teal-100 text-teal-800",
-      gray: "bg-gray-100 text-gray-800"
+      gray: "bg-gray-100 text-gray-800",
     }.freeze
 
     def initialize

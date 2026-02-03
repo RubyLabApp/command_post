@@ -1,8 +1,6 @@
 require "rails_helper"
 
 RSpec.describe CommandPost::Dashboard::MetricCardComponent, type: :component do
-  include ViewComponent::TestHelpers
-
   it "renders metric name and value" do
     result = render_inline(described_class.new(name: :total_users, value: 42, format: :number))
 

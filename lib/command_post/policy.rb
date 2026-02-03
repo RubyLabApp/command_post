@@ -1,10 +1,10 @@
 module CommandPost
   class Policy
-    def initialize(&block)
+    def initialize(&)
       @allow_rules = {}
       @deny_rules = {}
       @configured = block_given?
-      instance_eval(&block) if block_given?
+      instance_eval(&) if block_given?
     end
 
     def allow(*actions, if: nil)
@@ -22,7 +22,7 @@ module CommandPost
       return false unless @allow_rules.key?(action)
 
       condition = @allow_rules[action]
-      condition.nil? ? true : condition.call(user)
+      condition.nil? || condition.call(user)
     end
 
     def denied?(action, _user, record)

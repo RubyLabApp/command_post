@@ -3,6 +3,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_000001) do
     t.string :name, null: false
     t.string :email, null: false
     t.string :role
+    t.boolean :active, default: true
     t.timestamps
 
     t.index :email, unique: true

@@ -11,7 +11,7 @@ module CommandPost
     class_attribute :menu_options, default: {}
     class_attribute :component_overrides, default: {}
     class_attribute :_policy_block, default: nil
-    class_attribute :export_formats, default: [ :csv, :json ]
+    class_attribute :export_formats, default: %i[csv json]
     class_attribute :export_field_names, default: nil
     class_attribute :denied_crud_actions, default: []
     class_attribute :defined_associations, default: {}
@@ -45,13 +45,13 @@ module CommandPost
       def searchable_columns
         return _searchable_columns if _searchable_columns
 
-        model.columns.select { |c| c.type.in?([ :string, :text ]) }
-             .map { |c| c.name.to_sym }
-             .reject { |name| name.to_s.end_with?("_digest") }
+        model.columns.select { |c| c.type.in?(%i[string text]) }
+          .map { |c| c.name.to_sym }
+          .reject { |name| name.to_s.end_with?("_digest") }
       end
 
       def filter(name, **options)
-        self.defined_filters = defined_filters + [ { name: name, **options } ]
+        self.defined_filters = defined_filters + [{ name: name, **options }]
       end
 
       def remove_filter(name)
@@ -59,15 +59,15 @@ module CommandPost
       end
 
       def scope(name, lambda, default: false)
-        self.defined_scopes = defined_scopes + [ { name: name, scope: lambda, default: default } ]
+        self.defined_scopes = defined_scopes + [{ name: name, scope: lambda, default: default }]
       end
 
       def action(name, **options, &block)
-        self.defined_actions = defined_actions + [ { name: name, block: block, **options } ]
+        self.defined_actions = defined_actions + [{ name: name, block: block, **options }]
       end
 
       def bulk_action(name, **options, &block)
-        self.defined_bulk_actions = defined_bulk_actions + [ { name: name, block: block, **options } ]
+        self.defined_bulk_actions = defined_bulk_actions + [{ name: name, block: block, **options }]
       end
 
       def index_fields(*fields)
@@ -95,7 +95,7 @@ module CommandPost
       end
 
       def action_allowed?(action_name)
-        !denied_crud_actions.include?(action_name.to_sym)
+        denied_crud_actions.exclude?(action_name.to_sym)
       end
 
       def exports(*formats)
@@ -110,11 +110,11 @@ module CommandPost
         self.defined_associations = defined_associations.merge(name => { kind: :belongs_to, **options })
       end
 
-      def has_many(name, **options) # rubocop:disable Naming/PredicateName
+      def has_many(name, **options)
         self.defined_associations = defined_associations.merge(name => { kind: :has_many, **options })
       end
 
-      def has_one(name, **options) # rubocop:disable Naming/PredicateName
+      def has_one(name, **options)
         self.defined_associations = defined_associations.merge(name => { kind: :has_one, **options })
       end
 
@@ -127,7 +127,7 @@ module CommandPost
           merged = assoc_overrides.except(:kind).merge(overrides)
 
           if merged.any?
-            Field.new(field.name, **{ type: field.type }.merge(field.options).merge(merged))
+            Field.new(field.name, type: field.type, **field.options, **merged)
           else
             field
           end

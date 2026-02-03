@@ -1,13 +1,9 @@
 require "rails_helper"
-require_relative "../../../support/test_resources"
 
 RSpec.describe CommandPost::Layout::SidebarComponent, type: :component do
-  include ViewComponent::TestHelpers
-
   before do
-    CommandPost::ResourceRegistry.reset!
-    CommandPost::ResourceRegistry.register(TestUserResource)
-    CommandPost::ResourceRegistry.register(TestLicenseResource)
+    CommandPost::ResourceRegistry.register(UserResource)
+    CommandPost::ResourceRegistry.register(LicenseResource)
 
     vc_test_controller.view_context.class.define_method(:heroicon) do |name, **_opts|
       "<svg class=\"heroicon-#{name}\"></svg>".html_safe

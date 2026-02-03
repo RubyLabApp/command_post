@@ -12,15 +12,15 @@ module CommandPost
       end
 
       def metric(name, format: :number, &block)
-        self.defined_metrics = defined_metrics + [ { name: name, format: format, block: block } ]
+        self.defined_metrics = defined_metrics + [{ name: name, format: format, block: block }]
       end
 
       def chart(name, type: :line, &block)
-        self.defined_charts = defined_charts + [ { name: name, type: type, block: block } ]
+        self.defined_charts = defined_charts + [{ name: name, type: type, block: block }]
       end
 
       def recent(resource_name, limit: 5, scope: nil)
-        self.defined_recents = defined_recents + [ { resource_name: resource_name, limit: limit, scope: scope } ]
+        self.defined_recents = defined_recents + [{ resource_name: resource_name, limit: limit, scope: scope }]
       end
 
       def layout(&block)
