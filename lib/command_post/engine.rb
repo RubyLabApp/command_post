@@ -7,7 +7,9 @@ module CommandPost
     isolate_namespace CommandPost
 
     initializer "command_post.assets" do |app|
-      app.config.assets.precompile += %w[command_post_manifest]
+      if app.config.respond_to?(:assets) && app.config.assets
+        app.config.assets.precompile += %w[command_post_manifest]
+      end
     end
 
     config.after_initialize do

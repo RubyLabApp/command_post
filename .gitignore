@@ -1,2 +1,7 @@
 /.idea
 /docs/plans/
+coverage/
+log/
+spec/examples.txt
+*.gem
+tmp/
