@@ -1,0 +1,148 @@
+require:
+  - rubocop-rails
+  - rubocop-rspec
+  - rubocop-rake
+
+AllCops:
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - "spec/dummy/db/**/*"
+    - "spec/dummy/tmp/**/*"
+    - "tmp/**/*"
+    - "vendor/**/*"
+    - "coverage/**/*"
+
+# Layout
+Layout/LineLength:
+  Max: 130
+  Exclude:
+    - "spec/**/*"
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+# Metrics
+Metrics/BlockLength:
+  Exclude:
+    - "spec/**/*"
+    - "*.gemspec"
+
+Metrics/MethodLength:
+  Max: 35
+  Exclude:
+    - "spec/**/*"
+
+Metrics/AbcSize:
+  Max: 35
+  Exclude:
+    - "spec/**/*"
+
+Metrics/ClassLength:
+  Max: 180
+  Exclude:
+    - "spec/**/*"
+
+Metrics/ModuleLength:
+  Max: 130
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Metrics/PerceivedComplexity:
+  Max: 10
+
+# Style
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+
+# Rails
+Rails:
+  Enabled: true
+
+Rails/UnknownEnv:
+  Environments:
+    - production
+    - development
+    - test
+
+Rails/I18nLocaleTexts:
+  Enabled: false
+
+# RSpec
+RSpec/ExampleLength:
+  Max: 15
+
+RSpec/MultipleExpectations:
+  Max: 5
+
+RSpec/NestedGroups:
+  Max: 4
+
+RSpec/DescribeClass:
+  Exclude:
+    - "spec/requests/**/*"
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+
+RSpec/MultipleDescribes:
+  Enabled: false
+
+# Naming - allow has_many/has_one DSL methods
+Naming/PredicatePrefix:
+  AllowedMethods:
+    - has_many
+    - has_one
+    - has_many_associations
+
+Naming/FileName:
+  Exclude:
+    - "lib/command-post.rb"
+
+# Gemspec
+Gemspec/DevelopmentDependencies:
+  Enabled: false
+
+# Lint
+Lint/MissingSuper:
+  Exclude:
+    - "app/components/**/*"
+
+Lint/SuppressedException:
+  Exclude:
+    - "lib/command_post/resource.rb"
+
+# Style
+Style/OpenStructUse:
+  Enabled: false
+
+# Rake
+Rake/Desc:
+  Exclude:
+    - "Rakefile"
+
+# Rails
+Rails/HasManyOrHasOneDependent:
+  Exclude:
+    - "spec/dummy/**/*"
+
+Rails/OutputSafety:
+  Exclude:
+    - "spec/**/*"
