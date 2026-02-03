@@ -1,0 +1,11 @@
+CommandPost.configure do |config|
+  config.title = "<%= Rails.application.class.module_parent_name %> Admin"
+
+  config.authenticate do |controller|
+    # controller.redirect_to "/login" unless controller.session[:user_id]
+  end
+
+  config.current_user do |controller|
+    # User.find_by(id: controller.session[:user_id])
+  end
+end

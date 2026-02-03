@@ -1,0 +1,54 @@
+- error_input_class = "!border-red-400 !focus:border-red-500 !focus:ring-red-500/20"
+
+= form_with model: @record, url: form_url, scope: :record do |f|
+  .grid.grid-cols-1.md:grid-cols-2.2xl:grid-cols-3.gap-x-6.gap-y-5
+    - @fields.each do |field|
+      - next unless field.visible?(command_post_current_user)
+      - next if field.readonly?(command_post_current_user)
+      - span_full = field.type == :textarea || field.type == :json
+      - has_error = @record.errors[field.name].any?
+      %div{ class: span_full ? "md:col-span-2 2xl:col-span-3" : nil }
+        = f.label field.name, field.name.to_s.humanize,
+          class: "block text-sm font-medium #{cp_label_text} mb-1.5"
+        - case field.type
+        - when :belongs_to
+          - assoc_class = field.options[:association_class]
+          - fk = field.options[:foreign_key]
+          - display_method = field.options[:display]
+          = f.select fk,
+            options_from_collection_for_select(assoc_class.all, :id, (display_method || :name), @record.public_send(fk)),
+            { include_blank: "Select..." },
+            class: [cp_select_class, (error_input_class if has_error)].compact.join(" ")
+        - when :text
+          = f.text_field field.name, placeholder: field.name.to_s.humanize,
+            class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
+        - when :textarea
+          = f.text_area field.name, rows: 4, placeholder: field.name.to_s.humanize,
+            class: [cp_textarea_class, (error_input_class if has_error)].compact.join(" ")
+        - when :number
+          = f.number_field field.name, placeholder: "0",
+            class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
+        - when :boolean
+          .flex.items-center.gap-2.5.pt-1
+            = f.check_box field.name, class: cp_checkbox_class
+            %span.text-sm.text-gray-600 Enable #{field.name.to_s.humanize.downcase}
+        - when :datetime, :date
+          = f.datetime_local_field field.name,
+            class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
+        - when :select
+          = f.select field.name, field.options[:choices]&.map { |c| [c.humanize, c] },
+            { include_blank: "Select..." },
+            class: [cp_select_class, (error_input_class if has_error)].compact.join(" ")
+        - else
+          = f.text_field field.name, placeholder: field.name.to_s.humanize,
+            class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
+
+        - if has_error
+          .flex.items-center.gap-1.5.mt-1.5
+            = heroicon "exclamation-circle", variant: :mini, options: { class: "h-4 w-4 text-red-500 shrink-0" }
+            %p.text-sm.text-red-600= @record.errors[field.name].join(", ")
+
+  .flex.items-center.gap-3.mt-8.pt-6.border-t{ class: t.card_border }
+    = f.submit class: cp_btn_primary_lg
+    = link_to "Cancel", resources_path(@resource_class.resource_name),
+      class: cp_btn_secondary

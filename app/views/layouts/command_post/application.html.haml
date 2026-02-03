@@ -1,0 +1,13 @@
+!!!
+%html
+  %head
+    %meta{ charset: "utf-8" }
+    %meta{ name: "viewport", content: "width=device-width, initial-scale=1" }
+    %title= CommandPost.configuration.title
+    = csrf_meta_tags
+    = csp_meta_tag
+    = stylesheet_link_tag "tailwind", "data-turbo-track": "reload"
+    = javascript_importmap_tags
+  %body.bg-gray-50.text-gray-900.antialiased
+    = render CommandPost::Layout::ShellComponent.new(current_user: command_post_current_user) do
+      = yield

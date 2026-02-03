@@ -1,0 +1,7 @@
+- form_url = resources_path(@resource_class.resource_name)
+
+.p-8.max-w-7xl.mx-auto{ class: t.font_family }
+  %h1.text-2xl.mb-6{ class: cp_heading } New #{@resource_class.model.model_name.human}
+
+  .p-6{ class: cp_card }
+    = render "form", form_url: form_url

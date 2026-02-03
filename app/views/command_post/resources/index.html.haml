@@ -1,0 +1,104 @@
+.p-8.max-w-7xl.mx-auto{ class: t.font_family }
+  .flex.items-center.justify-between.mb-6
+    %h1.text-2xl{ class: cp_heading }= @resource_class.label
+    - if @resource_class.action_allowed?(:create)
+      = link_to "New #{@resource_class.model.model_name.human}",
+        new_resource_path(@resource_class.resource_name),
+        class: cp_btn_primary
+
+  - if @resource_class.defined_scopes.any? || @resource_class.searchable_columns.any?
+    .flex.items-center.justify-between.mb-4
+      - if @resource_class.defined_scopes.any?
+        .flex.gap-1.border-b{ class: t.card_border }
+          - @resource_class.defined_scopes.each do |scope|
+            - active = @current_scope == scope[:name].to_s
+            = link_to scope[:name].to_s.humanize,
+              resources_path(@resource_class.resource_name, scope: scope[:name], q: params[:q]),
+              class: "px-4 py-2 text-sm font-medium border-b-2 -mb-px #{active ? cp_scope_active : cp_scope_inactive}"
+
+      - if @resource_class.searchable_columns.any?
+        = form_tag resources_path(@resource_class.resource_name), method: :get, class: "flex" do
+          = hidden_field_tag :scope, @current_scope
+          - @resource_class.defined_filters.each do |filter|
+            - value = params.dig(:filters, filter[:name])
+            - if value.present?
+              = hidden_field_tag "filters[#{filter[:name]}]", value
+          .relative
+            .pointer-events-none.absolute.inset-y-0.left-0.flex.items-center.pl-3.5
+              = heroicon "magnifying-glass", variant: :mini, options: { class: "h-4 w-4 #{cp_muted_text}" }
+            = text_field_tag :q, params[:q],
+              placeholder: "Search...",
+              class: cp_search_class
+
+  - if @resource_class.defined_filters.any?
+    - has_active_filters = @resource_class.defined_filters.any? { |f| params.dig(:filters, f[:name]).present? || params.dig(:filters, "#{f[:name]}_from").present? || params.dig(:filters, "#{f[:name]}_to").present? }
+    - select_chevron_style = "background-image: url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"
+    .flex.justify-end.mb-4
+      %details.relative.group{ open: has_active_filters || nil }
+        %summary.inline-flex.items-center.gap-2.px-4.cursor-pointer.select-none.text-sm.font-medium.rounded-lg.border.shadow-sm.transition.duration-150{ class: "#{cp_label_text} #{t.card_border} #{t.card_bg} py-2.5 hover:bg-gray-50 [&::-webkit-details-marker]:hidden", style: "list-style: none;" }
+          = heroicon "funnel", variant: :mini, options: { class: "h-4 w-4 #{cp_muted_text}" }
+          %span Filters
+          - if has_active_filters
+            - active_count = @resource_class.defined_filters.count { |f| params.dig(:filters, f[:name]).present? || params.dig(:filters, "#{f[:name]}_from").present? || params.dig(:filters, "#{f[:name]}_to").present? }
+            %span{ class: cp_badge_count }
+              = active_count
+          = heroicon "chevron-down", variant: :mini, options: { class: "h-4 w-4 text-gray-400 transition-transform group-open:rotate-180" }
+        .absolute.right-0.top-full.mt-2.w-72.border.z-20{ class: "#{t.border_radius} #{t.card_border} #{t.card_bg} #{t.card_shadow}-lg" }
+          = form_tag resources_path(@resource_class.resource_name), method: :get, class: "p-4" do
+            = hidden_field_tag :scope, @current_scope
+            = hidden_field_tag :q, params[:q]
+            .space-y-3
+              - @resource_class.defined_filters.each do |filter|
+                .space-y-1
+                  %label.block.text-xs.font-semibold.uppercase.tracking-wider{ class: cp_muted_text }
+                    = filter[:name].to_s.humanize
+                  - case filter[:type]
+                  - when :select
+                    %select.block.w-full.appearance-none.border.px-3.py-2.text-sm.shadow-sm.outline-none.transition.duration-150.ease-in-out{ name: "filters[#{filter[:name]}]", class: "#{t.border_radius} #{t.input_border} #{t.card_bg} #{cp_body_text} #{cp_focus}", style: select_chevron_style }
+                      %option{ value: "" } All
+                      - filter_options_for(@resource_class, filter).each do |label, value|
+                        %option{ value: value, selected: params.dig(:filters, filter[:name]) == value.to_s }= label
+                  - when :boolean
+                    %select.block.w-full.appearance-none.border.px-3.py-2.text-sm.shadow-sm.outline-none.transition.duration-150.ease-in-out{ name: "filters[#{filter[:name]}]", class: "#{t.border_radius} #{t.input_border} #{t.card_bg} #{cp_body_text} #{cp_focus}", style: select_chevron_style }
+                      %option{ value: "" } All
+                      - filter_options_for(@resource_class, filter).each do |label, value|
+                        %option{ value: value, selected: params.dig(:filters, filter[:name]) == value.to_s }= label
+                  - when :date_range
+                    .space-y-2
+                      = date_field_tag "filters[#{filter[:name]}_from]", params.dig(:filters, "#{filter[:name]}_from"),
+                        class: cp_filter_input_class,
+                        placeholder: "From"
+                      = date_field_tag "filters[#{filter[:name]}_to]", params.dig(:filters, "#{filter[:name]}_to"),
+                        class: cp_filter_input_class,
+                        placeholder: "To"
+            .flex.items-center.gap-3.mt-4.pt-3.border-t.border-gray-100
+              %button{ type: "submit", class: cp_btn_filter_apply } Apply
+              = link_to "Clear", resources_path(@resource_class.resource_name, scope: @current_scope, q: params[:q]),
+                class: "text-sm #{cp_link_muted}"
+
+  = turbo_frame_tag "records" do
+    %table.min-w-full{ class: "#{cp_table_border} divide-y #{t.card_bg} #{t.border_radius} #{t.card_shadow}" }
+      %thead{ class: cp_table_header_bg }
+        %tr
+          - @fields.each do |field|
+            %th.px-6.py-3.text-left.text-xs.font-medium.uppercase.tracking-wider{ class: cp_muted_text }
+              = link_to field.name.to_s.humanize,
+                resources_path(@resource_class.resource_name, sort: field.name,
+                  direction: params[:sort] == field.name.to_s && params[:direction] == "asc" ? "desc" : "asc",
+                  scope: @current_scope, q: params[:q])
+      %tbody{ class: "#{cp_table_border} divide-y" }
+        - if @records.empty?
+          %tr
+            %td.px-6.py-8.text-center.text-sm{ colspan: @fields.size + 1, class: cp_muted_text }
+              No records found.
+        - @records.each do |record|
+          %tr{ class: cp_table_row_hover }
+            - @fields.each do |field|
+              %td.px-6.py-4.whitespace-nowrap.text-sm{ class: cp_body_text }
+                = display_field_value(record, field)
+            %td.px-6.py-4.whitespace-nowrap.text-right.text-sm
+              = link_to "View", resource_path(@resource_class.resource_name, record),
+                class: cp_link, data: { turbo_frame: "_top" }
+
+    .mt-4
+      = render "command_post/shared/pagination", pagy: @pagy

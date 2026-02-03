@@ -1,0 +1,23 @@
+%nav.w-64.flex.flex-col.h-full.overflow-y-auto{ class: "#{cp_sidebar_bg} #{cp_sidebar_title}" }
+  .p-6
+    - if logo
+      = image_tag logo, class: "h-8"
+    - else
+      %h1.text-xl.font-bold= title
+
+  .flex-1.px-3
+    = link_to helpers.command_post.root_path,
+      class: "flex items-center gap-3 px-3 py-2 rounded-lg #{cp_sidebar_link} mb-1" do
+      = helpers.heroicon "home", variant: :outline, options: { class: "h-5 w-5" }
+      Dashboard
+
+    - grouped_resources.each do |group, resources|
+      .mt-6
+        %p.px-3.text-xs.font-semibold.uppercase.tracking-wider{ class: cp_sidebar_group_label }= group
+        .mt-2.space-y-1
+          - resources.sort_by { |r| r.menu_options[:priority] || 999 }.each do |resource|
+            = link_to helpers.command_post.resources_path(resource.resource_name),
+              class: "flex items-center gap-3 px-3 py-2 rounded-lg #{cp_sidebar_link}" do
+              - if resource.menu_options[:icon]
+                = helpers.heroicon resource.menu_options[:icon], variant: :outline, options: { class: "h-5 w-5" }
+              = resource.label
