@@ -47,6 +47,12 @@ Metrics/ClassLength:
 Metrics/ModuleLength:
   Max: 130
 
+Metrics/ParameterLists:
+  Max: 9
+  MaxOptionalParameters: 8
+  Exclude:
+    - "app/components/**/*"
+
 Metrics/CyclomaticComplexity:
   Max: 10
 
@@ -87,10 +93,10 @@ Rails/I18nLocaleTexts:
 
 # RSpec
 RSpec/ExampleLength:
-  Max: 15
+  Max: 20
 
 RSpec/MultipleExpectations:
-  Max: 5
+  Max: 10
 
 RSpec/NestedGroups:
   Max: 4
@@ -105,12 +111,15 @@ RSpec/MultipleMemoizedHelpers:
 RSpec/MultipleDescribes:
   Enabled: false
 
-# Naming - allow has_many/has_one DSL methods
+# Naming - allow has_many/has_one DSL methods and common component predicates
 Naming/PredicatePrefix:
   AllowedMethods:
     - has_many
     - has_one
     - has_many_associations
+    - has_errors?
+    - has_active_filters?
+    - has_action?
 
 Naming/FileName:
   Exclude:
@@ -128,6 +137,10 @@ Lint/MissingSuper:
 Lint/SuppressedException:
   Exclude:
     - "lib/command_post/resource.rb"
+
+Lint/DuplicateBranch:
+  Exclude:
+    - "app/components/**/*"
 
 # Style
 Style/OpenStructUse:

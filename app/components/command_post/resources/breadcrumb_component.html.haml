@@ -1,0 +1,7 @@
+%nav.flex{ aria: { label: "Breadcrumb" } }
+  %ol.flex.items-center.space-x-2{ role: "list" }
+    - items.each_with_index do |item, index|
+      %li.flex.items-center
+        - unless index.zero?
+          = heroicon "chevron-right", variant: :mini, options: { class: "h-4 w-4 mx-2 #{theme.muted_text}" }
+        = item

@@ -1,0 +1,17 @@
+%div{ class: wrapper_classes }
+  %label{ for: name, class: label_classes }
+    = label
+    - if required
+      %span.text-red-500 *
+
+  = content
+
+  - if hint && !has_errors?
+    %p.mt-1.text-sm{ class: theme.muted_text }
+      = hint
+
+  - if has_errors?
+    %div{ class: error_classes }
+      = heroicon "exclamation-circle", variant: :mini, options: { class: "h-4 w-4 text-red-500 shrink-0" }
+      %p.text-sm.text-red-600
+        = errors.join(", ")

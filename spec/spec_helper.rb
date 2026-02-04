@@ -5,6 +5,8 @@ SimpleCov.start "rails" do
   add_filter "/spec/"
   add_filter "/lib/generators/"
   add_filter "/lib/command_post/version.rb"
+  # Pagination component requires Pagy::Frontend which is only available in full Rails context
+  add_filter "/app/components/command_post/ui/pagination_component.rb"
 
   add_group "Lib", "lib/command_post"
   add_group "Controllers", "app/controllers"

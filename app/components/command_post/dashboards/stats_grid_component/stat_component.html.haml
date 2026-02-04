@@ -1,0 +1,15 @@
+%div{ class: "#{theme.card_bg} border #{theme.card_border} #{theme.border_radius} #{theme.card_shadow} p-6" }
+  .flex.items-center.justify-between
+    %div
+      %p.text-sm.font-medium{ class: theme.muted_text }
+        = label
+      %p.mt-1.text-3xl.font-semibold{ class: theme.body_text }
+        = value
+      - if change
+        .flex.items-center.gap-1.mt-2{ class: change_classes }
+          - if change_icon
+            = heroicon change_icon, variant: :mini, options: { class: "h-4 w-4" }
+          %span.text-sm= change
+    - if icon
+      .flex-shrink-0.p-3.rounded-full.bg-indigo-50
+        = heroicon icon, variant: :outline, options: { class: "h-6 w-6 text-indigo-600" }

@@ -1,5 +1,5 @@
 module CommandPost
-  class Dashboard
+  module Dashboards
     class MetricCardComponent < ViewComponent::Base
       def initialize(name:, value:, format: :number)
         @name = name

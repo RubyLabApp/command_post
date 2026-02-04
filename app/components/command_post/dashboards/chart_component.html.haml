@@ -1,0 +1,5 @@
+%div{ class: "#{theme.card_bg} border #{theme.card_border} #{theme.border_radius} #{theme.card_shadow} p-6" }
+  %h3.text-lg.font-semibold.mb-4{ class: theme.body_text }
+    = title
+  %div{ style: "height: #{height}px" }
+    %canvas{ id: chart_id, data: { controller: "chart", chart_config_value: chart_config } }

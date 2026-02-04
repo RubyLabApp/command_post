@@ -9,8 +9,8 @@ CommandPost uses ViewComponent for all UI elements. Override any component globa
 | `CommandPost::Layout::ShellComponent` | Main layout wrapper |
 | `CommandPost::Layout::NavbarComponent` | Top navigation bar |
 | `CommandPost::Layout::SidebarComponent` | Left sidebar |
-| `CommandPost::Dashboard::MetricCardComponent` | Dashboard metric |
-| `CommandPost::Dashboard::RecentTableComponent` | Dashboard recent records |
+| `CommandPost::Dashboards::MetricCardComponent` | Dashboard metric |
+| `CommandPost::Dashboards::RecentTableComponent` | Dashboard recent records |
 
 ## Global Overrides
 

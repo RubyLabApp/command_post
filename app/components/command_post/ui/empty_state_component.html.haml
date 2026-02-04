@@ -1,0 +1,12 @@
+.text-center.py-12
+  .mx-auto.flex.items-center.justify-center.h-12.w-12.rounded-full.bg-gray-100
+    = heroicon icon, variant: :outline, options: { class: "h-6 w-6 #{theme.muted_text}" }
+  %h3.mt-4.text-sm.font-semibold{ class: theme.body_text }
+    = title
+  - if description
+    %p.mt-1.text-sm{ class: theme.muted_text }
+      = description
+  - if has_action?
+    .mt-6
+      = link_to action_href, class: "#{theme.btn_primary} px-4 py-2 text-sm font-medium rounded-lg" do
+        = action_text

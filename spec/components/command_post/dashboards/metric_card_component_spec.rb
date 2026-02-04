@@ -1,6 +1,7 @@
 require "rails_helper"
+require_relative "../../../../app/components/command_post/dashboards/metric_card_component"
 
-RSpec.describe CommandPost::Dashboard::MetricCardComponent, type: :component do
+RSpec.describe CommandPost::Dashboards::MetricCardComponent, type: :component do
   it "renders metric name and value" do
     result = render_inline(described_class.new(name: :total_users, value: 42, format: :number))
 

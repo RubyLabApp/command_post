@@ -1,0 +1,8 @@
+.space-y-1
+  %label{ class: label_classes }
+    = label
+  %select{ name: field_name, class: select_classes, style: chevron_style }
+    %option{ value: "" } All
+    - options.each do |option|
+      - opt_label, opt_value = option.is_a?(Array) ? option : [option.to_s.humanize, option]
+      %option{ value: opt_value, selected: selected.to_s == opt_value.to_s }= opt_label

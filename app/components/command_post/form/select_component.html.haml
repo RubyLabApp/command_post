@@ -1,0 +1,6 @@
+%select{ name: name, id: name, class: select_classes, disabled: disabled, style: chevron_style }
+  - if include_blank
+    %option{ value: "" }= include_blank.is_a?(String) ? include_blank : "Select..."
+  - options.each do |option|
+    - label, value = option.is_a?(Array) ? option : [option.to_s.humanize, option]
+    %option{ value: value, selected: selected.to_s == value.to_s }= label

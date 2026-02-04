@@ -1,0 +1,6 @@
+.space-y-1
+  %label{ class: label_classes }
+    = label
+  .space-y-2
+    = date_field_tag from_field_name, from_value, class: input_classes, placeholder: "From"
+    = date_field_tag to_field_name, to_value, class: input_classes, placeholder: "To"

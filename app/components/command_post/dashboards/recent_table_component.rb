@@ -1,5 +1,5 @@
 module CommandPost
-  class Dashboard
+  module Dashboards
     class RecentTableComponent < ViewComponent::Base
       def initialize(resource_name:, records:)
         @resource_name = resource_name

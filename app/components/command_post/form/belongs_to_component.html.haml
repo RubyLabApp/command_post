@@ -1,0 +1,5 @@
+%select{ name: name, id: name, class: select_classes, disabled: disabled, style: chevron_style }
+  - if include_blank
+    %option{ value: "" } Select...
+  - options.each do |label, value|
+    %option{ value: value, selected: selected.to_s == value.to_s }= label

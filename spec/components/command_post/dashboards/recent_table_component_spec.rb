@@ -1,6 +1,7 @@
 require "rails_helper"
+require_relative "../../../../app/components/command_post/dashboards/recent_table_component"
 
-RSpec.describe CommandPost::Dashboard::RecentTableComponent, type: :component do
+RSpec.describe CommandPost::Dashboards::RecentTableComponent, type: :component do
   before do
     CommandPost::ResourceRegistry.register(UserResource)
   end

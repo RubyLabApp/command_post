@@ -1,0 +1,8 @@
+%div{ class: "relative inline-block text-left", data: { controller: "dropdown" } }
+  %div{ data: { action: "click->dropdown#toggle" } }
+    = trigger
+
+  %div{ class: dropdown_classes, data: { dropdown_target: "menu" }, hidden: true }
+    .py-1{ role: "menu" }
+      - items.each do |item|
+        = item
