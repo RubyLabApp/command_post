@@ -18,10 +18,32 @@ Convention-over-configuration admin panel engine for Ruby on Rails.
 - [Theming](guides/theming.md) - Customize every visual aspect
 - [Components](guides/components.md) - Override and extend UI components
 - [Export](guides/export.md) - CSV and JSON export
-- [Extending the Engine](guides/extending.md) - Advanced customization and extension points
+- [Extending the Engine](guides/extending.md) - Advanced customization
+
+### Components Library
+
+Comprehensive documentation for all built-in ViewComponents:
+
+- [Components Overview](components/README.md) - Introduction and usage patterns
+- [UI Components](components/ui-components.md) - Badge, Button, Card, Alert, Modal, Dropdown, Tooltip, Pagination, Scopes, EmptyState
+- [Form Components](components/form-components.md) - TextInput, Select, Checkbox, Textarea, DatePicker, BelongsTo, FieldWrapper
+- [Filter Components](components/filter-components.md) - Search, SelectFilter, DateRange, FilterBar
+- [Resource Components](components/resource-components.md) - DataTable, ShowField, Actions, Breadcrumb, BulkActions, RelatedList
+- [Dashboard Components](components/dashboard-components.md) - Chart, StatsGrid, ActivityFeed, QuickLinks, MetricCard, RecentTable
 
 ### Reference
 
 - [Configuration](reference/configuration.md) - All configuration options
 - [Routes](reference/routes.md) - Route reference
 - [Theme Properties](reference/theme-properties.md) - Complete theme property list
+
+## Quick Links
+
+| Task | Documentation |
+|------|---------------|
+| Install CommandPost | [Installation Guide](getting-started/installation.md) |
+| Create first resource | [Quick Start](getting-started/quick-start.md) |
+| Customize appearance | [Theming Guide](guides/theming.md) |
+| Override a component | [Components Guide](guides/components.md) |
+| Add authentication | [Authentication Guide](guides/authentication.md) |
+| Use a UI component | [UI Components](components/ui-components.md) |
