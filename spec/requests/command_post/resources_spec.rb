@@ -260,6 +260,78 @@ RSpec.describe "CommandPost::Resources", type: :request do
         expect(response).to have_http_status(:not_found)
       end
     end
+
+    context "with transaction handling" do
+      let(:transaction_resource) do
+        Class.new(CommandPost::Resource) do
+          self.model_class_override = License
+
+          def self.name
+            "TransactionLicenseResource"
+          end
+
+          def self.resource_name
+            "transaction_licenses"
+          end
+
+          belongs_to :user, display: :email
+
+          action :failing_action do |license|
+            license.update!(status: "revoked")
+            raise StandardError, "Something went wrong"
+          end
+
+          action :returning_false_action do |license|
+            license.update!(status: "revoked")
+            false
+          end
+
+          action :successful_action do |license|
+            license.update!(status: "revoked")
+          end
+        end
+      end
+
+      before do
+        CommandPost::ResourceRegistry.register(transaction_resource)
+      end
+
+      after do
+        CommandPost::ResourceRegistry.reset!
+        CommandPost::ResourceRegistry.register(UserResource)
+        CommandPost::ResourceRegistry.register(LicenseResource)
+      end
+
+      it "rolls back changes when action raises an error" do
+        post command_post.resource_action_path("transaction_licenses", license, "failing_action"), as: :html
+        expect(license.reload.status).to eq("active")
+      end
+
+      it "shows error message in flash when action raises" do
+        post command_post.resource_action_path("transaction_licenses", license, "failing_action"), as: :html
+        expect(flash[:alert]).to eq("Action failed: Something went wrong")
+      end
+
+      it "redirects to show page when action raises" do
+        post command_post.resource_action_path("transaction_licenses", license, "failing_action"), as: :html
+        expect(response).to redirect_to(command_post.resource_path("transaction_licenses", license))
+      end
+
+      it "rolls back changes when action returns false" do
+        post command_post.resource_action_path("transaction_licenses", license, "returning_false_action"), as: :html
+        expect(license.reload.status).to eq("active")
+      end
+
+      it "persists changes when action succeeds" do
+        post command_post.resource_action_path("transaction_licenses", license, "successful_action"), as: :html
+        expect(license.reload.status).to eq("revoked")
+      end
+
+      it "shows success message when action completes" do
+        post command_post.resource_action_path("transaction_licenses", license, "successful_action"), as: :html
+        expect(flash[:notice]).to eq("Action completed")
+      end
+    end
   end
 
   describe "POST /:resource_name/bulk_actions/:action_name" do
@@ -272,7 +344,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
              params: { ids: licenses.map(&:id) },
              as: :html
         expect(response).to redirect_to(command_post.resources_path("licenses"))
-        expect(flash[:notice]).to eq("Bulk action executed.")
+        expect(flash[:notice]).to eq("Bulk action completed")
       end
     end
 
@@ -289,6 +361,96 @@ RSpec.describe "CommandPost::Resources", type: :request do
       it "handles empty ids" do
         post command_post.resource_bulk_action_path("licenses", "export"), as: :html
         expect(response).to redirect_to(command_post.resources_path("licenses"))
+      end
+    end
+
+    context "with transaction handling" do
+      let(:bulk_transaction_resource) do
+        Class.new(CommandPost::Resource) do
+          self.model_class_override = License
+
+          def self.name
+            "BulkTransactionLicenseResource"
+          end
+
+          def self.resource_name
+            "bulk_transaction_licenses"
+          end
+
+          belongs_to :user, display: :email
+
+          bulk_action :failing_bulk_action do |licenses|
+            licenses.update_all(status: "revoked")
+            raise StandardError, "Bulk operation failed"
+          end
+
+          bulk_action :returning_false_bulk_action do |licenses|
+            licenses.update_all(status: "revoked")
+            false
+          end
+
+          bulk_action :successful_bulk_action do |licenses|
+            licenses.update_all(status: "revoked")
+          end
+        end
+      end
+
+      before do
+        CommandPost::ResourceRegistry.register(bulk_transaction_resource)
+      end
+
+      after do
+        CommandPost::ResourceRegistry.reset!
+        CommandPost::ResourceRegistry.register(UserResource)
+        CommandPost::ResourceRegistry.register(LicenseResource)
+      end
+
+      it "rolls back changes when bulk action raises an error" do
+        post command_post.resource_bulk_action_path("bulk_transaction_licenses", "failing_bulk_action"),
+             params: { ids: licenses.map(&:id) },
+             as: :html
+        licenses.each do |license|
+          expect(license.reload.status).to eq("active")
+        end
+      end
+
+      it "shows error message in flash when bulk action raises" do
+        post command_post.resource_bulk_action_path("bulk_transaction_licenses", "failing_bulk_action"),
+             params: { ids: licenses.map(&:id) },
+             as: :html
+        expect(flash[:alert]).to eq("Action failed: Bulk operation failed")
+      end
+
+      it "redirects to index page when bulk action raises" do
+        post command_post.resource_bulk_action_path("bulk_transaction_licenses", "failing_bulk_action"),
+             params: { ids: licenses.map(&:id) },
+             as: :html
+        expect(response).to redirect_to(command_post.resources_path("bulk_transaction_licenses"))
+      end
+
+      it "rolls back changes when bulk action returns false" do
+        post command_post.resource_bulk_action_path("bulk_transaction_licenses", "returning_false_bulk_action"),
+             params: { ids: licenses.map(&:id) },
+             as: :html
+        licenses.each do |license|
+          expect(license.reload.status).to eq("active")
+        end
+      end
+
+      it "persists changes when bulk action succeeds" do
+        post command_post.resource_bulk_action_path("bulk_transaction_licenses", "successful_bulk_action"),
+             params: { ids: licenses.map(&:id) },
+             as: :html
+        licenses.each do |license|
+          expect(license.reload.status).to eq("revoked")
+        end
+      end
+
+      it "shows success message when bulk action completes" do
+        post command_post.resource_bulk_action_path("bulk_transaction_licenses", "successful_bulk_action"),
+             params: { ids: licenses.map(&:id) },
+             as: :html
+        expect(flash[:notice]).to eq("Bulk action completed")
       end
     end
   end

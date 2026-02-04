@@ -72,9 +72,18 @@ module CommandPost
       return head(:not_found) unless action
       return head(:forbidden) unless action_authorized?(action[:name])
 
-      action[:block].call(@record)
-      emit_event(params[:action_name], @record)
-      redirect_to resource_path(@resource_class.resource_name, @record), notice: "Action executed."
+      ActiveRecord::Base.transaction do
+        result = action[:block].call(@record)
+        emit_event(params[:action_name], @record)
+
+        if result == false
+          raise ActiveRecord::Rollback
+        end
+      end
+
+      redirect_to resource_path(@resource_class.resource_name, @record), notice: "Action completed"
+    rescue StandardError => e
+      redirect_to resource_path(@resource_class.resource_name, @record), alert: "Action failed: #{e.message}"
     end
 
     def execute_bulk_action
@@ -85,8 +94,17 @@ module CommandPost
       return head(:not_found) unless action
       return head(:forbidden) unless action_authorized?(action[:name])
 
-      action[:block].call(records)
-      redirect_to resources_path(@resource_class.resource_name), notice: "Bulk action executed."
+      ActiveRecord::Base.transaction do
+        result = action[:block].call(records)
+
+        if result == false
+          raise ActiveRecord::Rollback
+        end
+      end
+
+      redirect_to resources_path(@resource_class.resource_name), notice: "Bulk action completed"
+    rescue StandardError => e
+      redirect_to resources_path(@resource_class.resource_name), alert: "Action failed: #{e.message}"
     end
 
     def autocomplete
