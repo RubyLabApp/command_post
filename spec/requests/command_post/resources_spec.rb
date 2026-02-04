@@ -302,6 +302,107 @@ RSpec.describe "CommandPost::Resources", type: :request do
     end
   end
 
+  describe "field visibility enforcement" do
+    # Create a resource with a field that has conditional visibility
+    let(:visibility_resource) do
+      Class.new(CommandPost::Resource) do
+        self.model_class_override = User
+
+        def self.name
+          "VisibilityUserResource"
+        end
+
+        def self.resource_name
+          "visibility_users"
+        end
+
+        # Make email invisible to non-admin users
+        field :email, visible: ->(user) { user&.role == "admin" }
+        # Make role always invisible
+        field :role, visible: false
+
+        index_fields :id, :name, :email, :role
+      end
+    end
+
+    before do
+      CommandPost::ResourceRegistry.register(visibility_resource)
+    end
+
+    after do
+      CommandPost::ResourceRegistry.reset!
+      CommandPost::ResourceRegistry.register(UserResource)
+      CommandPost::ResourceRegistry.register(LicenseResource)
+    end
+
+    context "when user does not have permission to see a field" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "member") }
+        end
+      end
+
+      it "does not show invisible fields in index view" do
+        user = create(:user, name: "Test User", email: "test@example.com", role: "admin")
+        get command_post.resources_path("visibility_users"), headers: { "Accept" => "text/html" }
+
+        expect(response).to have_http_status(:ok)
+        # The email field should not be visible to non-admin users
+        expect(response.body).not_to include("Email")
+        # The role field is always invisible
+        expect(response.body).not_to include(">Role<")
+        # The name field should be visible
+        expect(response.body).to include("Name")
+        # The actual email value should not appear
+        expect(response.body).not_to include("test@example.com")
+      end
+
+      it "does not show invisible fields in show view" do
+        user = create(:user, name: "Test User", email: "test@example.com", role: "admin")
+        get command_post.resource_path("visibility_users", user), headers: { "Accept" => "text/html" }
+
+        expect(response).to have_http_status(:ok)
+        # The email field should not be visible to non-admin users
+        expect(response.body).not_to include("test@example.com")
+        # The name should be visible
+        expect(response.body).to include("Test User")
+      end
+    end
+
+    context "when user has permission to see a field" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "admin") }
+        end
+      end
+
+      it "shows conditionally visible fields in index view" do
+        user = create(:user, name: "Test User", email: "test@example.com", role: "member")
+        get command_post.resources_path("visibility_users"), headers: { "Accept" => "text/html" }
+
+        expect(response).to have_http_status(:ok)
+        # The email field should be visible to admin users
+        expect(response.body).to include("Email")
+        expect(response.body).to include("test@example.com")
+        # The role field is always invisible (visible: false)
+        expect(response.body).not_to include(">Role<")
+        # The name field should be visible
+        expect(response.body).to include("Name")
+      end
+
+      it "shows conditionally visible fields in show view" do
+        user = create(:user, name: "Test User", email: "test@example.com", role: "member")
+        get command_post.resource_path("visibility_users", user), headers: { "Accept" => "text/html" }
+
+        expect(response).to have_http_status(:ok)
+        # Admin user should see the email field
+        expect(response.body).to include("test@example.com")
+        # The name should be visible
+        expect(response.body).to include("Test User")
+      end
+    end
+  end
+
   describe "policy-based authorization" do
     # Create a resource with a policy that only allows admin users
     let(:policy_user_resource) do

@@ -39,11 +39,10 @@ RSpec.describe CommandPost::ApplicationController, type: :request do
 
   describe "current_user helper" do
     context "when current_user block is configured" do
-      let(:user) { create(:user, name: "Admin") }
-
       it "executes the current_user block" do
+        test_user = create(:user, name: "Admin")
         CommandPost.configure do |config|
-          config.current_user { |_controller| user }
+          config.current_user { |_controller| test_user }
         end
 
         get command_post.resources_path("users"), as: :html
@@ -51,8 +50,9 @@ RSpec.describe CommandPost::ApplicationController, type: :request do
       end
 
       it "provides current user to views" do
+        test_user = create(:user, name: "Admin")
         CommandPost.configure do |config|
-          config.current_user { |_controller| user }
+          config.current_user { |_controller| test_user }
         end
 
         get command_post.root_path, as: :html
