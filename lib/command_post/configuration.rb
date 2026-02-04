@@ -4,7 +4,7 @@ require "command_post/configuration/components"
 module CommandPost
   class Configuration
     attr_accessor :title, :logo, :per_page, :default_sort, :default_sort_direction, :search_engine,
-                  :badge_colors
+                  :badge_colors, :audit_enabled
     attr_reader :authenticate_block, :current_user_block, :on_action_block, :theme_config, :components
 
     DEFAULT_BADGE_COLORS = {
@@ -29,6 +29,7 @@ module CommandPost
       @badge_colors = DEFAULT_BADGE_COLORS.dup
       @theme_config = Theme.new
       @components = Components.new
+      @audit_enabled = false
     end
 
     def authenticate(&block)

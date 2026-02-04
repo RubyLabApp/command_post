@@ -51,6 +51,10 @@ RSpec.describe CommandPost::Configuration do
     it "sets on_action_block to nil" do
       expect(config.on_action_block).to be_nil
     end
+
+    it "sets audit_enabled to false" do
+      expect(config.audit_enabled).to be false
+    end
   end
 
   describe "badge_colors" do
@@ -169,6 +173,12 @@ RSpec.describe CommandPost::Configuration do
       config.logo = "/images/logo.png"
 
       expect(config.logo).to eq("/images/logo.png")
+    end
+
+    it "allows setting audit_enabled" do
+      config.audit_enabled = true
+
+      expect(config.audit_enabled).to be true
     end
   end
 end
