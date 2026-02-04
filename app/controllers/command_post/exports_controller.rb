@@ -15,7 +15,7 @@ module CommandPost
         end
 
         format.json do
-          data = records.map { |r| fields.each_with_object({}) { |f, h| h[f.name] = r.public_send(f.name) } }
+          data = records.map { |r| fields.each_with_object({}) { |f, h| h[f.name] = safe_field_value(r, f) } }
           render json: data
         end
       end
@@ -41,8 +41,25 @@ module CommandPost
       CSV.generate do |csv|
         csv << fields.map { |f| f.name.to_s.humanize }
         records.find_each do |record|
-          csv << fields.map { |f| record.public_send(f.name) }
+          csv << fields.map { |f| safe_field_value(record, f) }
         end
+      end
+    end
+
+    def safe_field_value(record, field)
+      return "[Error: field not found]" unless record.respond_to?(field.name)
+
+      value = record.public_send(field.name)
+      format_for_export(value, field.type)
+    rescue => e
+      "[Error: #{e.message}]"
+    end
+
+    def format_for_export(value, type)
+      case type
+      when :datetime, :date then value&.iso8601
+      when :boolean then value ? "Yes" : "No"
+      else value.to_s
       end
     end
   end
