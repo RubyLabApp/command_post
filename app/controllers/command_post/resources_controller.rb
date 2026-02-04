@@ -185,13 +185,14 @@ module CommandPost
         if filter[:type] == :date_range
           from = params.dig(:filters, "#{filter[:name]}_from")
           to = params.dig(:filters, "#{filter[:name]}_to")
-          scope = scope.where(filter[:name] => from..) if from.present?
-          scope = scope.where(filter[:name] => ..to.to_date.end_of_day) if to.present?
+          scope = scope.where(filter[:name] => parse_date(from)..) if from.present? && parse_date(from)
+          scope = scope.where(filter[:name] => ..parse_date(to)&.end_of_day) if to.present? && parse_date(to)
           next
         end
 
         value = params.dig(:filters, filter[:name])
         next if value.blank?
+        next unless value.is_a?(String)
 
         value = ActiveModel::Type::Boolean.new.cast(value) if filter[:type] == :boolean
 
@@ -202,6 +203,14 @@ module CommandPost
                 end
       end
       scope
+    end
+
+    def parse_date(value)
+      return nil if value.blank?
+
+      Date.parse(value)
+    rescue ArgumentError, TypeError
+      nil
     end
 
     def current_scope_name

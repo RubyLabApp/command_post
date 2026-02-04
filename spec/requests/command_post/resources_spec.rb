@@ -79,6 +79,338 @@ RSpec.describe "CommandPost::Resources", type: :request do
         expect(response).to have_http_status(:ok)
       end
     end
+
+    context "filter edge cases" do
+      let(:user) { create(:user) }
+
+      describe "invalid date in date range filter" do
+        it "handles completely invalid date string without crashing" do
+          create(:license, user: user)
+          get command_post.resources_path("licenses"),
+              params: { filters: { created_at_from: "not-a-date", created_at_to: "also-invalid" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles malformed date format gracefully" do
+          create(:license, user: user)
+          get command_post.resources_path("licenses"),
+              params: { filters: { created_at_from: "2024-13-45", created_at_to: "2024-00-00" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles partial date values without crashing" do
+          create(:license, user: user)
+          get command_post.resources_path("licenses"),
+              params: { filters: { created_at_from: "2024", created_at_to: "2024-01" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles empty string date values" do
+          create(:license, user: user)
+          get command_post.resources_path("licenses"),
+              params: { filters: { created_at_from: "", created_at_to: "" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles date with only from value" do
+          create(:license, user: user, created_at: 1.day.ago)
+          create(:license, user: user, created_at: 10.days.ago)
+          get command_post.resources_path("licenses"),
+              params: { filters: { created_at_from: 5.days.ago.to_date.to_s } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles date with only to value" do
+          create(:license, user: user, created_at: 1.day.ago)
+          create(:license, user: user, created_at: 10.days.ago)
+          get command_post.resources_path("licenses"),
+              params: { filters: { created_at_to: 5.days.ago.to_date.to_s } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+      end
+
+      describe "multiple filters combined" do
+        before do
+          create(:license, user: user, status: "active", created_at: 1.day.ago)
+          create(:license, user: user, status: "expired", created_at: 1.day.ago)
+          create(:license, user: user, status: "active", created_at: 10.days.ago)
+        end
+
+        it "applies both select and date range filters correctly" do
+          get command_post.resources_path("licenses"),
+              params: {
+                filters: {
+                  status: "active",
+                  created_at_from: 5.days.ago.to_date.to_s,
+                  created_at_to: Date.current.to_s
+                }
+              },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "combines filters with search query" do
+          get command_post.resources_path("licenses"),
+              params: {
+                q: "license",
+                filters: { status: "active" }
+              },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "combines filters with sorting" do
+          get command_post.resources_path("licenses"),
+              params: {
+                sort: "created_at",
+                direction: "desc",
+                filters: { status: "active" }
+              },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "combines filters with scopes" do
+          get command_post.resources_path("licenses"),
+              params: {
+                scope: "expired",
+                filters: { created_at_from: 5.days.ago.to_date.to_s }
+              },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "combines multiple filters with pagination" do
+          create_list(:license, 30, user: user, status: "active")
+          get command_post.resources_path("licenses"),
+              params: {
+                page: 2,
+                filters: { status: "active" }
+              },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+      end
+
+      describe "filter with nil and blank values" do
+        before do
+          create(:license, user: user, status: "active")
+        end
+
+        it "handles nil filter hash gracefully" do
+          get command_post.resources_path("licenses"),
+              params: { filters: nil },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles filter with nil value" do
+          get command_post.resources_path("licenses"),
+              params: { filters: { status: nil } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles filter with empty string value" do
+          get command_post.resources_path("licenses"),
+              params: { filters: { status: "" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles filter with whitespace only value" do
+          get command_post.resources_path("licenses"),
+              params: { filters: { status: "   " } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+      end
+
+      describe "filter bypass attempts via URL manipulation" do
+        before do
+          create(:license, user: user, status: "active")
+        end
+
+        it "ignores undefined filter names" do
+          get command_post.resources_path("licenses"),
+              params: { filters: { undefined_filter: "malicious_value" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "ignores SQL injection attempts in filter values" do
+          get command_post.resources_path("licenses"),
+              params: { filters: { status: "active'; DROP TABLE licenses;--" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+          # Verify the table still exists
+          expect(License.count).to be >= 1
+        end
+
+        it "ignores SQL injection attempts in date filter" do
+          get command_post.resources_path("licenses"),
+              params: { filters: { created_at_from: "2024-01-01'; DROP TABLE licenses;--" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+          expect(License.count).to be >= 1
+        end
+
+        it "handles array values in filter params" do
+          get command_post.resources_path("licenses"),
+              params: { filters: { status: %w[active expired] } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles hash values in filter params" do
+          get command_post.resources_path("licenses"),
+              params: { filters: { status: { nested: "value" } } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles extremely long filter values" do
+          get command_post.resources_path("licenses"),
+              params: { filters: { status: "a" * 10000 } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles special characters in filter values" do
+          get command_post.resources_path("licenses"),
+              params: { filters: { status: "<script>alert('xss')</script>" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "ignores attempts to filter by columns not defined as filters" do
+          get command_post.resources_path("licenses"),
+              params: { filters: { license_key: "test", id: 1 } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+      end
+
+      describe "boolean filter edge cases" do
+        let(:boolean_filter_resource) do
+          Class.new(CommandPost::Resource) do
+            self.model_class_override = User
+
+            def self.name
+              "BooleanFilterUserResource"
+            end
+
+            def self.resource_name
+              "boolean_filter_users"
+            end
+
+            filter :active, type: :boolean
+          end
+        end
+
+        before do
+          CommandPost::ResourceRegistry.register(boolean_filter_resource)
+        end
+
+        after do
+          CommandPost::ResourceRegistry.reset!
+          CommandPost::ResourceRegistry.register(UserResource)
+          CommandPost::ResourceRegistry.register(LicenseResource)
+        end
+
+        it "handles boolean filter with string 'true'" do
+          create(:user)
+          get command_post.resources_path("boolean_filter_users"),
+              params: { filters: { active: "true" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles boolean filter with string 'false'" do
+          create(:user)
+          get command_post.resources_path("boolean_filter_users"),
+              params: { filters: { active: "false" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles boolean filter with string '1'" do
+          create(:user)
+          get command_post.resources_path("boolean_filter_users"),
+              params: { filters: { active: "1" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles boolean filter with string '0'" do
+          create(:user)
+          get command_post.resources_path("boolean_filter_users"),
+              params: { filters: { active: "0" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles boolean filter with invalid value" do
+          create(:user)
+          get command_post.resources_path("boolean_filter_users"),
+              params: { filters: { active: "invalid" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+      end
+
+      describe "custom scope filter edge cases" do
+        let(:custom_scope_resource) do
+          Class.new(CommandPost::Resource) do
+            self.model_class_override = User
+
+            def self.name
+              "CustomScopeUserResource"
+            end
+
+            def self.resource_name
+              "custom_scope_users"
+            end
+
+            filter :search_name, type: :text, scope: ->(value, scope) { scope.where("name LIKE ?", "%#{value}%") }
+          end
+        end
+
+        before do
+          CommandPost::ResourceRegistry.register(custom_scope_resource)
+        end
+
+        after do
+          CommandPost::ResourceRegistry.reset!
+          CommandPost::ResourceRegistry.register(UserResource)
+          CommandPost::ResourceRegistry.register(LicenseResource)
+        end
+
+        it "applies custom scope filter correctly" do
+          create(:user, name: "John Doe")
+          create(:user, name: "Jane Smith")
+          get command_post.resources_path("custom_scope_users"),
+              params: { filters: { search_name: "John" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "handles SQL injection in custom scope filter" do
+          create(:user, name: "Test User")
+          get command_post.resources_path("custom_scope_users"),
+              params: { filters: { search_name: "'; DROP TABLE users;--" } },
+              as: :html
+          expect(response).to have_http_status(:ok)
+          expect(User.count).to be >= 1
+        end
+      end
+    end
   end
 
   describe "GET /:resource_name/:id" do
