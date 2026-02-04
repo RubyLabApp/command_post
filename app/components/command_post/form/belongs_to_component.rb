@@ -1,10 +1,14 @@
 module CommandPost
   module Form
     class BelongsToComponent < ViewComponent::Base
-      attr_reader :name, :association_class, :selected, :display_method, :include_blank, :disabled, :has_error
+      DEFAULT_OPTIONS_LIMIT = 100
+
+      attr_reader :name, :association_class, :selected, :display_method, :include_blank, :disabled, :has_error,
+                  :options_limit, :options_scope
 
       def initialize(name:, association_class:, selected: nil, display_method: :name,
-                     include_blank: true, disabled: false, has_error: false)
+                     include_blank: true, disabled: false, has_error: false,
+                     options_limit: DEFAULT_OPTIONS_LIMIT, options_scope: nil)
         @name = name
         @association_class = association_class
         @selected = selected
@@ -12,6 +16,8 @@ module CommandPost
         @include_blank = include_blank
         @disabled = disabled
         @has_error = has_error
+        @options_limit = options_limit
+        @options_scope = options_scope
       end
 
       def theme
@@ -19,9 +25,14 @@ module CommandPost
       end
 
       def options
-        association_class.all.map do |record|
+        scope = options_scope ? association_class.instance_exec(&options_scope) : association_class.all
+        scope.limit(options_limit).map do |record|
           [record.public_send(display_method), record.id]
         end
+      end
+
+      def show_search_hint?
+        association_class.count > options_limit
       end
 
       def select_classes

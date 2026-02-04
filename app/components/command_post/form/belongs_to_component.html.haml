@@ -3,3 +3,6 @@
     %option{ value: "" } Select...
   - options.each do |label, value|
     %option{ value: value, selected: selected.to_s == value.to_s }= label
+- if show_search_hint?
+  %p.text-xs.text-gray-500.mt-1.italic
+    Showing first #{options_limit} options. Use search for more results.

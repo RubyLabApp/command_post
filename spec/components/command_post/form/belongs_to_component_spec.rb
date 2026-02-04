@@ -54,6 +54,27 @@ RSpec.describe CommandPost::Form::BelongsToComponent, type: :component do
       expect(component.disabled).to be true
       expect(component.has_error).to be true
     end
+
+    it "defaults options_limit to DEFAULT_OPTIONS_LIMIT" do
+      component = described_class.new(name: :user_id, association_class: User)
+      expect(component.options_limit).to eq(described_class::DEFAULT_OPTIONS_LIMIT)
+    end
+
+    it "accepts custom options_limit" do
+      component = described_class.new(name: :user_id, association_class: User, options_limit: 50)
+      expect(component.options_limit).to eq(50)
+    end
+
+    it "defaults options_scope to nil" do
+      component = described_class.new(name: :user_id, association_class: User)
+      expect(component.options_scope).to be_nil
+    end
+
+    it "accepts custom options_scope" do
+      scope = -> { where(role: "admin") }
+      component = described_class.new(name: :user_id, association_class: User, options_scope: scope)
+      expect(component.options_scope).to eq(scope)
+    end
   end
 
   describe "#options" do
@@ -69,6 +90,50 @@ RSpec.describe CommandPost::Form::BelongsToComponent, type: :component do
       component = described_class.new(name: :user_id, association_class: User, display_method: :email)
       options = component.options
       expect(options.flatten).to include("test@example.com")
+    end
+
+    it "limits options to options_limit" do
+      create_list(:user, 5)
+      component = described_class.new(name: :user_id, association_class: User, options_limit: 3)
+      expect(component.options.size).to eq(3)
+    end
+
+    it "applies custom options_scope" do
+      create(:user, role: "admin", name: "Admin User")
+      create(:user, role: "member", name: "Member User")
+      scope = -> { where(role: "admin") }
+      component = described_class.new(name: :user_id, association_class: User, options_scope: scope)
+      options = component.options
+      expect(options.size).to eq(1)
+      expect(options.first.first).to eq("Admin User")
+    end
+
+    it "applies both options_scope and options_limit" do
+      create_list(:user, 5, role: "admin")
+      create_list(:user, 3, role: "member")
+      scope = -> { where(role: "admin") }
+      component = described_class.new(name: :user_id, association_class: User, options_scope: scope, options_limit: 2)
+      expect(component.options.size).to eq(2)
+    end
+  end
+
+  describe "#show_search_hint?" do
+    it "returns true when total records exceed options_limit" do
+      create_list(:user, 5)
+      component = described_class.new(name: :user_id, association_class: User, options_limit: 3)
+      expect(component.show_search_hint?).to be true
+    end
+
+    it "returns false when total records are within options_limit" do
+      create_list(:user, 2)
+      component = described_class.new(name: :user_id, association_class: User, options_limit: 5)
+      expect(component.show_search_hint?).to be false
+    end
+
+    it "returns false when total records equal options_limit" do
+      create_list(:user, 3)
+      component = described_class.new(name: :user_id, association_class: User, options_limit: 3)
+      expect(component.show_search_hint?).to be false
     end
   end
 
