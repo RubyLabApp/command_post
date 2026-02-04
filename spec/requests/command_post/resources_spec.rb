@@ -25,6 +25,130 @@ RSpec.describe "CommandPost::Resources", type: :request do
       end
     end
 
+    context "with field-specific search (field:value syntax)" do
+      it "searches only the specified column with email:value" do
+        john = create(:user, name: "John Doe", email: "john@example.com")
+        jane = create(:user, name: "Jane Smith", email: "jane@example.com")
+        # Search email column specifically
+        get command_post.resources_path("users"), params: { q: "email:john" }, as: :html
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("john@example.com")
+        expect(response.body).not_to include("jane@example.com")
+      end
+
+      it "searches only the specified column with name:value" do
+        create(:user, name: "John Doe", email: "john@example.com")
+        create(:user, name: "Jane Smith", email: "jane@example.com")
+        get command_post.resources_path("users"), params: { q: "name:Jane" }, as: :html
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Jane Smith")
+        expect(response.body).not_to include("John Doe")
+      end
+
+      it "ignores invalid field names without crashing" do
+        create(:user, name: "John Doe", email: "john@example.com")
+        get command_post.resources_path("users"), params: { q: "invalid_field:value" }, as: :html
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "handles special characters in search value" do
+        create(:user, name: "John+Doe", email: "john+test@example.com")
+        get command_post.resources_path("users"), params: { q: "email:john+test" }, as: :html
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("john+test@example.com")
+      end
+
+      it "handles values with colons" do
+        # Value itself contains a colon
+        create(:user, name: "Test User", email: "test@example.com")
+        get command_post.resources_path("users"), params: { q: "name:Test User" }, as: :html
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context "with date range search (field:from..to syntax)" do
+      let(:user) { create(:user) }
+
+      it "filters by date range with both from and to dates" do
+        old_license = create(:license, user: user, created_at: 30.days.ago)
+        recent_license = create(:license, user: user, created_at: 2.days.ago)
+        future_license = create(:license, user: user, created_at: 1.day.from_now)
+
+        from_date = 10.days.ago.to_date.to_s
+        to_date = Date.current.to_s
+        get command_post.resources_path("licenses"), params: { q: "created_at:#{from_date}..#{to_date}" }, as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(recent_license.license_key)
+        expect(response.body).not_to include(old_license.license_key)
+      end
+
+      it "filters with only from date (open-ended to)" do
+        old_license = create(:license, user: user, created_at: 30.days.ago)
+        recent_license = create(:license, user: user, created_at: 2.days.ago)
+
+        from_date = 10.days.ago.to_date.to_s
+        get command_post.resources_path("licenses"), params: { q: "created_at:#{from_date}.." }, as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(recent_license.license_key)
+        expect(response.body).not_to include(old_license.license_key)
+      end
+
+      it "filters with only to date (open-ended from)" do
+        old_license = create(:license, user: user, created_at: 30.days.ago)
+        recent_license = create(:license, user: user, created_at: 2.days.ago)
+
+        to_date = 10.days.ago.to_date.to_s
+        get command_post.resources_path("licenses"), params: { q: "created_at:..#{to_date}" }, as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(old_license.license_key)
+        expect(response.body).not_to include(recent_license.license_key)
+      end
+
+      it "handles invalid dates gracefully" do
+        create(:license, user: user)
+        get command_post.resources_path("licenses"), params: { q: "created_at:invalid..also-invalid" }, as: :html
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "handles date range on expires_at column" do
+        expiring_soon = create(:license, user: user, expires_at: 5.days.from_now)
+        expiring_later = create(:license, user: user, expires_at: 30.days.from_now)
+
+        to_date = 10.days.from_now.to_date.to_s
+        get command_post.resources_path("licenses"), params: { q: "expires_at:..#{to_date}" }, as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(expiring_soon.license_key)
+        expect(response.body).not_to include(expiring_later.license_key)
+      end
+    end
+
+    context "regular search still works after advanced search feature" do
+      it "searches across all searchable columns without field: prefix" do
+        create(:user, name: "John Doe", email: "unique@example.com")
+        create(:user, name: "Jane Smith", email: "jane@example.com")
+        # Regular search should still search across all searchable columns (name and email)
+        get command_post.resources_path("users"), params: { q: "unique" }, as: :html
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("unique@example.com")
+      end
+
+      it "handles empty search query" do
+        create(:user, name: "Test User")
+        get command_post.resources_path("users"), params: { q: "" }, as: :html
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "handles whitespace-only search query" do
+        create(:user, name: "Test User")
+        get command_post.resources_path("users"), params: { q: "   " }, as: :html
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
     context "with sorting" do
       it "sorts records by column" do
         create_list(:user, 3)

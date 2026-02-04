@@ -5,7 +5,8 @@ module CommandPost
   class Configuration
     attr_accessor :title, :logo, :per_page, :default_sort, :default_sort_direction, :search_engine,
                   :badge_colors, :audit_enabled
-    attr_reader :authenticate_block, :current_user_block, :on_action_block, :theme_config, :components
+    attr_reader :authenticate_block, :current_user_block, :on_action_block, :theme_config, :components,
+                :tenant_scope_block
 
     DEFAULT_BADGE_COLORS = {
       green: "bg-green-100 text-green-800",
@@ -47,6 +48,10 @@ module CommandPost
     def theme
       yield @theme_config if block_given?
       @theme_config
+    end
+
+    def tenant_scope(&block)
+      @tenant_scope_block = block
     end
   end
 end

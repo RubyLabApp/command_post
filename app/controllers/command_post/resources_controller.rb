@@ -6,7 +6,7 @@ module CommandPost
     before_action :check_action_allowed, only: %i[new create edit update destroy]
 
     def index
-      scope = apply_scopes(apply_filters(@resource_class.model.all))
+      scope = apply_scopes(apply_filters(base_scope))
       scope = apply_search(scope)
       scope = apply_sorting(scope)
       scope = apply_preloading(scope)
@@ -17,7 +17,7 @@ module CommandPost
     end
 
     def show
-      @record = @resource_class.model.find(params[:id])
+      @record = base_scope.find(params[:id])
       @fields = @resource_class.resolved_fields
     end
 
@@ -27,7 +27,7 @@ module CommandPost
     end
 
     def edit
-      @record = @resource_class.model.find(params[:id])
+      @record = base_scope.find(params[:id])
       @fields = form_fields
     end
 
@@ -45,7 +45,7 @@ module CommandPost
     end
 
     def update
-      @record = @resource_class.model.find(params[:id])
+      @record = base_scope.find(params[:id])
 
       if @record.update(resource_params)
         emit_event(:update, @record)
@@ -58,7 +58,7 @@ module CommandPost
     end
 
     def destroy
-      @record = @resource_class.model.find(params[:id])
+      @record = base_scope.find(params[:id])
       @record.destroy!
       emit_event(:destroy, @record)
       redirect_to resources_path(@resource_class.resource_name),
@@ -88,7 +88,7 @@ module CommandPost
 
     def execute_bulk_action
       ids = params[:ids] || []
-      records = @resource_class.model.where(id: ids)
+      records = base_scope.where(id: ids)
       action = @resource_class.defined_bulk_actions.find { |a| a[:name].to_s == params[:action_name] }
 
       return head(:not_found) unless action
@@ -117,7 +117,7 @@ module CommandPost
       column = conn.quote_column_name(display)
       like_operator = conn.adapter_name.downcase.include?("postgresql") ? "ILIKE" : "LIKE"
 
-      records = @resource_class.model
+      records = base_scope
                   .where("#{table}.#{column} #{like_operator} ?", "%#{query}%")
                   .limit(20)
                   .map { |r| { id: r.id, label: r.public_send(display) } }
@@ -126,6 +126,16 @@ module CommandPost
     end
 
     private
+
+    def base_scope
+      scope = @resource_class.model.all
+
+      if CommandPost.configuration.tenant_scope_block
+        scope = CommandPost.configuration.tenant_scope_block.call(scope)
+      end
+
+      scope
+    end
 
     def set_resource_class
       @resource_class = ResourceRegistry.find(params[:resource_name])
@@ -230,9 +240,43 @@ module CommandPost
     end
 
     def apply_search(scope)
-      query = params[:q]
+      query = params[:q].to_s.strip
       return scope if query.blank?
 
+      # Check for field:value syntax
+      if query.match?(/^\w+:.+$/)
+        field, value = query.split(":", 2)
+        return apply_field_search(scope, field, value)
+      end
+
+      # Default: search all searchable columns
+      apply_general_search(scope, query)
+    end
+
+    def apply_field_search(scope, field, value)
+      return scope unless @resource_class.model.column_names.include?(field)
+
+      conn = @resource_class.model.connection
+      table = conn.quote_table_name(@resource_class.model.table_name)
+      column = conn.quote_column_name(field)
+      like_op = conn.adapter_name.downcase.include?("postgresql") ? "ILIKE" : "LIKE"
+
+      # Check for date range syntax (field:from..to)
+      if value.include?("..")
+        from_str, to_str = value.split("..", 2)
+        from_date = parse_date(from_str)
+        to_date = parse_date(to_str)
+
+        return scope.where(field => from_date..to_date) if from_date && to_date
+        return scope.where("#{table}.#{column} >= ?", from_date) if from_date
+        return scope.where("#{table}.#{column} <= ?", to_date) if to_date
+        return scope # Both dates invalid, return unfiltered
+      end
+
+      scope.where("#{table}.#{column} #{like_op} ?", "%#{value}%")
+    end
+
+    def apply_general_search(scope, query)
       columns = @resource_class.searchable_columns
       conn = @resource_class.model.connection
       table = conn.quote_table_name(@resource_class.model.table_name)

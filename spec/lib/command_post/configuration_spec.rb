@@ -55,6 +55,10 @@ RSpec.describe CommandPost::Configuration do
     it "sets audit_enabled to false" do
       expect(config.audit_enabled).to be false
     end
+
+    it "sets tenant_scope_block to nil" do
+      expect(config.tenant_scope_block).to be_nil
+    end
   end
 
   describe "badge_colors" do
@@ -112,6 +116,24 @@ RSpec.describe CommandPost::Configuration do
       config.on_action(&:to_s)
 
       expect(config.on_action_block.call(:create)).to eq("create")
+    end
+  end
+
+  describe "#tenant_scope" do
+    it "stores the provided block" do
+      config.tenant_scope { |scope| scope.where(organization_id: 1) }
+
+      expect(config.tenant_scope_block).to be_a(Proc)
+    end
+
+    it "stores a callable block that receives scope" do
+      config.tenant_scope { |scope| scope.where(active: true) }
+
+      # Create a mock scope to test the block
+      mock_scope = double("scope")
+      allow(mock_scope).to receive(:where).with(active: true).and_return("filtered_scope")
+
+      expect(config.tenant_scope_block.call(mock_scope)).to eq("filtered_scope")
     end
   end
 
