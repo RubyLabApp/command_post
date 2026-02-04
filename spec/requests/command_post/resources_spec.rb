@@ -1757,4 +1757,190 @@ RSpec.describe "CommandPost::Resources", type: :request do
       end
     end
   end
+
+  describe "multi-tenant scoping" do
+    context "when tenant scope is configured" do
+      before do
+        # Configure tenant scope to only show active users
+        CommandPost.configure do |config|
+          config.tenant_scope do |scope|
+            scope.where(active: true)
+          end
+        end
+      end
+
+      it "applies tenant scope to index queries" do
+        active_user = create(:user, name: "Active User", active: true)
+        inactive_user = create(:user, name: "Inactive User", active: false)
+
+        get command_post.resources_path("users"), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Active User")
+        expect(response.body).not_to include("Inactive User")
+      end
+
+      it "applies tenant scope to show action" do
+        active_user = create(:user, name: "Active User", active: true)
+
+        get command_post.resource_path("users", active_user), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Active User")
+      end
+
+      it "prevents cross-tenant record access on show" do
+        inactive_user = create(:user, name: "Inactive User", active: false)
+
+        expect do
+          get command_post.resource_path("users", inactive_user), as: :html
+        end.to raise_error(ActiveRecord::RecordNotFound)
+      end
+
+      it "prevents cross-tenant record access on edit" do
+        inactive_user = create(:user, name: "Inactive User", active: false)
+
+        expect do
+          get command_post.edit_resource_path("users", inactive_user), as: :html
+        end.to raise_error(ActiveRecord::RecordNotFound)
+      end
+
+      it "prevents cross-tenant record access on update" do
+        inactive_user = create(:user, name: "Inactive User", active: false)
+
+        expect do
+          patch command_post.resource_path("users", inactive_user),
+                params: { record: { name: "New Name", email: inactive_user.email, role: inactive_user.role } },
+                as: :html
+        end.to raise_error(ActiveRecord::RecordNotFound)
+      end
+
+      it "prevents cross-tenant record access on destroy" do
+        inactive_user = create(:user, name: "Inactive User", active: false)
+
+        expect do
+          delete command_post.resource_path("users", inactive_user), as: :html
+        end.to raise_error(ActiveRecord::RecordNotFound)
+      end
+
+      it "applies tenant scope to bulk actions" do
+        active_user = create(:user)
+        active_licenses = create_list(:license, 2, user: active_user, status: "active")
+        inactive_user = create(:user, active: false)
+        inactive_license = create(:license, user: inactive_user, status: "active")
+
+        # Reconfigure tenant scope for licenses based on user's active status
+        CommandPost.configure do |config|
+          config.tenant_scope do |scope|
+            scope.joins(:user).where(users: { active: true })
+          end
+        end
+
+        post command_post.resource_bulk_action_path("licenses", "export"),
+             params: { ids: active_licenses.map(&:id) + [inactive_license.id] },
+             as: :html
+
+        expect(response).to redirect_to(command_post.resources_path("licenses"))
+      end
+
+      it "applies tenant scope to autocomplete" do
+        create(:user, name: "Active Smith", active: true)
+        create(:user, name: "Inactive Smith", active: false)
+
+        get command_post.autocomplete_path("users"), params: { q: "Smith" }, as: :json
+
+        data = JSON.parse(response.body)
+        expect(data.length).to eq(1)
+        expect(data.first["label"]).to eq("Active Smith")
+      end
+    end
+
+    context "when no tenant scope is configured" do
+      it "returns all records on index" do
+        active_user = create(:user, name: "Active User", active: true)
+        inactive_user = create(:user, name: "Inactive User", active: false)
+
+        get command_post.resources_path("users"), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Active User")
+        expect(response.body).to include("Inactive User")
+      end
+
+      it "allows access to any record on show" do
+        inactive_user = create(:user, name: "Inactive User", active: false)
+
+        get command_post.resource_path("users", inactive_user), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Inactive User")
+      end
+
+      it "allows updating any record" do
+        user = create(:user, name: "Original Name", active: false)
+
+        patch command_post.resource_path("users", user),
+              params: { record: { name: "Updated Name", email: user.email, role: user.role } },
+              as: :html
+
+        expect(user.reload.name).to eq("Updated Name")
+      end
+
+      it "allows deleting any record" do
+        user = create(:user, active: false)
+
+        expect do
+          delete command_post.resource_path("users", user), as: :html
+        end.to change(User, :count).by(-1)
+      end
+    end
+
+    context "with organization-based tenant scope" do
+      # Simulates a SaaS scenario where users belong to organizations
+      let(:org_id) { 1 }
+
+      before do
+        # Simulate storing org_id in a thread-local variable (like Current.organization)
+        Thread.current[:test_org_id] = org_id
+
+        CommandPost.configure do |config|
+          config.tenant_scope do |scope|
+            # In a real app, this would be scope.where(organization_id: Current.organization.id)
+            # Here we simulate with a role-based scope for testing
+            current_org_role = Thread.current[:test_org_id] == 1 ? "admin" : "member"
+            scope.where(role: current_org_role)
+          end
+        end
+      end
+
+      after do
+        Thread.current[:test_org_id] = nil
+      end
+
+      it "isolates records by tenant" do
+        admin_user = create(:user, name: "Admin User", role: "admin")
+        member_user = create(:user, name: "Member User", role: "member")
+
+        get command_post.resources_path("users"), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Admin User")
+        expect(response.body).not_to include("Member User")
+      end
+
+      it "switches tenant context appropriately" do
+        admin_user = create(:user, name: "Admin User", role: "admin")
+        member_user = create(:user, name: "Member User", role: "member")
+
+        # Switch to org 2 (member context)
+        Thread.current[:test_org_id] = 2
+
+        get command_post.resources_path("users"), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).not_to include("Admin User")
+        expect(response.body).to include("Member User")
+      end
+    end
+  end
 end
