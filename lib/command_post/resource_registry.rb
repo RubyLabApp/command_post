@@ -2,6 +2,7 @@ module CommandPost
   class ResourceRegistry
     class << self
       def register(resource_class)
+        resource_class.register_soft_delete_features
         resources[resource_class.resource_name] = resource_class
       end
 

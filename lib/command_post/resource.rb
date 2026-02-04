@@ -170,6 +170,33 @@ module CommandPost
         end || :id
       end
 
+      def soft_delete?
+        model.column_names.include?(soft_delete_column)
+      end
+
+      def soft_delete_column
+        "deleted_at"
+      end
+
+      def register_soft_delete_features
+        return unless soft_delete?
+
+        # Capture the column name for use in lambdas
+        column = soft_delete_column
+        column_sym = column.to_sym
+
+        # Register with_deleted scope
+        scope :with_deleted, -> { unscope(where: column_sym) }
+
+        # Register only_deleted scope
+        scope :only_deleted, -> { unscope(where: column_sym).where.not(column => nil) }
+
+        # Register restore action
+        action :restore, icon: "arrow-path" do |record|
+          record.update(column => nil)
+        end
+      end
+
       private
 
       def infer_preload_associations

@@ -66,7 +66,7 @@ module CommandPost
     end
 
     def execute_action
-      @record = @resource_class.model.find(params[:id])
+      @record = find_record_for_action
       action = @resource_class.defined_actions.find { |a| a[:name].to_s == params[:action_name] }
 
       return head(:not_found) unless action
@@ -260,8 +260,6 @@ module CommandPost
     end
 
     def emit_event(action, record)
-      return unless CommandPost.configuration.on_action_block
-
       event = OpenStruct.new(
         user: command_post_current_user,
         action: action,
@@ -270,7 +268,22 @@ module CommandPost
         changes: record.saved_changes,
         ip_address: request.remote_ip
       )
-      CommandPost.configuration.on_action_block.call(event)
+
+      # Log to audit log if enabled
+      CommandPost::AuditLog.log(event)
+
+      # Call on_action callback if configured
+      CommandPost.configuration.on_action_block&.call(event)
+    end
+
+    def find_record_for_action
+      # Use unscoped for soft delete models to allow finding deleted records
+      # This is needed for the restore action to work on soft-deleted records
+      if @resource_class.soft_delete?
+        @resource_class.model.unscoped.find(params[:id])
+      else
+        @resource_class.model.find(params[:id])
+      end
     end
   end
 end
