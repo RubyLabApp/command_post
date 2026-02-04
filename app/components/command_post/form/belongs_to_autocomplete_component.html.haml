@@ -1,0 +1,156 @@
+.relative{ id: component_id, data: { autocomplete_url: autocomplete_url } }
+  %input{ type: "hidden", name: name, id: "#{component_id}-hidden", value: selected_id }
+  %input{ type: "text",
+          id: "#{component_id}-input",
+          class: input_classes,
+          placeholder: placeholder,
+          disabled: effectively_disabled?,
+          value: selected_label,
+          autocomplete: "off",
+          data: { autocomplete_input: true } }
+  .hidden{ id: "#{component_id}-dropdown", class: dropdown_classes }
+
+:javascript
+  (function() {
+    const container = document.getElementById('#{component_id}');
+    const hiddenInput = document.getElementById('#{component_id}-hidden');
+    const textInput = document.getElementById('#{component_id}-input');
+    const dropdown = document.getElementById('#{component_id}-dropdown');
+    const autocompleteUrl = container.dataset.autocompleteUrl;
+
+    let debounceTimer = null;
+    let selectedIndex = -1;
+    let results = [];
+
+    function showDropdown() {
+      dropdown.classList.remove('hidden');
+    }
+
+    function hideDropdown() {
+      dropdown.classList.add('hidden');
+      selectedIndex = -1;
+    }
+
+    function clearDropdown() {
+      while (dropdown.firstChild) {
+        dropdown.removeChild(dropdown.firstChild);
+      }
+    }
+
+    function createResultItem(item, index) {
+      const div = document.createElement('div');
+      div.className = '#{dropdown_item_classes}';
+      div.dataset.id = item.id;
+      div.dataset.index = index;
+      div.textContent = item.label;
+      div.addEventListener('click', function() {
+        selectItem(parseInt(this.dataset.index));
+      });
+      return div;
+    }
+
+    function createNoResultsItem() {
+      const div = document.createElement('div');
+      div.className = 'px-3 py-2 text-sm text-gray-500';
+      div.textContent = 'No results found';
+      return div;
+    }
+
+    function renderResults(items) {
+      results = items;
+      selectedIndex = -1;
+      clearDropdown();
+
+      if (items.length === 0) {
+        dropdown.appendChild(createNoResultsItem());
+        showDropdown();
+        return;
+      }
+
+      items.forEach((item, index) => {
+        dropdown.appendChild(createResultItem(item, index));
+      });
+
+      showDropdown();
+    }
+
+    function selectItem(index) {
+      if (index >= 0 && index < results.length) {
+        const item = results[index];
+        hiddenInput.value = item.id;
+        textInput.value = item.label;
+        hideDropdown();
+      }
+    }
+
+    function highlightItem(index) {
+      const items = dropdown.querySelectorAll('[data-id]');
+      items.forEach((el, i) => {
+        if (i === index) {
+          el.classList.add('bg-gray-100');
+        } else {
+          el.classList.remove('bg-gray-100');
+        }
+      });
+    }
+
+    function fetchResults(query) {
+      if (!query || query.length < 1) {
+        hideDropdown();
+        return;
+      }
+
+      fetch(`${autocompleteUrl}?q=${encodeURIComponent(query)}`, {
+        headers: { 'Accept': 'application/json' }
+      })
+      .then(response => response.json())
+      .then(data => renderResults(data))
+      .catch(() => hideDropdown());
+    }
+
+    textInput.addEventListener('input', function() {
+      // Clear selected value when user types
+      hiddenInput.value = '';
+
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => fetchResults(this.value), 300);
+    });
+
+    textInput.addEventListener('keydown', function(e) {
+      if (dropdown.classList.contains('hidden')) return;
+
+      switch(e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          selectedIndex = Math.min(selectedIndex + 1, results.length - 1);
+          highlightItem(selectedIndex);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          selectedIndex = Math.max(selectedIndex - 1, 0);
+          highlightItem(selectedIndex);
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (selectedIndex >= 0) {
+            selectItem(selectedIndex);
+          }
+          break;
+        case 'Escape':
+          hideDropdown();
+          break;
+      }
+    });
+
+    textInput.addEventListener('focus', function() {
+      if (this.value && !hiddenInput.value) {
+        fetchResults(this.value);
+      }
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!container.contains(e.target)) {
+        hideDropdown();
+      }
+    });
+  })();

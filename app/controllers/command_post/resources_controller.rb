@@ -89,6 +89,24 @@ module CommandPost
       redirect_to resources_path(@resource_class.resource_name), notice: "Bulk action executed."
     end
 
+    def autocomplete
+      query = params[:q].to_s.strip
+      return render json: [] if query.blank?
+
+      display = @resource_class.display_attribute
+      conn = @resource_class.model.connection
+      table = conn.quote_table_name(@resource_class.model.table_name)
+      column = conn.quote_column_name(display)
+      like_operator = conn.adapter_name.downcase.include?("postgresql") ? "ILIKE" : "LIKE"
+
+      records = @resource_class.model
+                  .where("#{table}.#{column} #{like_operator} ?", "%#{query}%")
+                  .limit(20)
+                  .map { |r| { id: r.id, label: r.public_send(display) } }
+
+      render json: records
+    end
+
     private
 
     def set_resource_class

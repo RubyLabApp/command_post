@@ -814,4 +814,114 @@ RSpec.describe "CommandPost::Resources", type: :request do
       end
     end
   end
+
+  describe "GET /autocomplete/:resource_name" do
+    context "with valid query" do
+      it "returns matching records as JSON" do
+        create(:user, name: "Alice Smith", email: "alice@example.com")
+        create(:user, name: "Bob Jones", email: "bob@example.com")
+        create(:user, name: "Charlie Smith", email: "charlie@example.com")
+
+        get command_post.autocomplete_path("users"), params: { q: "Smith" }, as: :json
+        expect(response).to have_http_status(:ok)
+
+        data = JSON.parse(response.body)
+        expect(data.length).to eq(2)
+        expect(data.map { |r| r["label"] }).to contain_exactly("Alice Smith", "Charlie Smith")
+      end
+
+      it "returns id and label for each record" do
+        user = create(:user, name: "Test User")
+        get command_post.autocomplete_path("users"), params: { q: "Test" }, as: :json
+
+        data = JSON.parse(response.body)
+        expect(data.first).to eq({ "id" => user.id, "label" => "Test User" })
+      end
+
+      it "limits results to 20 records" do
+        create_list(:user, 25, name: "Test User")
+        get command_post.autocomplete_path("users"), params: { q: "Test" }, as: :json
+
+        data = JSON.parse(response.body)
+        expect(data.length).to eq(20)
+      end
+    end
+
+    context "with empty query" do
+      it "returns empty array" do
+        create(:user, name: "Test User")
+        get command_post.autocomplete_path("users"), params: { q: "" }, as: :json
+
+        data = JSON.parse(response.body)
+        expect(data).to eq([])
+      end
+
+      it "returns empty array when query param is missing" do
+        create(:user, name: "Test User")
+        get command_post.autocomplete_path("users"), as: :json
+
+        data = JSON.parse(response.body)
+        expect(data).to eq([])
+      end
+    end
+
+    context "with case-insensitive search" do
+      it "matches regardless of case" do
+        create(:user, name: "Alice SMITH")
+        get command_post.autocomplete_path("users"), params: { q: "smith" }, as: :json
+
+        data = JSON.parse(response.body)
+        expect(data.length).to eq(1)
+        expect(data.first["label"]).to eq("Alice SMITH")
+      end
+    end
+
+    context "with custom display attribute" do
+      let(:autocomplete_resource) do
+        Class.new(CommandPost::Resource) do
+          self.model_class_override = User
+
+          def self.name
+            "AutocompleteUserResource"
+          end
+
+          def self.resource_name
+            "autocomplete_users"
+          end
+
+          def self.display_attribute
+            :email
+          end
+        end
+      end
+
+      before do
+        CommandPost::ResourceRegistry.register(autocomplete_resource)
+      end
+
+      after do
+        CommandPost::ResourceRegistry.reset!
+        CommandPost::ResourceRegistry.register(UserResource)
+        CommandPost::ResourceRegistry.register(LicenseResource)
+      end
+
+      it "uses the display_attribute for searching and labeling" do
+        create(:user, name: "Test User", email: "test@example.com")
+        create(:user, name: "Another User", email: "another@example.com")
+
+        get command_post.autocomplete_path("autocomplete_users"), params: { q: "test@" }, as: :json
+
+        data = JSON.parse(response.body)
+        expect(data.length).to eq(1)
+        expect(data.first["label"]).to eq("test@example.com")
+      end
+    end
+
+    context "with unknown resource" do
+      it "returns not found" do
+        get command_post.autocomplete_path("unknown_resources"), params: { q: "test" }, as: :json
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
 end

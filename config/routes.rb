@@ -2,6 +2,7 @@ CommandPost::Engine.routes.draw do
   root "dashboard#index"
 
   get "search", to: "search#index", as: :search
+  get "autocomplete/:resource_name", to: "resources#autocomplete", as: :autocomplete
   get ":resource_name/export", to: "exports#show", as: :export
 
   get ":resource_name", to: "resources#index", as: :resources

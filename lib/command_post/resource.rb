@@ -164,6 +164,12 @@ module CommandPost
         model.model_name.human.pluralize
       end
 
+      def display_attribute
+        ApplicationHelper::DISPLAY_METHODS.find do |method|
+          model.column_names.include?(method.to_s)
+        end || :id
+      end
+
       private
 
       def infer_preload_associations
