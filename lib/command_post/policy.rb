@@ -31,5 +31,16 @@ module CommandPost
 
       condition.call(record)
     end
+
+    # Check if a custom action (or bulk action) is allowed
+    # Same logic as allowed? - returns true if no policy configured,
+    # false if action not in allow list, or evaluates condition
+    def action_allowed?(action_name, user)
+      return true unless @configured
+      return false unless @allow_rules.key?(action_name)
+
+      condition = @allow_rules[action_name]
+      condition.nil? || condition.call(user)
+    end
   end
 end

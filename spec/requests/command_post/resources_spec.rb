@@ -255,10 +255,9 @@ RSpec.describe "CommandPost::Resources", type: :request do
     end
 
     context "with invalid action" do
-      it "redirects with error" do
+      it "returns not found" do
         post command_post.resource_action_path("licenses", license, "nonexistent"), as: :html
-        expect(response).to redirect_to(command_post.resource_path("licenses", license))
-        expect(flash[:alert]).to eq("Action not found.")
+        expect(response).to have_http_status(:not_found)
       end
     end
   end
@@ -278,12 +277,11 @@ RSpec.describe "CommandPost::Resources", type: :request do
     end
 
     context "with invalid bulk action" do
-      it "redirects with error" do
+      it "returns not found" do
         post command_post.resource_bulk_action_path("licenses", "nonexistent"),
              params: { ids: licenses.map(&:id) },
              as: :html
-        expect(response).to redirect_to(command_post.resources_path("licenses"))
-        expect(flash[:alert]).to eq("Action not found.")
+        expect(response).to have_http_status(:not_found)
       end
     end
 
@@ -508,6 +506,249 @@ RSpec.describe "CommandPost::Resources", type: :request do
       it "returns forbidden when policy requires user context" do
         get command_post.new_resource_path("policy_users"), as: :html
         expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
+
+  describe "custom action authorization" do
+    # Create a resource with policy-controlled custom actions
+    let(:policy_license_resource) do
+      Class.new(CommandPost::Resource) do
+        self.model_class_override = License
+
+        def self.name
+          "PolicyLicenseResource"
+        end
+
+        def self.resource_name
+          "policy_licenses"
+        end
+
+        belongs_to :user, display: :email
+
+        action :revoke, icon: "x-circle" do |license|
+          license.update!(status: :revoked)
+        end
+
+        action :renew, icon: "refresh" do |license|
+          license.update!(status: :active)
+        end
+
+        bulk_action :bulk_revoke do |licenses|
+          licenses.update_all(status: :revoked)
+        end
+
+        bulk_action :bulk_export do |licenses|
+          licenses.pluck(:license_key)
+        end
+
+        policy do
+          allow :create, :update, :destroy, if: ->(user) { user&.role == "admin" }
+          allow :revoke, if: ->(user) { user&.role == "admin" }
+          allow :bulk_revoke, if: ->(user) { user&.role == "admin" }
+          # renew and bulk_export are not allowed by policy
+        end
+      end
+    end
+
+    before do
+      CommandPost::ResourceRegistry.register(policy_license_resource)
+    end
+
+    after do
+      CommandPost::ResourceRegistry.reset!
+      CommandPost::ResourceRegistry.register(UserResource)
+      CommandPost::ResourceRegistry.register(LicenseResource)
+    end
+
+    context "when policy denies custom action" do
+      let(:user) { create(:user) }
+      let!(:license) { create(:license, user: user, status: "active") }
+
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "member") }
+        end
+      end
+
+      it "returns forbidden when policy denies the action" do
+        post command_post.resource_action_path("policy_licenses", license, "revoke"), as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "returns forbidden for actions not in policy allow list" do
+        post command_post.resource_action_path("policy_licenses", license, "renew"), as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "does not execute the action when forbidden" do
+        post command_post.resource_action_path("policy_licenses", license, "revoke"), as: :html
+        expect(license.reload.status).to eq("active")
+      end
+    end
+
+    context "when policy allows custom action" do
+      let(:user) { create(:user) }
+      let!(:license) { create(:license, user: user, status: "active") }
+
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "admin") }
+        end
+      end
+
+      it "executes the action when policy allows" do
+        post command_post.resource_action_path("policy_licenses", license, "revoke"), as: :html
+        expect(response).to redirect_to(command_post.resource_path("policy_licenses", license))
+        expect(license.reload.status).to eq("revoked")
+      end
+
+      it "returns forbidden for actions not in policy allow list even for admin" do
+        post command_post.resource_action_path("policy_licenses", license, "renew"), as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when no policy is defined" do
+      let(:user) { create(:user) }
+      let!(:license) { create(:license, user: user, status: "active") }
+
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "member") }
+        end
+      end
+
+      it "allows custom actions by default" do
+        # Using the regular LicenseResource which has no policy
+        CommandPost::ResourceRegistry.register(LicenseResource)
+        post command_post.resource_action_path("licenses", license, "revoke"), as: :html
+        expect(response).to redirect_to(command_post.resource_path("licenses", license))
+        expect(license.reload.status).to eq("revoked")
+      end
+    end
+  end
+
+  describe "bulk action authorization" do
+    # Reuse the same policy_license_resource setup
+    let(:policy_license_resource) do
+      Class.new(CommandPost::Resource) do
+        self.model_class_override = License
+
+        def self.name
+          "PolicyLicenseResource"
+        end
+
+        def self.resource_name
+          "policy_licenses"
+        end
+
+        belongs_to :user, display: :email
+
+        bulk_action :bulk_revoke do |licenses|
+          licenses.update_all(status: :revoked)
+        end
+
+        bulk_action :bulk_export do |licenses|
+          licenses.pluck(:license_key)
+        end
+
+        policy do
+          allow :bulk_revoke, if: ->(user) { user&.role == "admin" }
+          # bulk_export is not allowed by policy
+        end
+      end
+    end
+
+    before do
+      CommandPost::ResourceRegistry.register(policy_license_resource)
+    end
+
+    after do
+      CommandPost::ResourceRegistry.reset!
+      CommandPost::ResourceRegistry.register(UserResource)
+      CommandPost::ResourceRegistry.register(LicenseResource)
+    end
+
+    context "when policy denies bulk action" do
+      let(:user) { create(:user) }
+      let!(:licenses) { create_list(:license, 3, user: user, status: "active") }
+
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "member") }
+        end
+      end
+
+      it "returns forbidden when policy denies the bulk action" do
+        post command_post.resource_bulk_action_path("policy_licenses", "bulk_revoke"),
+             params: { ids: licenses.map(&:id) },
+             as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "returns forbidden for bulk actions not in policy allow list" do
+        post command_post.resource_bulk_action_path("policy_licenses", "bulk_export"),
+             params: { ids: licenses.map(&:id) },
+             as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "does not execute the bulk action when forbidden" do
+        post command_post.resource_bulk_action_path("policy_licenses", "bulk_revoke"),
+             params: { ids: licenses.map(&:id) },
+             as: :html
+        licenses.each do |license|
+          expect(license.reload.status).to eq("active")
+        end
+      end
+    end
+
+    context "when policy allows bulk action" do
+      let(:user) { create(:user) }
+      let!(:licenses) { create_list(:license, 3, user: user, status: "active") }
+
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "admin") }
+        end
+      end
+
+      it "executes the bulk action when policy allows" do
+        post command_post.resource_bulk_action_path("policy_licenses", "bulk_revoke"),
+             params: { ids: licenses.map(&:id) },
+             as: :html
+        expect(response).to redirect_to(command_post.resources_path("policy_licenses"))
+        licenses.each do |license|
+          expect(license.reload.status).to eq("revoked")
+        end
+      end
+
+      it "returns forbidden for bulk actions not in policy allow list even for admin" do
+        post command_post.resource_bulk_action_path("policy_licenses", "bulk_export"),
+             params: { ids: licenses.map(&:id) },
+             as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when no policy is defined" do
+      let(:user) { create(:user) }
+      let!(:licenses) { create_list(:license, 3, user: user) }
+
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "member") }
+        end
+      end
+
+      it "allows bulk actions by default" do
+        # Using the regular LicenseResource which has no policy
+        CommandPost::ResourceRegistry.register(LicenseResource)
+        post command_post.resource_bulk_action_path("licenses", "export"),
+             params: { ids: licenses.map(&:id) },
+             as: :html
+        expect(response).to redirect_to(command_post.resources_path("licenses"))
       end
     end
   end

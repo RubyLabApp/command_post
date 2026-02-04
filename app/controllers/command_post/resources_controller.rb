@@ -68,13 +68,12 @@ module CommandPost
       @record = @resource_class.model.find(params[:id])
       action = @resource_class.defined_actions.find { |a| a[:name].to_s == params[:action_name] }
 
-      if action
-        action[:block].call(@record)
-        emit_event(params[:action_name], @record)
-        redirect_to resource_path(@resource_class.resource_name, @record), notice: "Action executed."
-      else
-        redirect_to resource_path(@resource_class.resource_name, @record), alert: "Action not found."
-      end
+      return head(:not_found) unless action
+      return head(:forbidden) unless action_authorized?(action[:name])
+
+      action[:block].call(@record)
+      emit_event(params[:action_name], @record)
+      redirect_to resource_path(@resource_class.resource_name, @record), notice: "Action executed."
     end
 
     def execute_bulk_action
@@ -82,12 +81,11 @@ module CommandPost
       records = @resource_class.model.where(id: ids)
       action = @resource_class.defined_bulk_actions.find { |a| a[:name].to_s == params[:action_name] }
 
-      if action
-        action[:block].call(records)
-        redirect_to resources_path(@resource_class.resource_name), notice: "Bulk action executed."
-      else
-        redirect_to resources_path(@resource_class.resource_name), alert: "Action not found."
-      end
+      return head(:not_found) unless action
+      return head(:forbidden) unless action_authorized?(action[:name])
+
+      action[:block].call(records)
+      redirect_to resources_path(@resource_class.resource_name), notice: "Bulk action executed."
     end
 
     private
@@ -112,6 +110,13 @@ module CommandPost
         policy = Policy.new(&@resource_class._policy_block)
         head(:forbidden) and return unless policy.allowed?(crud_action, command_post_current_user)
       end
+    end
+
+    def action_authorized?(action_name)
+      return true unless @resource_class._policy_block
+
+      policy = Policy.new(&@resource_class._policy_block)
+      policy.action_allowed?(action_name, command_post_current_user)
     end
 
     def index_fields
