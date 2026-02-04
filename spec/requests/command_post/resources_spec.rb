@@ -301,4 +301,113 @@ RSpec.describe "CommandPost::Resources", type: :request do
       expect(response).to have_http_status(:not_found)
     end
   end
+
+  describe "policy-based authorization" do
+    # Create a resource with a policy that only allows admin users
+    let(:policy_user_resource) do
+      Class.new(CommandPost::Resource) do
+        self.model_class_override = User
+
+        def self.name
+          "PolicyUserResource"
+        end
+
+        def self.resource_name
+          "policy_users"
+        end
+
+        policy do
+          allow :create, :update, :destroy, if: ->(user) { user&.role == "admin" }
+        end
+      end
+    end
+
+    before do
+      CommandPost::ResourceRegistry.register(policy_user_resource)
+    end
+
+    after do
+      CommandPost::ResourceRegistry.reset!
+      CommandPost::ResourceRegistry.register(UserResource)
+      CommandPost::ResourceRegistry.register(LicenseResource)
+    end
+
+    context "when policy denies action based on user context" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "member") }
+        end
+      end
+
+      it "returns forbidden for new action when policy denies create" do
+        get command_post.new_resource_path("policy_users"), as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "returns forbidden for create action when policy denies" do
+        post command_post.resources_path("policy_users"),
+             params: { record: { name: "Test", email: "test@example.com", role: "member" } },
+             as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "returns forbidden for edit action when policy denies update" do
+        user = create(:user)
+        get command_post.edit_resource_path("policy_users", user), as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "returns forbidden for update action when policy denies" do
+        user = create(:user)
+        patch command_post.resource_path("policy_users", user),
+              params: { record: { name: "Updated", email: user.email, role: user.role } },
+              as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "returns forbidden for destroy action when policy denies" do
+        user = create(:user)
+        delete command_post.resource_path("policy_users", user), as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when policy allows action based on user context" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "admin") }
+        end
+      end
+
+      it "allows create action when policy permits" do
+        get command_post.new_resource_path("policy_users"), as: :html
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "allows update action when policy permits" do
+        user = create(:user)
+        get command_post.edit_resource_path("policy_users", user), as: :html
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "allows destroy action when policy permits" do
+        user = create(:user)
+        delete command_post.resource_path("policy_users", user), as: :html
+        expect(response).to redirect_to(command_post.resources_path("policy_users"))
+      end
+    end
+
+    context "when no user is logged in" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { nil }
+        end
+      end
+
+      it "returns forbidden when policy requires user context" do
+        get command_post.new_resource_path("policy_users"), as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
 end

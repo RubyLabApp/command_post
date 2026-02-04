@@ -103,7 +103,15 @@ module CommandPost
                     when :edit, :update then :update
                     when :destroy then :destroy
                     end
+
+      # Check global action permissions (deny_actions DSL)
       head(:forbidden) and return unless @resource_class.action_allowed?(crud_action)
+
+      # Check policy-based authorization if a policy is defined
+      if @resource_class._policy_block
+        policy = Policy.new(&@resource_class._policy_block)
+        head(:forbidden) and return unless policy.allowed?(crud_action, command_post_current_user)
+      end
     end
 
     def index_fields
