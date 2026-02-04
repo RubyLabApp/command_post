@@ -50,17 +50,38 @@ module CommandPost
       return "[Error: field not found]" unless record.respond_to?(field.name)
 
       value = record.public_send(field.name)
-      format_for_export(value, field.type)
+      format_for_export(value, field)
     rescue => e
       "[Error: #{e.message}]"
     end
 
-    def format_for_export(value, type)
-      case type
-      when :datetime, :date then value&.iso8601
+    def format_for_export(value, field)
+      return "" if value.nil?
+
+      case field.type
+      when :datetime, :date then value.iso8601
       when :boolean then value ? "Yes" : "No"
+      when :belongs_to then format_belongs_to(value, field)
       else value.to_s
       end
+    end
+
+    def format_belongs_to(associated_record, field)
+      return "" if associated_record.nil?
+
+      display_method = field.options[:display]
+      if display_method
+        associated_record.public_send(display_method).to_s
+      else
+        display_label_for(associated_record)
+      end
+    end
+
+    def display_label_for(record)
+      %i[name title email label slug].each do |method|
+        return record.public_send(method).to_s if record.respond_to?(method) && record.public_send(method).present?
+      end
+      "#{record.class.model_name.human} ##{record.id}"
     end
   end
 end
