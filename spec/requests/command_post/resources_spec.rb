@@ -977,6 +977,221 @@ RSpec.describe "CommandPost::Resources", type: :request do
     end
   end
 
+  describe "resources without policies allow all actions by default" do
+    # UserResource and LicenseResource have no policy defined
+    # All CRUD actions should be allowed
+
+    context "with any user" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "member") }
+        end
+      end
+
+      it "allows create action for resources without policy" do
+        expect do
+          post command_post.resources_path("users"),
+               params: { record: { name: "New User", email: "new@example.com", role: "member" } },
+               as: :html
+        end.to change(User, :count).by(1)
+        expect(response).to redirect_to(command_post.resource_path("users", User.last))
+      end
+
+      it "allows update action for resources without policy" do
+        user = create(:user, name: "Old Name")
+        patch command_post.resource_path("users", user),
+              params: { record: { name: "New Name", email: user.email, role: user.role } },
+              as: :html
+        expect(user.reload.name).to eq("New Name")
+        expect(response).to redirect_to(command_post.resource_path("users", user))
+      end
+
+      it "allows destroy action for resources without policy" do
+        user = create(:user)
+        expect do
+          delete command_post.resource_path("users", user), as: :html
+        end.to change(User, :count).by(-1)
+        expect(response).to redirect_to(command_post.resources_path("users"))
+      end
+
+      it "allows new form for resources without policy" do
+        get command_post.new_resource_path("users"), as: :html
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "allows edit form for resources without policy" do
+        user = create(:user)
+        get command_post.edit_resource_path("users", user), as: :html
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context "without any user (nil current_user)" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { nil }
+        end
+      end
+
+      it "allows create action when no user is logged in" do
+        expect do
+          post command_post.resources_path("users"),
+               params: { record: { name: "New User", email: "new@example.com", role: "member" } },
+               as: :html
+        end.to change(User, :count).by(1)
+      end
+
+      it "allows update action when no user is logged in" do
+        user = create(:user, name: "Old Name")
+        patch command_post.resource_path("users", user),
+              params: { record: { name: "New Name", email: user.email, role: user.role } },
+              as: :html
+        expect(user.reload.name).to eq("New Name")
+      end
+
+      it "allows destroy action when no user is logged in" do
+        user = create(:user)
+        expect do
+          delete command_post.resource_path("users", user), as: :html
+        end.to change(User, :count).by(-1)
+      end
+    end
+  end
+
+  describe "policy with read actions always allowed" do
+    # Tests that index and show are always accessible even when write actions are restricted
+    let(:read_only_resource) do
+      Class.new(CommandPost::Resource) do
+        self.model_class_override = User
+
+        def self.name
+          "ReadOnlyUserResource"
+        end
+
+        def self.resource_name
+          "read_only_users"
+        end
+
+        policy do
+          allow :index, :show
+          # create, update, destroy are NOT allowed
+        end
+      end
+    end
+
+    before do
+      CommandPost::ResourceRegistry.register(read_only_resource)
+    end
+
+    after do
+      CommandPost::ResourceRegistry.reset!
+      CommandPost::ResourceRegistry.register(UserResource)
+      CommandPost::ResourceRegistry.register(LicenseResource)
+    end
+
+    context "with any user" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "member") }
+        end
+      end
+
+      it "allows index action" do
+        create_list(:user, 3)
+        get command_post.resources_path("read_only_users"), as: :html
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "allows show action" do
+        user = create(:user)
+        get command_post.resource_path("read_only_users", user), as: :html
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "denies create action" do
+        post command_post.resources_path("read_only_users"),
+             params: { record: { name: "Test", email: "test@example.com", role: "member" } },
+             as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "denies update action" do
+        user = create(:user)
+        patch command_post.resource_path("read_only_users", user),
+              params: { record: { name: "Updated", email: user.email, role: user.role } },
+              as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "denies destroy action" do
+        user = create(:user)
+        delete command_post.resource_path("read_only_users", user), as: :html
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
+
+  describe "authorization does not affect record counts or queries" do
+    let(:counting_resource) do
+      Class.new(CommandPost::Resource) do
+        self.model_class_override = User
+
+        def self.name
+          "CountingUserResource"
+        end
+
+        def self.resource_name
+          "counting_users"
+        end
+
+        policy do
+          allow :index, :show, :create, :update, :destroy, if: ->(user) { user&.role == "admin" }
+        end
+      end
+    end
+
+    before do
+      CommandPost::ResourceRegistry.register(counting_resource)
+    end
+
+    after do
+      CommandPost::ResourceRegistry.reset!
+      CommandPost::ResourceRegistry.register(UserResource)
+      CommandPost::ResourceRegistry.register(LicenseResource)
+    end
+
+    context "when action is forbidden" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "member") }
+        end
+      end
+
+      it "does not create a record when create is forbidden" do
+        expect do
+          post command_post.resources_path("counting_users"),
+               params: { record: { name: "Test", email: "test@example.com", role: "member" } },
+               as: :html
+        end.not_to change(User, :count)
+      end
+
+      it "does not modify a record when update is forbidden" do
+        user = create(:user, name: "Original Name")
+        patch command_post.resource_path("counting_users", user),
+              params: { record: { name: "New Name", email: user.email, role: user.role } },
+              as: :html
+        expect(user.reload.name).to eq("Original Name")
+      end
+
+      it "does not delete a record when destroy is forbidden" do
+        user = create(:user)
+        expect do
+          delete command_post.resource_path("counting_users", user), as: :html
+        end.not_to change(User, :count)
+      end
+    end
+  end
+
   describe "GET /autocomplete/:resource_name" do
     context "with valid query" do
       it "returns matching records as JSON" do
