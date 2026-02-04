@@ -138,4 +138,63 @@ RSpec.describe CommandPost::Resource do
       expect(TestUserResource.menu_options[:priority]).to eq(0)
     end
   end
+
+  describe "preload_associations" do
+    context "when no explicit preload is defined" do
+      it "infers belongs_to associations from resolved fields" do
+        preloads = TestLicenseResource.preload_associations
+        expect(preloads).to include(:user)
+      end
+
+      it "returns empty array when no belongs_to associations exist" do
+        expect(TestUserResource.preload_associations).to eq([])
+      end
+    end
+
+    context "when explicit preload is defined" do
+      let(:custom_preload_resource) do
+        Class.new(CommandPost::Resource) do
+          self.model_class_override = License
+
+          def self.name
+            "CustomPreloadResource"
+          end
+
+          belongs_to :user, display: :email
+          preload :user, :some_other_association
+        end
+      end
+
+      it "uses the explicitly defined associations" do
+        expect(custom_preload_resource.preload_associations).to eq([:user, :some_other_association])
+      end
+
+      it "overrides the auto-inferred associations" do
+        # Even though user would be inferred, explicit preload takes precedence
+        expect(custom_preload_resource.preload_associations).not_to eq([:user])
+        expect(custom_preload_resource.preload_associations.length).to eq(2)
+      end
+    end
+
+    context "with multiple belongs_to associations" do
+      let(:multi_belongs_to_resource) do
+        # Create a resource that would have multiple belongs_to if the model supported it
+        # For now, test with the existing License which has user
+        Class.new(CommandPost::Resource) do
+          self.model_class_override = License
+
+          def self.name
+            "MultiBelongsToResource"
+          end
+
+          belongs_to :user, display: :email
+        end
+      end
+
+      it "returns all belongs_to associations" do
+        preloads = multi_belongs_to_resource.preload_associations
+        expect(preloads).to include(:user)
+      end
+    end
+  end
 end

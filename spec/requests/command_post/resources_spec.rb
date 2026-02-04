@@ -300,6 +300,68 @@ RSpec.describe "CommandPost::Resources", type: :request do
     end
   end
 
+  describe "association preloading" do
+    let(:user) { create(:user) }
+
+    before do
+      create_list(:license, 3, user: user)
+    end
+
+    it "preloads belongs_to associations to prevent N+1 queries" do
+      # LicenseResource has belongs_to :user, which should be preloaded
+      queries = []
+      callback = lambda { |_name, _start, _finish, _id, payload|
+        queries << payload[:sql] unless payload[:sql].match?(/SCHEMA|TRANSACTION/)
+      }
+
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        get command_post.resources_path("licenses"), headers: { "Accept" => "text/html" }
+      end
+
+      expect(response).to have_http_status(:ok)
+
+      # Count queries that select from users table
+      # Without preloading: we'd see 1 query for licenses + 3 queries for each user
+      # With preloading: we'd see 1 query for licenses + 1 query for all users
+      user_queries = queries.select { |q| q.include?('"users"') || q.include?('`users`') }
+      expect(user_queries.length).to be <= 1
+    end
+
+    it "applies custom preload associations when defined" do
+      custom_resource = Class.new(CommandPost::Resource) do
+        self.model_class_override = License
+
+        def self.name
+          "CustomPreloadLicenseResource"
+        end
+
+        def self.resource_name
+          "custom_preload_licenses"
+        end
+
+        belongs_to :user, display: :email
+        preload :user
+      end
+
+      CommandPost::ResourceRegistry.register(custom_resource)
+
+      queries = []
+      callback = lambda { |_name, _start, _finish, _id, payload|
+        queries << payload[:sql] unless payload[:sql].match?(/SCHEMA|TRANSACTION/)
+      }
+
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        get command_post.resources_path("custom_preload_licenses"), headers: { "Accept" => "text/html" }
+      end
+
+      expect(response).to have_http_status(:ok)
+
+      # Verify user association is preloaded
+      user_queries = queries.select { |q| q.include?('"users"') || q.include?('`users`') }
+      expect(user_queries.length).to be <= 1
+    end
+  end
+
   describe "field visibility enforcement" do
     # Create a resource with a field that has conditional visibility
     let(:visibility_resource) do

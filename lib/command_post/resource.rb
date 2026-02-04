@@ -134,6 +134,14 @@ module CommandPost
         end
       end
 
+      def preload_associations
+        @preload_associations || infer_preload_associations
+      end
+
+      def preload(*associations)
+        @preload_associations = associations
+      end
+
       def has_many_associations
         defined_associations.filter_map do |assoc_name, config|
           next unless config[:kind] == :has_many
@@ -154,6 +162,12 @@ module CommandPost
 
       def label
         model.model_name.human.pluralize
+      end
+
+      private
+
+      def infer_preload_associations
+        resolved_fields.select { |f| f.type == :belongs_to }.map(&:name)
       end
     end
   end

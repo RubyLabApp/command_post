@@ -9,6 +9,7 @@ module CommandPost
       scope = apply_scopes(apply_filters(@resource_class.model.all))
       scope = apply_search(scope)
       scope = apply_sorting(scope)
+      scope = apply_preloading(scope)
 
       @pagy, @records = pagy(scope, limit: CommandPost.configuration.per_page)
       @fields = index_fields
@@ -206,6 +207,11 @@ module CommandPost
                    CommandPost.configuration.default_sort_direction
                  end
       scope.order(sort_col => sort_dir)
+    end
+
+    def apply_preloading(scope)
+      preloads = @resource_class.preload_associations
+      preloads.any? ? scope.includes(*preloads) : scope
     end
 
     def emit_event(action, record)
