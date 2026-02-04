@@ -27,4 +27,55 @@ RSpec.describe CommandPost::Resources::ShowFieldComponent, type: :component do
       expect(component.label).to eq("Name")
     end
   end
+
+  describe "field visibility" do
+    let(:current_user) { create(:user) }
+
+    context "when field is visible" do
+      let(:visible_field) { CommandPost::Field.new(:name, visible: true) }
+
+      it "renders the component" do
+        component = described_class.new(field: visible_field, record: user, current_user: current_user)
+        expect(component.render?).to be true
+      end
+    end
+
+    context "when field is not visible" do
+      let(:invisible_field) { CommandPost::Field.new(:name, visible: false) }
+
+      it "does not render the component" do
+        component = described_class.new(field: invisible_field, record: user, current_user: current_user)
+        expect(component.render?).to be false
+      end
+    end
+
+    context "when field visibility is conditional" do
+      it "renders when condition is true" do
+        conditional_field = CommandPost::Field.new(:name, visible: ->(u) { u.present? })
+        component = described_class.new(field: conditional_field, record: user, current_user: current_user)
+        expect(component.render?).to be true
+      end
+
+      it "does not render when condition is false" do
+        conditional_field = CommandPost::Field.new(:name, visible: ->(u) { u.nil? })
+        component = described_class.new(field: conditional_field, record: user, current_user: current_user)
+        expect(component.render?).to be false
+      end
+    end
+
+    context "when current_user is nil" do
+      let(:visible_field) { CommandPost::Field.new(:name, visible: true) }
+      let(:conditional_field) { CommandPost::Field.new(:name, visible: ->(u) { u.nil? }) }
+
+      it "renders when field is unconditionally visible" do
+        component = described_class.new(field: visible_field, record: user)
+        expect(component.render?).to be true
+      end
+
+      it "evaluates conditional visibility with nil user" do
+        component = described_class.new(field: conditional_field, record: user)
+        expect(component.render?).to be true
+      end
+    end
+  end
 end

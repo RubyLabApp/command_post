@@ -111,4 +111,60 @@ RSpec.describe CommandPost::Resources::DataTableComponent, type: :component do
       expect(component.sorted?(:name)).to be false
     end
   end
+
+  describe "#visible_fields" do
+    let(:current_user) { create(:user) }
+    let(:visible_field) { CommandPost::Field.new(:name, visible: true) }
+    let(:invisible_field) { CommandPost::Field.new(:email, visible: false) }
+    let(:conditional_visible_field) { CommandPost::Field.new(:role, visible: ->(user) { user.present? }) }
+    let(:conditional_invisible_field) { CommandPost::Field.new(:secret, visible: ->(user) { user.nil? }) }
+    let(:mixed_fields) { [visible_field, invisible_field, conditional_visible_field, conditional_invisible_field] }
+
+    it "filters out fields where visible? returns false" do
+      component = described_class.new(
+        records: users,
+        fields: mixed_fields,
+        resource_class: UserResource,
+        current_user: current_user,
+        base_url: "/admin/users?"
+      )
+      expect(component.visible_fields).to contain_exactly(visible_field, conditional_visible_field)
+    end
+
+    it "includes all fields when all are visible" do
+      all_visible = [visible_field, conditional_visible_field]
+      component = described_class.new(
+        records: users,
+        fields: all_visible,
+        resource_class: UserResource,
+        current_user: current_user,
+        base_url: "/admin/users?"
+      )
+      expect(component.visible_fields).to contain_exactly(visible_field, conditional_visible_field)
+    end
+
+    it "returns empty array when no fields are visible" do
+      no_visible = [invisible_field, conditional_invisible_field]
+      component = described_class.new(
+        records: users,
+        fields: no_visible,
+        resource_class: UserResource,
+        current_user: current_user,
+        base_url: "/admin/users?"
+      )
+      expect(component.visible_fields).to be_empty
+    end
+
+    it "defaults to nil current_user when not provided" do
+      # When current_user is nil, conditional_invisible_field (visible: ->(user) { user.nil? }) should be visible
+      conditional_field = CommandPost::Field.new(:secret, visible: ->(user) { user.nil? })
+      component = described_class.new(
+        records: users,
+        fields: [visible_field, conditional_field],
+        resource_class: UserResource,
+        base_url: "/admin/users?"
+      )
+      expect(component.visible_fields).to contain_exactly(visible_field, conditional_field)
+    end
+  end
 end

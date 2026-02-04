@@ -1,7 +1,7 @@
 %table{ class: "#{table_classes} #{theme.card_border} divide-y" }
   %thead{ class: header_classes }
     %tr
-      - fields.each do |field|
+      - visible_fields.each do |field|
         %th.px-6.py-3.text-left.text-xs.font-medium.uppercase.tracking-wider{ class: theme.muted_text }
           = link_to sort_url(field.name), class: "inline-flex items-center gap-1 hover:text-gray-700" do
             = field.name.to_s.humanize
@@ -16,7 +16,7 @@
   %tbody{ class: "#{theme.card_border} divide-y" }
     - if empty?
       %tr
-        %td.px-6.py-8.text-center.text-sm{ colspan: fields.size + 1, class: theme.muted_text }
+        %td.px-6.py-8.text-center.text-sm{ colspan: visible_fields.size + 1, class: theme.muted_text }
           - if empty_state?
             = empty_state
           - else
@@ -24,7 +24,7 @@
     - else
       - records.each do |record|
         %tr{ class: theme.table_row_hover }
-          - fields.each do |field|
+          - visible_fields.each do |field|
             %td.px-6.py-4.whitespace-nowrap.text-sm{ class: theme.body_text }
               = helpers.display_field_value(record, field)
           %td.px-6.py-4.whitespace-nowrap.text-right.text-sm

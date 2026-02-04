@@ -1,11 +1,16 @@
 module CommandPost
   module Resources
     class ShowFieldComponent < ViewComponent::Base
-      attr_reader :field, :record
+      attr_reader :field, :record, :current_user
 
-      def initialize(field:, record:)
+      def initialize(field:, record:, current_user: nil)
         @field = field
         @record = record
+        @current_user = current_user
+      end
+
+      def render?
+        field.visible?(@current_user)
       end
 
       def theme
