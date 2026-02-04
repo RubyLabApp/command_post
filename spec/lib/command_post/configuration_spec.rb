@@ -77,7 +77,7 @@ RSpec.describe CommandPost::Configuration do
     end
 
     it "stores a callable block" do
-      config.authenticate { |controller| "authenticated" }
+      config.authenticate { |_controller| "authenticated" }
 
       expect(config.authenticate_block.call(nil)).to eq("authenticated")
     end
@@ -85,7 +85,7 @@ RSpec.describe CommandPost::Configuration do
 
   describe "#current_user" do
     it "stores the provided block" do
-      config.current_user { |controller| controller.current_user }
+      config.current_user(&:current_user)
 
       expect(config.current_user_block).to be_a(Proc)
     end
@@ -105,7 +105,7 @@ RSpec.describe CommandPost::Configuration do
     end
 
     it "stores a callable block" do
-      config.on_action { |event| event.to_s }
+      config.on_action(&:to_s)
 
       expect(config.on_action_block.call(:create)).to eq("create")
     end

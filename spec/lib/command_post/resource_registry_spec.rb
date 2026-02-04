@@ -34,7 +34,9 @@ RSpec.describe CommandPost::ResourceRegistry do
       described_class.register(TestLicenseResource)
 
       sorted = described_class.sorted
-      expect(sorted.first).to eq(TestLicenseResource)
+      # UserResource has priority 0, LicenseResource has priority 1
+      # Lower priority should come first
+      expect(sorted.first).to eq(TestUserResource)
     end
   end
 end

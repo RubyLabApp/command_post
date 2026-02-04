@@ -4,6 +4,7 @@ require "simplecov-console"
 SimpleCov.start "rails" do
   add_filter "/spec/"
   add_filter "/lib/generators/"
+  add_filter "/lib/command_post/version.rb"
 
   add_group "Lib", "lib/command_post"
   add_group "Controllers", "app/controllers"

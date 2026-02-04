@@ -13,7 +13,7 @@ RSpec.describe CommandPost::Dashboard::RecentTableComponent, type: :component do
     end
 
     it "stores records" do
-      records = [double("Record")]
+      records = [instance_double(User)]
       component = described_class.new(resource_name: :user, records: records)
 
       expect(component.instance_variable_get(:@records)).to eq(records)

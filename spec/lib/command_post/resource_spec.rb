@@ -17,7 +17,7 @@ RSpec.describe CommandPost::Resource do
       fields = TestLicenseResource.resolved_fields
       license_key = fields.find { |f| f.name == :license_key }
 
-      expect(license_key.readonly).to eq(true)
+      expect(license_key.readonly).to be(true)
     end
 
     it "uses inferred fields when no override" do
@@ -28,7 +28,7 @@ RSpec.describe CommandPost::Resource do
 
   describe "searchable" do
     it "uses custom searchable columns" do
-      expect(TestLicenseResource.searchable_columns).to eq([ :license_key ])
+      expect(TestLicenseResource.searchable_columns).to eq([:license_key])
     end
 
     it "defaults to string/text columns" do
@@ -51,7 +51,7 @@ RSpec.describe CommandPost::Resource do
       scopes = TestLicenseResource.defined_scopes
       expect(scopes.length).to eq(2)
       expect(scopes.first[:name]).to eq(:active)
-      expect(scopes.first[:default]).to eq(true)
+      expect(scopes.first[:default]).to be(true)
     end
   end
 
@@ -60,7 +60,7 @@ RSpec.describe CommandPost::Resource do
       actions = TestLicenseResource.defined_actions
       expect(actions.length).to eq(1)
       expect(actions.first[:name]).to eq(:revoke)
-      expect(actions.first[:confirm]).to eq(true)
+      expect(actions.first[:confirm]).to be(true)
     end
   end
 
@@ -73,11 +73,11 @@ RSpec.describe CommandPost::Resource do
 
   describe "view field lists" do
     it "stores index fields" do
-      expect(TestLicenseResource.index_field_names).to eq([ :license_key, :status, :expires_at ])
+      expect(TestLicenseResource.index_field_names).to eq(%i[license_key status expires_at])
     end
 
     it "stores form fields" do
-      expect(TestLicenseResource.form_field_names).to eq([ :license_type, :status, :max_devices ])
+      expect(TestLicenseResource.form_field_names).to eq(%i[license_type status max_devices])
     end
 
     it "defaults to all fields" do
@@ -134,8 +134,8 @@ RSpec.describe CommandPost::Resource do
       expect(TestLicenseResource.menu_options).to eq({ priority: 1, icon: "key", group: "Licensing" })
     end
 
-    it "defaults to empty hash" do
-      expect(TestUserResource.menu_options).to eq({})
+    it "stores priority in menu options" do
+      expect(TestUserResource.menu_options[:priority]).to eq(0)
     end
   end
 end

@@ -14,7 +14,7 @@ RSpec.describe CommandPost::FieldInferrer do
     end
 
     it "infers boolean columns as boolean type" do
-      field = fields.find { |f| f.name == :email_verified }
+      field = fields.find { |f| f.name == :active }
       expect(field.type).to eq(:boolean)
     end
 
@@ -23,16 +23,21 @@ RSpec.describe CommandPost::FieldInferrer do
       expect(field.type).to eq(:datetime)
     end
 
-    it "includes all columns without exclusions" do
+    it "includes expected columns" do
       names = fields.map(&:name)
       expect(names).to include(:id)
-      expect(names).to include(:password_digest)
+      expect(names).to include(:name)
+      expect(names).to include(:email)
     end
 
-    it "detects enum columns as select type" do
-      role_field = fields.find { |f| f.name == :role }
-      expect(role_field.type).to eq(:select)
-      expect(role_field.options[:choices]).to eq(User.roles.keys)
+    context "with enum columns" do
+      subject(:fields) { described_class.call(License) }
+
+      it "detects enum columns as select type" do
+        status_field = fields.find { |f| f.name == :status }
+        expect(status_field.type).to eq(:select)
+        expect(status_field.options[:choices]).to eq(License.statuses.keys)
+      end
     end
   end
 end

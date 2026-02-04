@@ -11,18 +11,18 @@ RSpec.describe CommandPost::Policy do
     end
 
     it "allows unrestricted actions" do
-      expect(policy.allowed?(:index, :user)).to eq(true)
-      expect(policy.allowed?(:show, :user)).to eq(true)
+      expect(policy.allowed?(:index, :user)).to be(true)
+      expect(policy.allowed?(:show, :user)).to be(true)
     end
 
     it "checks conditional allows" do
-      expect(policy.allowed?(:create, :admin)).to eq(true)
-      expect(policy.allowed?(:create, :user)).to eq(false)
+      expect(policy.allowed?(:create, :admin)).to be(true)
+      expect(policy.allowed?(:create, :user)).to be(false)
     end
 
     it "restricts destroy" do
-      expect(policy.allowed?(:destroy, :super_admin)).to eq(true)
-      expect(policy.allowed?(:destroy, :admin)).to eq(false)
+      expect(policy.allowed?(:destroy, :super_admin)).to be(true)
+      expect(policy.allowed?(:destroy, :admin)).to be(false)
     end
   end
 
@@ -35,11 +35,11 @@ RSpec.describe CommandPost::Policy do
     end
 
     it "denies when condition matches" do
-      expect(policy.denied?(:destroy, nil, :protected)).to eq(true)
+      expect(policy.denied?(:destroy, nil, :protected)).to be(true)
     end
 
     it "allows when condition does not match" do
-      expect(policy.denied?(:destroy, nil, :normal)).to eq(false)
+      expect(policy.denied?(:destroy, nil, :normal)).to be(false)
     end
   end
 
@@ -47,7 +47,7 @@ RSpec.describe CommandPost::Policy do
     let(:policy) { described_class.new }
 
     it "allows everything by default" do
-      expect(policy.allowed?(:destroy, :anyone)).to eq(true)
+      expect(policy.allowed?(:destroy, :anyone)).to be(true)
     end
   end
 end

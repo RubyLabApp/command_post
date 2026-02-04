@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe CommandPost::Layout::ShellComponent, type: :component do
   describe "#initialize" do
     it "accepts current_user parameter" do
-      user = double("User", name: "Test User")
+      user = instance_double(User, name: "Test User")
       component = described_class.new(current_user: user)
 
       expect(component.instance_variable_get(:@current_user)).to eq(user)

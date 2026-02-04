@@ -1,3 +1,5 @@
+require "ostruct"
+
 module CommandPost
   class ResourcesController < ApplicationController
     before_action :set_resource_class
@@ -175,7 +177,8 @@ module CommandPost
       columns = @resource_class.searchable_columns
       conn = @resource_class.model.connection
       table = conn.quote_table_name(@resource_class.model.table_name)
-      conditions = columns.map { |col| "#{table}.#{conn.quote_column_name(col)} ILIKE :q" }
+      like_operator = conn.adapter_name.downcase.include?("postgresql") ? "ILIKE" : "LIKE"
+      conditions = columns.map { |col| "#{table}.#{conn.quote_column_name(col)} #{like_operator} :q" }
       scope.where(conditions.join(" OR "), q: "%#{query}%")
     end
 

@@ -71,15 +71,13 @@ RSpec.describe CommandPost::ApplicationHelper, type: :helper do
     end
 
     context "when no display method found" do
-      let(:minimal_record) do
-        double("Record", id: 123, class: double(model_name: double(human: "Item")))
-      end
-
-      before do
-        CommandPost::ApplicationHelper::DISPLAY_METHODS.each do |method|
-          allow(minimal_record).to receive(:respond_to?).with(method).and_return(false)
+      let(:minimal_record_class) do
+        model_name = Struct.new(:human).new("Item")
+        Struct.new(:id, :model_name, keyword_init: true) do
+          define_method(:class) { Struct.new(:model_name).new(model_name) }
         end
       end
+      let(:minimal_record) { minimal_record_class.new(id: 123) }
 
       it "returns fallback label" do
         expect(helper.display_record_label(minimal_record)).to eq("Item #123")
@@ -94,8 +92,8 @@ RSpec.describe CommandPost::ApplicationHelper, type: :helper do
       it "returns enum options" do
         options = helper.filter_options_for(LicenseResource, filter)
 
-        expect(options).to include(["Active", "active"])
-        expect(options).to include(["Expired", "expired"])
+        expect(options).to include(%w[Active active])
+        expect(options).to include(%w[Expired expired])
       end
     end
 
@@ -120,8 +118,8 @@ RSpec.describe CommandPost::ApplicationHelper, type: :helper do
       it "returns distinct values" do
         options = helper.filter_options_for(UserResource, filter)
 
-        expect(options).to include(["Admin", "admin"])
-        expect(options).to include(["User", "user"])
+        expect(options).to include(%w[Admin admin])
+        expect(options).to include(%w[User user])
       end
     end
 
