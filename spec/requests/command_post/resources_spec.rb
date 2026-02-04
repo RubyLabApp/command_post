@@ -27,8 +27,8 @@ RSpec.describe "CommandPost::Resources", type: :request do
 
     context "with field-specific search (field:value syntax)" do
       it "searches only the specified column with email:value" do
-        john = create(:user, name: "John Doe", email: "john@example.com")
-        jane = create(:user, name: "Jane Smith", email: "jane@example.com")
+        create(:user, name: "John Doe", email: "john@example.com")
+        create(:user, name: "Jane Smith", email: "jane@example.com")
         # Search email column specifically
         get command_post.resources_path("users"), params: { q: "email:john" }, as: :html
         expect(response).to have_http_status(:ok)
@@ -72,7 +72,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
       it "filters by date range with both from and to dates" do
         old_license = create(:license, user: user, created_at: 30.days.ago)
         recent_license = create(:license, user: user, created_at: 2.days.ago)
-        future_license = create(:license, user: user, created_at: 1.day.from_now)
+        create(:license, user: user, created_at: 1.day.from_now)
 
         from_date = 10.days.ago.to_date.to_s
         to_date = Date.current.to_s
@@ -272,8 +272,8 @@ RSpec.describe "CommandPost::Resources", type: :request do
                 filters: {
                   status: "active",
                   created_at_from: 5.days.ago.to_date.to_s,
-                  created_at_to: Date.current.to_s
-                }
+                  created_at_to: Date.current.to_s,
+                },
               },
               as: :html
           expect(response).to have_http_status(:ok)
@@ -283,7 +283,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
           get command_post.resources_path("licenses"),
               params: {
                 q: "license",
-                filters: { status: "active" }
+                filters: { status: "active" },
               },
               as: :html
           expect(response).to have_http_status(:ok)
@@ -294,7 +294,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
               params: {
                 sort: "created_at",
                 direction: "desc",
-                filters: { status: "active" }
+                filters: { status: "active" },
               },
               as: :html
           expect(response).to have_http_status(:ok)
@@ -304,7 +304,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
           get command_post.resources_path("licenses"),
               params: {
                 scope: "expired",
-                filters: { created_at_from: 5.days.ago.to_date.to_s }
+                filters: { created_at_from: 5.days.ago.to_date.to_s },
               },
               as: :html
           expect(response).to have_http_status(:ok)
@@ -315,7 +315,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
           get command_post.resources_path("licenses"),
               params: {
                 page: 2,
-                filters: { status: "active" }
+                filters: { status: "active" },
               },
               as: :html
           expect(response).to have_http_status(:ok)
@@ -401,7 +401,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
 
         it "handles extremely long filter values" do
           get command_post.resources_path("licenses"),
-              params: { filters: { status: "a" * 10000 } },
+              params: { filters: { status: "a" * 10_000 } },
               as: :html
           expect(response).to have_http_status(:ok)
         end
@@ -941,7 +941,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
       # Count queries that select from users table
       # Without preloading: we'd see 1 query for licenses + 3 queries for each user
       # With preloading: we'd see 1 query for licenses + 1 query for all users
-      user_queries = queries.select { |q| q.include?('"users"') || q.include?('`users`') }
+      user_queries = queries.select { |q| q.include?('"users"') || q.include?("`users`") }
       expect(user_queries.length).to be <= 1
     end
 
@@ -975,7 +975,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
       expect(response).to have_http_status(:ok)
 
       # Verify user association is preloaded
-      user_queries = queries.select { |q| q.include?('"users"') || q.include?('`users`') }
+      user_queries = queries.select { |q| q.include?('"users"') || q.include?("`users`") }
       expect(user_queries.length).to be <= 1
     end
   end
@@ -1021,7 +1021,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
       end
 
       it "does not show invisible fields in index view" do
-        user = create(:user, name: "Test User", email: "test@example.com", role: "admin")
+        create(:user, name: "Test User", email: "test@example.com", role: "admin")
         get command_post.resources_path("visibility_users"), headers: { "Accept" => "text/html" }
 
         expect(response).to have_http_status(:ok)
@@ -1055,7 +1055,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
       end
 
       it "shows conditionally visible fields in index view" do
-        user = create(:user, name: "Test User", email: "test@example.com", role: "member")
+        create(:user, name: "Test User", email: "test@example.com", role: "member")
         get command_post.resources_path("visibility_users"), headers: { "Accept" => "text/html" }
 
         expect(response).to have_http_status(:ok)
@@ -1658,16 +1658,16 @@ RSpec.describe "CommandPost::Resources", type: :request do
         get command_post.autocomplete_path("users"), params: { q: "Smith" }, as: :json
         expect(response).to have_http_status(:ok)
 
-        data = JSON.parse(response.body)
+        data = response.parsed_body
         expect(data.length).to eq(2)
-        expect(data.map { |r| r["label"] }).to contain_exactly("Alice Smith", "Charlie Smith")
+        expect(data.pluck("label")).to contain_exactly("Alice Smith", "Charlie Smith")
       end
 
       it "returns id and label for each record" do
         user = create(:user, name: "Test User")
         get command_post.autocomplete_path("users"), params: { q: "Test" }, as: :json
 
-        data = JSON.parse(response.body)
+        data = response.parsed_body
         expect(data.first).to eq({ "id" => user.id, "label" => "Test User" })
       end
 
@@ -1675,7 +1675,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
         create_list(:user, 25, name: "Test User")
         get command_post.autocomplete_path("users"), params: { q: "Test" }, as: :json
 
-        data = JSON.parse(response.body)
+        data = response.parsed_body
         expect(data.length).to eq(20)
       end
     end
@@ -1685,7 +1685,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
         create(:user, name: "Test User")
         get command_post.autocomplete_path("users"), params: { q: "" }, as: :json
 
-        data = JSON.parse(response.body)
+        data = response.parsed_body
         expect(data).to eq([])
       end
 
@@ -1693,7 +1693,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
         create(:user, name: "Test User")
         get command_post.autocomplete_path("users"), as: :json
 
-        data = JSON.parse(response.body)
+        data = response.parsed_body
         expect(data).to eq([])
       end
     end
@@ -1703,7 +1703,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
         create(:user, name: "Alice SMITH")
         get command_post.autocomplete_path("users"), params: { q: "smith" }, as: :json
 
-        data = JSON.parse(response.body)
+        data = response.parsed_body
         expect(data.length).to eq(1)
         expect(data.first["label"]).to eq("Alice SMITH")
       end
@@ -1744,7 +1744,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
 
         get command_post.autocomplete_path("autocomplete_users"), params: { q: "test@" }, as: :json
 
-        data = JSON.parse(response.body)
+        data = response.parsed_body
         expect(data.length).to eq(1)
         expect(data.first["label"]).to eq("test@example.com")
       end
@@ -1770,8 +1770,8 @@ RSpec.describe "CommandPost::Resources", type: :request do
       end
 
       it "applies tenant scope to index queries" do
-        active_user = create(:user, name: "Active User", active: true)
-        inactive_user = create(:user, name: "Inactive User", active: false)
+        create(:user, name: "Active User", active: true)
+        create(:user, name: "Inactive User", active: false)
 
         get command_post.resources_path("users"), as: :html
 
@@ -1849,7 +1849,7 @@ RSpec.describe "CommandPost::Resources", type: :request do
 
         get command_post.autocomplete_path("users"), params: { q: "Smith" }, as: :json
 
-        data = JSON.parse(response.body)
+        data = response.parsed_body
         expect(data.length).to eq(1)
         expect(data.first["label"]).to eq("Active Smith")
       end
@@ -1857,8 +1857,8 @@ RSpec.describe "CommandPost::Resources", type: :request do
 
     context "when no tenant scope is configured" do
       it "returns all records on index" do
-        active_user = create(:user, name: "Active User", active: true)
-        inactive_user = create(:user, name: "Inactive User", active: false)
+        create(:user, name: "Active User", active: true)
+        create(:user, name: "Inactive User", active: false)
 
         get command_post.resources_path("users"), as: :html
 
@@ -1918,8 +1918,8 @@ RSpec.describe "CommandPost::Resources", type: :request do
       end
 
       it "isolates records by tenant" do
-        admin_user = create(:user, name: "Admin User", role: "admin")
-        member_user = create(:user, name: "Member User", role: "member")
+        create(:user, name: "Admin User", role: "admin")
+        create(:user, name: "Member User", role: "member")
 
         get command_post.resources_path("users"), as: :html
 
@@ -1929,8 +1929,8 @@ RSpec.describe "CommandPost::Resources", type: :request do
       end
 
       it "switches tenant context appropriately" do
-        admin_user = create(:user, name: "Admin User", role: "admin")
-        member_user = create(:user, name: "Member User", role: "member")
+        create(:user, name: "Admin User", role: "admin")
+        create(:user, name: "Member User", role: "member")
 
         # Switch to org 2 (member context)
         Thread.current[:test_org_id] = 2

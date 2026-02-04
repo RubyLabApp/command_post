@@ -11,7 +11,7 @@ RSpec.describe "CommandPost Soft Delete Integration", type: :request do
     end
 
     # Define the Post model dynamically
-    Object.const_set(:Post, Class.new(ActiveRecord::Base) do
+    Object.const_set(:Post, Class.new(ApplicationRecord) do
       # Simulate paranoia/discard default scope
       default_scope { where(deleted_at: nil) }
     end)

@@ -166,7 +166,7 @@ RSpec.describe CommandPost::Resource do
       end
 
       it "uses the explicitly defined associations" do
-        expect(custom_preload_resource.preload_associations).to eq([:user, :some_other_association])
+        expect(custom_preload_resource.preload_associations).to eq(%i[user some_other_association])
       end
 
       it "overrides the auto-inferred associations" do

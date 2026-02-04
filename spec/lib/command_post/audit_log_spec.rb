@@ -12,12 +12,12 @@ RSpec.describe CommandPost::AuditLog do
   describe CommandPost::AuditLog::Entry do
     describe "#initialize" do
       it "sets attributes from hash" do
-        entry = CommandPost::AuditLog::Entry.new(
+        entry = described_class.new(
           user: "admin",
           action: :create,
           resource: "User",
           record_id: 1,
-          changes: { name: ["old", "new"] },
+          changes: { name: %w[old new] },
           ip_address: "127.0.0.1"
         )
 
@@ -25,13 +25,13 @@ RSpec.describe CommandPost::AuditLog do
         expect(entry.action).to eq(:create)
         expect(entry.resource).to eq("User")
         expect(entry.record_id).to eq(1)
-        expect(entry.changes).to eq({ name: ["old", "new"] })
+        expect(entry.changes).to eq({ name: %w[old new] })
         expect(entry.ip_address).to eq("127.0.0.1")
       end
 
       it "sets timestamp to current time when not provided" do
         before_time = Time.current
-        entry = CommandPost::AuditLog::Entry.new(action: :create)
+        entry = described_class.new(action: :create)
         after_time = Time.current
 
         expect(entry.timestamp).to be >= before_time
@@ -40,7 +40,7 @@ RSpec.describe CommandPost::AuditLog do
 
       it "uses provided timestamp when given" do
         custom_time = 1.hour.ago
-        entry = CommandPost::AuditLog::Entry.new(timestamp: custom_time)
+        entry = described_class.new(timestamp: custom_time)
         expect(entry.timestamp).to eq(custom_time)
       end
     end
@@ -48,25 +48,25 @@ RSpec.describe CommandPost::AuditLog do
     describe "#to_h" do
       it "returns hash representation" do
         timestamp = Time.current
-        entry = CommandPost::AuditLog::Entry.new(
+        entry = described_class.new(
           user: "admin",
           action: :create,
           resource: "User",
           record_id: 1,
-          changes: { name: ["old", "new"] },
+          changes: { name: %w[old new] },
           ip_address: "127.0.0.1",
           timestamp: timestamp
         )
 
         expect(entry.to_h).to eq({
-          user: "admin",
-          action: :create,
-          resource: "User",
-          record_id: 1,
-          changes: { name: ["old", "new"] },
-          ip_address: "127.0.0.1",
-          timestamp: timestamp
-        })
+                                   user: "admin",
+                                   action: :create,
+                                   resource: "User",
+                                   record_id: 1,
+                                   changes: { name: %w[old new] },
+                                   ip_address: "127.0.0.1",
+                                   timestamp: timestamp,
+                                 })
       end
     end
   end
@@ -164,17 +164,17 @@ RSpec.describe CommandPost::AuditLog do
 
       # Create test entries
       described_class.log(OpenStruct.new(
-        user: "admin", action: :create, resource: "User",
-        record_id: 1, changes: {}, ip_address: "127.0.0.1"
-      ))
+                            user: "admin", action: :create, resource: "User",
+                            record_id: 1, changes: {}, ip_address: "127.0.0.1"
+                          ))
       described_class.log(OpenStruct.new(
-        user: "admin", action: :update, resource: "User",
-        record_id: 1, changes: { name: ["old", "new"] }, ip_address: "127.0.0.1"
-      ))
+                            user: "admin", action: :update, resource: "User",
+                            record_id: 1, changes: { name: %w[old new] }, ip_address: "127.0.0.1"
+                          ))
       described_class.log(OpenStruct.new(
-        user: "admin", action: :destroy, resource: "Post",
-        record_id: 5, changes: {}, ip_address: "192.168.1.1"
-      ))
+                            user: "admin", action: :destroy, resource: "Post",
+                            record_id: 5, changes: {}, ip_address: "192.168.1.1"
+                          ))
     end
 
     it "returns all entries when no filters" do
@@ -239,9 +239,9 @@ RSpec.describe CommandPost::AuditLog do
     before do
       CommandPost.configure { |c| c.audit_enabled = true }
       described_class.log(OpenStruct.new(
-        user: "admin", action: :create, resource: "User",
-        record_id: 1, changes: {}, ip_address: "127.0.0.1"
-      ))
+                            user: "admin", action: :create, resource: "User",
+                            record_id: 1, changes: {}, ip_address: "127.0.0.1"
+                          ))
     end
 
     it "removes all entries" do

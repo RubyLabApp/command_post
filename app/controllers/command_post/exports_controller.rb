@@ -51,7 +51,7 @@ module CommandPost
 
       value = record.public_send(field.name)
       format_for_export(value, field)
-    rescue => e
+    rescue StandardError => e
       "[Error: #{e.message}]"
     end
 

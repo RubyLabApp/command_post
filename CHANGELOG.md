@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Authorization System Improvements**
+  - Policy-based authorization now integrated into ResourcesController
+  - Field visibility enforcement (`field.visible?(user)`)
+  - Field readonly enforcement in form components (`field.readonly?(user)`)
+  - Custom action and bulk action authorization
+
+- **Performance Improvements**
+  - Automatic association preloading to prevent N+1 queries
+  - BelongsTo component pagination (default limit 100)
+  - BelongsTo autocomplete component for large associations
+
+- **Soft Delete Support**
+  - Auto-detection of `deleted_at` column
+  - Auto-registered `with_deleted` and `only_deleted` scopes
+  - Auto-registered `restore` action
+
+- **Audit Logging**
+  - Built-in audit log with `AuditLog.log(event)`
+  - Audit log viewer at `/admin/audit`
+  - Enable with `config.audit_enabled = true`
+
+- **Multi-Tenant Support**
+  - `config.tenant_scope` for automatic query scoping
+  - Applied to all resource queries (index, show, edit, update, destroy)
+
+- **Advanced Search**
+  - Field-specific search syntax (`email:john@example.com`)
+  - Date range search (`created_at:2025-01-01..2025-12-31`)
+
+- **Comprehensive ViewComponent Library**
+  - UI: Badge, Button, Card, Alert, Modal, Dropdown, Tooltip, Pagination, Scopes, EmptyState
+  - Form: TextInput, Select, Checkbox, Textarea, DatePicker, BelongsTo, FieldWrapper
+  - Filter: Search, SelectFilter, DateRange, BarComponent
+  - Resource: DataTable, ShowField, Actions, Breadcrumb, BulkActions, RelatedList
+  - Dashboard: Chart, StatsGrid, ActivityFeed, QuickLinks, MetricCard, RecentTable
+
+### Fixed
+
+- Export error handling for missing fields and type coercion
+- Custom actions wrapped in database transactions with proper error handling
+- Date filter parsing for invalid dates
+- Filter bypass attempts via URL manipulation
+
+### Changed
+
+- 841 tests with 96%+ coverage
+- 0 Rubocop offenses
+
 ## [0.1.0] - 2026-02-03
 
 ### Added

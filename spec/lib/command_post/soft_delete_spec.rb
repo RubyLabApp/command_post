@@ -11,7 +11,7 @@ RSpec.describe "CommandPost Soft Delete Support" do
     end
 
     # Define the Article model dynamically
-    Object.const_set(:Article, Class.new(ActiveRecord::Base) do
+    Object.const_set(:Article, Class.new(ApplicationRecord) do
       # Simulate paranoia/discard default scope
       default_scope { where(deleted_at: nil) }
     end)
@@ -86,7 +86,7 @@ RSpec.describe "CommandPost Soft Delete Support" do
         deleted_article = Article.unscoped.create!(title: "Deleted", content: "Content", deleted_at: Time.current)
 
         with_deleted_scope = article_resource.defined_scopes.find { |s| s[:name] == :with_deleted }
-        scope_result = Article.all.merge(with_deleted_scope[:scope])
+        scope_result = Article.merge(with_deleted_scope[:scope])
 
         expect(scope_result).to include(active_article)
         expect(scope_result).to include(deleted_article)

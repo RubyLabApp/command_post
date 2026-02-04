@@ -45,7 +45,7 @@ module CommandPost
 
       def dropdown_classes
         "absolute z-50 mt-1 w-full max-h-60 overflow-auto #{theme.border_radius} " \
-        "#{theme.card_bg} border #{theme.input_border} shadow-lg"
+          "#{theme.card_bg} border #{theme.input_border} shadow-lg"
       end
 
       def dropdown_item_classes

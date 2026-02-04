@@ -76,9 +76,7 @@ module CommandPost
         result = action[:block].call(@record)
         emit_event(params[:action_name], @record)
 
-        if result == false
-          raise ActiveRecord::Rollback
-        end
+        raise ActiveRecord::Rollback if result == false
       end
 
       redirect_to resource_path(@resource_class.resource_name, @record), notice: "Action completed"
@@ -97,9 +95,7 @@ module CommandPost
       ActiveRecord::Base.transaction do
         result = action[:block].call(records)
 
-        if result == false
-          raise ActiveRecord::Rollback
-        end
+        raise ActiveRecord::Rollback if result == false
       end
 
       redirect_to resources_path(@resource_class.resource_name), notice: "Bulk action completed"
@@ -118,9 +114,9 @@ module CommandPost
       like_operator = conn.adapter_name.downcase.include?("postgresql") ? "ILIKE" : "LIKE"
 
       records = base_scope
-                  .where("#{table}.#{column} #{like_operator} ?", "%#{query}%")
-                  .limit(20)
-                  .map { |r| { id: r.id, label: r.public_send(display) } }
+        .where("#{table}.#{column} #{like_operator} ?", "%#{query}%")
+        .limit(20)
+        .map { |r| { id: r.id, label: r.public_send(display) } }
 
       render json: records
     end
@@ -130,9 +126,7 @@ module CommandPost
     def base_scope
       scope = @resource_class.model.all
 
-      if CommandPost.configuration.tenant_scope_block
-        scope = CommandPost.configuration.tenant_scope_block.call(scope)
-      end
+      scope = CommandPost.configuration.tenant_scope_block.call(scope) if CommandPost.configuration.tenant_scope_block
 
       scope
     end
@@ -153,10 +147,10 @@ module CommandPost
       head(:forbidden) and return unless @resource_class.action_allowed?(crud_action)
 
       # Check policy-based authorization if a policy is defined
-      if @resource_class._policy_block
-        policy = Policy.new(&@resource_class._policy_block)
-        head(:forbidden) and return unless policy.allowed?(crud_action, command_post_current_user)
-      end
+      return unless @resource_class._policy_block
+
+      policy = Policy.new(&@resource_class._policy_block)
+      head(:forbidden) and return unless policy.allowed?(crud_action, command_post_current_user)
     end
 
     def action_authorized?(action_name)
@@ -270,6 +264,7 @@ module CommandPost
         return scope.where(field => from_date..to_date) if from_date && to_date
         return scope.where("#{table}.#{column} >= ?", from_date) if from_date
         return scope.where("#{table}.#{column} <= ?", to_date) if to_date
+
         return scope # Both dates invalid, return unfiltered
       end
 

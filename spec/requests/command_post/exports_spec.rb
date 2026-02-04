@@ -79,7 +79,7 @@ RSpec.describe "CommandPost::Exports", type: :request do
 
       get command_post.export_path("users", format: :json)
 
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json.first["created_at"]).to eq(user.created_at.iso8601)
     end
 
@@ -88,7 +88,7 @@ RSpec.describe "CommandPost::Exports", type: :request do
 
       get command_post.export_path("users", format: :json)
 
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json.first["active"]).to eq("Yes")
     end
 
@@ -98,7 +98,7 @@ RSpec.describe "CommandPost::Exports", type: :request do
       get command_post.export_path("users", format: :json)
 
       expect(response).to have_http_status(:ok)
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       expect(json.first["role"]).to eq("")
     end
 
@@ -112,7 +112,7 @@ RSpec.describe "CommandPost::Exports", type: :request do
         get command_post.export_path("users", format: :json)
 
         expect(response).to have_http_status(:ok)
-        json = JSON.parse(response.body)
+        json = response.parsed_body
         expect(json.first["nonexistent_field"]).to eq("[Error: field not found]")
       end
     end
@@ -123,7 +123,7 @@ RSpec.describe "CommandPost::Exports", type: :request do
 
     context "CSV format" do
       it "exports the association's display value" do
-        license = create(:license, user: user, license_key: "ABC-123")
+        create(:license, user: user, license_key: "ABC-123")
 
         get command_post.export_path("licenses", format: :csv)
 
@@ -181,12 +181,12 @@ RSpec.describe "CommandPost::Exports", type: :request do
 
     context "JSON format" do
       it "exports the association's display value" do
-        license = create(:license, user: user, license_key: "GHI-789")
+        create(:license, user: user, license_key: "GHI-789")
 
         get command_post.export_path("licenses", format: :json)
 
         expect(response).to have_http_status(:ok)
-        json = JSON.parse(response.body)
+        json = response.parsed_body
         expect(json.first["user"]).to eq("john@example.com")
       end
 
@@ -197,7 +197,7 @@ RSpec.describe "CommandPost::Exports", type: :request do
         get command_post.export_path("licenses", format: :json)
 
         expect(response).to have_http_status(:ok)
-        json = JSON.parse(response.body)
+        json = response.parsed_body
         expect(json.first["user"]).to eq("")
       end
 
@@ -208,7 +208,7 @@ RSpec.describe "CommandPost::Exports", type: :request do
         get command_post.export_path("licenses", format: :json)
 
         expect(response).to have_http_status(:ok)
-        json = JSON.parse(response.body)
+        json = response.parsed_body
         expect(json.first["user"]).to eq("json-special@example.com")
       end
     end

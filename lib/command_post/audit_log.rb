@@ -18,7 +18,7 @@ module CommandPost
           record_id: record_id,
           changes: changes,
           ip_address: ip_address,
-          timestamp: timestamp
+          timestamp: timestamp,
         }
       end
     end

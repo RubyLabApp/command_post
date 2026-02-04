@@ -75,6 +75,28 @@ Uses ViewComponent gem. Components are in `layout/` (shell, sidebar, navbar) and
 - **Theme** - Tailwind CSS class customization for every UI element.
 - **Components** - Override default ViewComponent classes with custom implementations.
 
+### Authorization System
+
+- **Policy** - Per-resource authorization with `allow`/`deny` DSL for CRUD and custom actions.
+- Controllers check `@resource_class._policy_block` and call `Policy#allowed?`.
+- Field-level visibility/readonly via `field.visible?(user)` and `field.readonly?(user)`.
+
+### Audit Logging
+
+- Enable with `config.audit_enabled = true`.
+- `AuditLog.log(event)` stores entries with user, action, resource, record_id, changes, ip_address, timestamp.
+- View audit log at `/admin/audit`.
+
+### Multi-Tenant Support
+
+- Configure with `config.tenant_scope { |scope| scope.where(org_id: Current.org.id) }`.
+- Applied automatically to all resource queries via `base_scope`.
+
+### Soft Delete Support
+
+- Auto-detects `deleted_at` column on models.
+- Auto-registers `with_deleted`, `only_deleted` scopes and `restore` action.
+
 ## Testing
 
 Tests use a dummy Rails app at `spec/dummy/`. The dummy app has test models (User, License) and corresponding resources.

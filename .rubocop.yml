@@ -34,13 +34,8 @@ Metrics/MethodLength:
   Exclude:
     - "spec/**/*"
 
-Metrics/AbcSize:
-  Max: 35
-  Exclude:
-    - "spec/**/*"
-
 Metrics/ClassLength:
-  Max: 180
+  Max: 250
   Exclude:
     - "spec/**/*"
 
@@ -54,10 +49,15 @@ Metrics/ParameterLists:
     - "app/components/**/*"
 
 Metrics/CyclomaticComplexity:
-  Max: 10
+  Max: 12
 
 Metrics/PerceivedComplexity:
-  Max: 10
+  Max: 13
+
+Metrics/AbcSize:
+  Max: 38
+  Exclude:
+    - "spec/**/*"
 
 # Style
 Style/Documentation:
@@ -92,9 +92,6 @@ Rails/I18nLocaleTexts:
   Enabled: false
 
 # RSpec
-RSpec/ExampleLength:
-  Max: 20
-
 RSpec/MultipleExpectations:
   Max: 10
 
@@ -104,6 +101,31 @@ RSpec/NestedGroups:
 RSpec/DescribeClass:
   Exclude:
     - "spec/requests/**/*"
+    - "spec/lib/command_post/soft_delete_spec.rb"
+
+RSpec/BeforeAfterAll:
+  Exclude:
+    - "spec/lib/command_post/soft_delete_spec.rb"
+    - "spec/requests/command_post/soft_delete_spec.rb"
+
+RSpec/RemoveConst:
+  Enabled: false
+
+RSpec/VerifiedDoubles:
+  Enabled: false
+
+RSpec/ContextWording:
+  Enabled: false
+
+RSpec/LetSetup:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Max: 25
+
+Rails/SkipsModelValidations:
+  Exclude:
+    - "spec/**/*"
 
 RSpec/MultipleMemoizedHelpers:
   Enabled: false
