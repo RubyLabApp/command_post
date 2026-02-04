@@ -36,4 +36,49 @@ RSpec.describe CommandPost::Form::CheckboxComponent, type: :component do
       expect(component.checkbox_classes).to include("rounded")
     end
   end
+
+  describe "field readonly enforcement" do
+    let(:user) { double("User") }
+
+    context "when field is readonly for user" do
+      let(:field) { CommandPost::Field.new(:active, readonly: true) }
+
+      it "renders disabled checkbox" do
+        result = render_inline(described_class.new(name: :active, field: field, current_user: user))
+        expect(result.css("input[type='checkbox'][disabled]")).to be_present
+      end
+    end
+
+    context "when field uses proc for readonly" do
+      let(:admin_user) { double("User", admin?: true) }
+      let(:regular_user) { double("User", admin?: false) }
+      let(:field) { CommandPost::Field.new(:active, readonly: ->(user) { !user.admin? }) }
+
+      it "renders disabled checkbox for non-admin" do
+        result = render_inline(described_class.new(name: :active, field: field, current_user: regular_user))
+        expect(result.css("input[type='checkbox'][disabled]")).to be_present
+      end
+
+      it "renders enabled checkbox for admin" do
+        result = render_inline(described_class.new(name: :active, field: field, current_user: admin_user))
+        expect(result.css("input[type='checkbox'][disabled]")).not_to be_present
+      end
+    end
+
+    context "when field is not readonly" do
+      let(:field) { CommandPost::Field.new(:active, readonly: false) }
+
+      it "renders enabled checkbox" do
+        result = render_inline(described_class.new(name: :active, field: field, current_user: user))
+        expect(result.css("input[type='checkbox'][disabled]")).not_to be_present
+      end
+    end
+
+    context "when no field is provided" do
+      it "uses disabled parameter only" do
+        result = render_inline(described_class.new(name: :active, disabled: false))
+        expect(result.css("input[type='checkbox'][disabled]")).not_to be_present
+      end
+    end
+  end
 end

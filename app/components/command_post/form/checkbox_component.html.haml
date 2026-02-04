@@ -1,6 +1,6 @@
 .flex.items-center.gap-2.5
   = hidden_field_tag name, "0"
-  %input{ type: "checkbox", name: name, id: name, value: "1", checked: checked, disabled: disabled, class: checkbox_classes }
+  %input{ type: "checkbox", name: name, id: name, value: "1", checked: checked, disabled: effectively_disabled?, class: checkbox_classes }
   - if label
     %label{ for: name, class: label_classes }
       = label

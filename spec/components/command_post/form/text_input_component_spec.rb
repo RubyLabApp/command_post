@@ -63,4 +63,54 @@ RSpec.describe CommandPost::Form::TextInputComponent, type: :component do
       expect(result.css("input[disabled]")).to be_present
     end
   end
+
+  describe "field readonly enforcement" do
+    let(:user) { double("User") }
+
+    context "when field is readonly for user" do
+      let(:field) { CommandPost::Field.new(:email, readonly: true) }
+
+      it "renders disabled input" do
+        result = render_inline(described_class.new(name: :email, field: field, current_user: user))
+        expect(result.css("input[disabled]")).to be_present
+      end
+
+      it "includes disabled classes" do
+        component = described_class.new(name: :email, field: field, current_user: user)
+        expect(component.input_classes).to include("cursor-not-allowed")
+      end
+    end
+
+    context "when field uses proc for readonly" do
+      let(:admin_user) { double("User", admin?: true) }
+      let(:regular_user) { double("User", admin?: false) }
+      let(:field) { CommandPost::Field.new(:email, readonly: ->(user) { !user.admin? }) }
+
+      it "renders disabled input for non-admin" do
+        result = render_inline(described_class.new(name: :email, field: field, current_user: regular_user))
+        expect(result.css("input[disabled]")).to be_present
+      end
+
+      it "renders enabled input for admin" do
+        result = render_inline(described_class.new(name: :email, field: field, current_user: admin_user))
+        expect(result.css("input[disabled]")).not_to be_present
+      end
+    end
+
+    context "when field is not readonly" do
+      let(:field) { CommandPost::Field.new(:email, readonly: false) }
+
+      it "renders enabled input" do
+        result = render_inline(described_class.new(name: :email, field: field, current_user: user))
+        expect(result.css("input[disabled]")).not_to be_present
+      end
+    end
+
+    context "when no field is provided" do
+      it "uses disabled parameter only" do
+        result = render_inline(described_class.new(name: :email, disabled: false))
+        expect(result.css("input[disabled]")).not_to be_present
+      end
+    end
+  end
 end

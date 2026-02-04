@@ -46,4 +46,54 @@ RSpec.describe CommandPost::Form::SelectComponent, type: :component do
       expect(component.chevron_style).to include("svg")
     end
   end
+
+  describe "field readonly enforcement" do
+    let(:user) { double("User") }
+
+    context "when field is readonly for user" do
+      let(:field) { CommandPost::Field.new(:status, readonly: true) }
+
+      it "renders disabled select" do
+        result = render_inline(described_class.new(name: :status, options: options, field: field, current_user: user))
+        expect(result.css("select[disabled]")).to be_present
+      end
+
+      it "includes disabled classes" do
+        component = described_class.new(name: :status, options: options, field: field, current_user: user)
+        expect(component.select_classes).to include("cursor-not-allowed")
+      end
+    end
+
+    context "when field uses proc for readonly" do
+      let(:admin_user) { double("User", admin?: true) }
+      let(:regular_user) { double("User", admin?: false) }
+      let(:field) { CommandPost::Field.new(:status, readonly: ->(user) { !user.admin? }) }
+
+      it "renders disabled select for non-admin" do
+        result = render_inline(described_class.new(name: :status, options: options, field: field, current_user: regular_user))
+        expect(result.css("select[disabled]")).to be_present
+      end
+
+      it "renders enabled select for admin" do
+        result = render_inline(described_class.new(name: :status, options: options, field: field, current_user: admin_user))
+        expect(result.css("select[disabled]")).not_to be_present
+      end
+    end
+
+    context "when field is not readonly" do
+      let(:field) { CommandPost::Field.new(:status, readonly: false) }
+
+      it "renders enabled select" do
+        result = render_inline(described_class.new(name: :status, options: options, field: field, current_user: user))
+        expect(result.css("select[disabled]")).not_to be_present
+      end
+    end
+
+    context "when no field is provided" do
+      it "uses disabled parameter only" do
+        result = render_inline(described_class.new(name: :status, options: options, disabled: false))
+        expect(result.css("select[disabled]")).not_to be_present
+      end
+    end
+  end
 end

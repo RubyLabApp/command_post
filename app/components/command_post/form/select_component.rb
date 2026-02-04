@@ -1,20 +1,30 @@
 module CommandPost
   module Form
     class SelectComponent < ViewComponent::Base
-      attr_reader :name, :options, :selected, :include_blank, :disabled, :has_error
+      attr_reader :name, :options, :selected, :include_blank, :disabled, :has_error, :field, :current_user
 
       def initialize(name:, options:, selected: nil, include_blank: nil,
-                     disabled: false, has_error: false)
+                     disabled: false, has_error: false, field: nil, current_user: nil)
         @name = name
         @options = options
         @selected = selected
         @include_blank = include_blank
         @disabled = disabled
         @has_error = has_error
+        @field = field
+        @current_user = current_user
       end
 
       def theme
         CommandPost.configuration.theme
+      end
+
+      def effectively_disabled?
+        disabled || field_readonly?
+      end
+
+      def field_readonly?
+        @field&.readonly?(@current_user) || false
       end
 
       def select_classes
@@ -22,7 +32,7 @@ module CommandPost
                "transition duration-150 ease-in-out #{theme.border_radius} #{theme.input_border} " \
                "#{theme.card_bg} #{theme.body_text} #{theme.input_focus}"
         base += " !border-red-400 !focus:border-red-500 !focus:ring-red-500/20" if has_error
-        base += " bg-gray-50 cursor-not-allowed" if disabled
+        base += " bg-gray-50 cursor-not-allowed" if effectively_disabled?
         base
       end
 

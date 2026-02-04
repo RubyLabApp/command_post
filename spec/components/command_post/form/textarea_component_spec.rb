@@ -102,4 +102,54 @@ RSpec.describe CommandPost::Form::TextareaComponent, type: :component do
       expect(result.css("textarea[readonly]")).to be_present
     end
   end
+
+  describe "field readonly enforcement" do
+    let(:user) { double("User") }
+
+    context "when field is readonly for user" do
+      let(:field) { CommandPost::Field.new(:description, readonly: true) }
+
+      it "renders disabled textarea" do
+        result = render_inline(described_class.new(name: :description, field: field, current_user: user))
+        expect(result.css("textarea[disabled]")).to be_present
+      end
+
+      it "includes disabled classes" do
+        component = described_class.new(name: :description, field: field, current_user: user)
+        expect(component.textarea_classes).to include("cursor-not-allowed")
+      end
+    end
+
+    context "when field uses proc for readonly" do
+      let(:admin_user) { double("User", admin?: true) }
+      let(:regular_user) { double("User", admin?: false) }
+      let(:field) { CommandPost::Field.new(:description, readonly: ->(user) { !user.admin? }) }
+
+      it "renders disabled textarea for non-admin" do
+        result = render_inline(described_class.new(name: :description, field: field, current_user: regular_user))
+        expect(result.css("textarea[disabled]")).to be_present
+      end
+
+      it "renders enabled textarea for admin" do
+        result = render_inline(described_class.new(name: :description, field: field, current_user: admin_user))
+        expect(result.css("textarea[disabled]")).not_to be_present
+      end
+    end
+
+    context "when field is not readonly" do
+      let(:field) { CommandPost::Field.new(:description, readonly: false) }
+
+      it "renders enabled textarea" do
+        result = render_inline(described_class.new(name: :description, field: field, current_user: user))
+        expect(result.css("textarea[disabled]")).not_to be_present
+      end
+    end
+
+    context "when no field is provided" do
+      it "uses disabled parameter only" do
+        result = render_inline(described_class.new(name: :description, disabled: false))
+        expect(result.css("textarea[disabled]")).not_to be_present
+      end
+    end
+  end
 end
