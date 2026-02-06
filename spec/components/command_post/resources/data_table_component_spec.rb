@@ -1,4 +1,5 @@
 require "rails_helper"
+require "ostruct"
 require_relative "../../../../app/components/command_post/resources/data_table_component"
 
 RSpec.describe CommandPost::Resources::DataTableComponent, type: :component do
@@ -165,6 +166,40 @@ RSpec.describe CommandPost::Resources::DataTableComponent, type: :component do
         base_url: "/admin/users?"
       )
       expect(component.visible_fields).to contain_exactly(visible_field, conditional_field)
+    end
+
+    context "when field has visibility restriction" do
+      let(:admin_user) { OpenStruct.new(admin?: true) }
+      let(:regular_user) { OpenStruct.new(admin?: false) }
+      let(:field_with_visibility) do
+        CommandPost::Field.new(
+          :salary,
+          type: :number,
+          visible: ->(user) { user&.admin? }
+        )
+      end
+
+      it "shows field when user has visibility permission" do
+        component = described_class.new(
+          records: users,
+          fields: [visible_field, field_with_visibility],
+          resource_class: UserResource,
+          current_user: admin_user,
+          base_url: "/admin/users?"
+        )
+        expect(component.visible_fields).to contain_exactly(visible_field, field_with_visibility)
+      end
+
+      it "hides field when user lacks visibility permission" do
+        component = described_class.new(
+          records: users,
+          fields: [visible_field, field_with_visibility],
+          resource_class: UserResource,
+          current_user: regular_user,
+          base_url: "/admin/users?"
+        )
+        expect(component.visible_fields).to contain_exactly(visible_field)
+      end
     end
   end
 end
