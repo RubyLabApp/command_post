@@ -1,4 +1,5 @@
 require "rails_helper"
+require "ostruct"
 require_relative "../../../../app/components/command_post/resources/show_field_component"
 
 RSpec.describe CommandPost::Resources::ShowFieldComponent, type: :component do
@@ -75,6 +76,23 @@ RSpec.describe CommandPost::Resources::ShowFieldComponent, type: :component do
       it "evaluates conditional visibility with nil user" do
         component = described_class.new(field: conditional_field, record: user)
         expect(component.render?).to be true
+      end
+    end
+
+    context "when field is not visible to user" do
+      let(:admin_only_field) do
+        CommandPost::Field.new(
+          :secret,
+          type: :text,
+          visible: ->(u) { u&.admin? }
+        )
+      end
+      let(:regular_user) { OpenStruct.new(admin?: false) }
+
+      it "renders nothing when user cannot see field" do
+        component = described_class.new(field: admin_only_field, record: user, current_user: regular_user)
+        result = render_inline(component)
+        expect(result.to_html.strip).to be_empty
       end
     end
   end
