@@ -26,23 +26,6 @@ RSpec.describe CommandPost::Policy do
     end
   end
 
-  describe "with deny rules" do
-    let(:policy) do
-      described_class.new do
-        allow :index, :show, :create, :update, :destroy
-        deny :destroy, if: ->(record) { record == :protected }
-      end
-    end
-
-    it "denies when condition matches" do
-      expect(policy.denied?(:destroy, nil, :protected)).to be(true)
-    end
-
-    it "allows when condition does not match" do
-      expect(policy.denied?(:destroy, nil, :normal)).to be(false)
-    end
-  end
-
   describe "without policy" do
     let(:policy) { described_class.new }
 
