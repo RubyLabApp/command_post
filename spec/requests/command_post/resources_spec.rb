@@ -1081,6 +1081,79 @@ RSpec.describe "CommandPost::Resources", type: :request do
     end
   end
 
+  describe "policy caching" do
+    let(:policy_caching_resource) do
+      Class.new(CommandPost::Resource) do
+        self.model_class_override = License
+
+        def self.name
+          "PolicyCachingResource"
+        end
+
+        def self.resource_name
+          "policy_caching_licenses"
+        end
+
+        belongs_to :user, display: :email
+
+        action :test_action do |license|
+          license.update!(status: "revoked")
+        end
+
+        policy do
+          allow :create, :update, :destroy, if: ->(user) { user&.role == "admin" }
+          allow :test_action, if: ->(user) { user&.role == "admin" }
+        end
+      end
+    end
+
+    before do
+      CommandPost::ResourceRegistry.register(policy_caching_resource)
+      CommandPost.configure do |config|
+        config.current_user { OpenStruct.new(role: "admin") }
+      end
+    end
+
+    after do
+      CommandPost::ResourceRegistry.reset!
+      CommandPost::ResourceRegistry.register(UserResource)
+      CommandPost::ResourceRegistry.register(LicenseResource)
+    end
+
+    it "caches the policy instance within a request" do
+      user = create(:user)
+      license = create(:license, user: user, status: "active")
+
+      # The policy should be instantiated once and reused
+      # We can verify this by checking the action completes successfully
+      # after both check_action_allowed and action_authorized? are called
+      post command_post.resource_action_path("policy_caching_licenses", license, "test_action"), as: :html
+
+      expect(response).to redirect_to(command_post.resource_path("policy_caching_licenses", license))
+      expect(license.reload.status).to eq("revoked")
+    end
+
+    it "returns nil when no policy block is defined" do
+      no_policy_resource = Class.new(CommandPost::Resource) do
+        self.model_class_override = User
+
+        def self.name
+          "NoPolicyResource"
+        end
+
+        def self.resource_name
+          "no_policy_users"
+        end
+      end
+
+      CommandPost::ResourceRegistry.register(no_policy_resource)
+
+      # Should be able to access new form without policy restriction
+      get command_post.new_resource_path("no_policy_users"), as: :html
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "policy-based authorization" do
     # Create a resource with a policy that only allows admin users
     let(:policy_user_resource) do

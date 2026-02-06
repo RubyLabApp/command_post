@@ -136,6 +136,13 @@ module CommandPost
       head(:not_found) and return unless @resource_class
     end
 
+    def resource_policy
+      @resource_policy ||= begin
+        return nil unless @resource_class._policy_block
+        Policy.new(&@resource_class._policy_block)
+      end
+    end
+
     def check_action_allowed
       crud_action = case action_name.to_sym
                     when :new, :create then :create
@@ -147,17 +154,15 @@ module CommandPost
       head(:forbidden) and return unless @resource_class.action_allowed?(crud_action)
 
       # Check policy-based authorization if a policy is defined
-      return unless @resource_class._policy_block
+      return unless resource_policy
 
-      policy = Policy.new(&@resource_class._policy_block)
-      head(:forbidden) and return unless policy.allowed?(crud_action, command_post_current_user)
+      head(:forbidden) and return unless resource_policy.allowed?(crud_action, command_post_current_user)
     end
 
     def action_authorized?(action_name)
-      return true unless @resource_class._policy_block
+      return true unless resource_policy
 
-      policy = Policy.new(&@resource_class._policy_block)
-      policy.action_allowed?(action_name, command_post_current_user)
+      resource_policy.action_allowed?(action_name, command_post_current_user)
     end
 
     def index_fields
