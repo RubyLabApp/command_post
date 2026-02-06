@@ -38,6 +38,87 @@ RSpec.describe CommandPost::Resource do
     end
   end
 
+  describe "unsearchable" do
+    let(:resource_with_unsearchable) do
+      Class.new(CommandPost::Resource) do
+        self.model_class_override = User
+
+        def self.name
+          "UnsearchableTestResource"
+        end
+
+        unsearchable :email
+      end
+    end
+
+    it "excludes specified columns from searchable columns" do
+      columns = resource_with_unsearchable.searchable_columns
+      expect(columns).not_to include(:email)
+      expect(columns).to include(:name)
+    end
+
+    it "can exclude multiple columns" do
+      resource = Class.new(CommandPost::Resource) do
+        self.model_class_override = User
+
+        def self.name
+          "MultiUnsearchableResource"
+        end
+
+        unsearchable :email, :name
+      end
+
+      columns = resource.searchable_columns
+      expect(columns).not_to include(:email)
+      expect(columns).not_to include(:name)
+    end
+
+    it "converts strings to symbols" do
+      resource = Class.new(CommandPost::Resource) do
+        self.model_class_override = User
+
+        def self.name
+          "StringUnsearchableResource"
+        end
+
+        unsearchable "email"
+      end
+
+      columns = resource.searchable_columns
+      expect(columns).not_to include(:email)
+    end
+
+    it "still excludes digest columns" do
+      resource = Class.new(CommandPost::Resource) do
+        self.model_class_override = User
+
+        def self.name
+          "DigestExclusionResource"
+        end
+      end
+
+      columns = resource.searchable_columns
+      expect(columns.any? { |c| c.to_s.end_with?("_digest") }).to be false
+    end
+
+    it "does not affect explicit searchable columns" do
+      resource = Class.new(CommandPost::Resource) do
+        self.model_class_override = User
+
+        def self.name
+          "ExplicitSearchableResource"
+        end
+
+        searchable :email, :name
+        unsearchable :email
+      end
+
+      # When explicit searchable is set, unsearchable is ignored
+      columns = resource.searchable_columns
+      expect(columns).to eq([:email, :name])
+    end
+  end
+
   describe "filters" do
     it "stores custom filters" do
       filters = TestLicenseResource.defined_filters

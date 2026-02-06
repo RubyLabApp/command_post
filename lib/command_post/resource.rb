@@ -2,6 +2,7 @@ module CommandPost
   class Resource
     class_attribute :field_overrides, default: {}
     class_attribute :_searchable_columns, default: nil
+    class_attribute :_unsearchable_columns, default: []
     class_attribute :defined_filters, default: []
     class_attribute :defined_scopes, default: []
     class_attribute :defined_actions, default: []
@@ -42,12 +43,17 @@ module CommandPost
         self._searchable_columns = columns
       end
 
+      def unsearchable(*columns)
+        self._unsearchable_columns = _unsearchable_columns + columns.map(&:to_sym)
+      end
+
       def searchable_columns
         return _searchable_columns if _searchable_columns
 
         model.columns.select { |c| c.type.in?(%i[string text]) }
           .map { |c| c.name.to_sym }
           .reject { |name| name.to_s.end_with?("_digest") }
+          .reject { |name| _unsearchable_columns.include?(name) }
       end
 
       def filter(name, **options)
