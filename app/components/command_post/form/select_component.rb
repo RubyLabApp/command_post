@@ -1,7 +1,9 @@
 module CommandPost
   module Form
     class SelectComponent < ViewComponent::Base
-      attr_reader :name, :options, :selected, :include_blank, :disabled, :has_error, :field, :current_user
+      include Concerns::FormInputBehavior
+
+      attr_reader :name, :options, :selected, :include_blank, :has_error
 
       def initialize(name:, options:, selected: nil, include_blank: nil,
                      disabled: false, has_error: false, field: nil, current_user: nil)
@@ -13,18 +15,6 @@ module CommandPost
         @has_error = has_error
         @field = field
         @current_user = current_user
-      end
-
-      def theme
-        CommandPost.configuration.theme
-      end
-
-      def effectively_disabled?
-        disabled || field_readonly?
-      end
-
-      def field_readonly?
-        @field&.readonly?(@current_user) || false
       end
 
       def select_classes

@@ -1,8 +1,9 @@
 module CommandPost
   module Form
     class BelongsToAutocompleteComponent < ViewComponent::Base
-      attr_reader :name, :resource_name, :selected_id, :selected_label, :placeholder,
-                  :disabled, :has_error, :field, :current_user
+      include Concerns::FormInputBehavior
+
+      attr_reader :name, :resource_name, :selected_id, :selected_label, :placeholder, :has_error
       attr_accessor :autocomplete_url
 
       def initialize(name:, resource_name:, selected_id: nil, selected_label: nil,
@@ -21,18 +22,6 @@ module CommandPost
 
       def before_render
         @autocomplete_url ||= helpers.command_post.autocomplete_path(resource_name)
-      end
-
-      def theme
-        CommandPost.configuration.theme
-      end
-
-      def effectively_disabled?
-        disabled || field_readonly?
-      end
-
-      def field_readonly?
-        @field&.readonly?(@current_user) || false
       end
 
       def input_classes

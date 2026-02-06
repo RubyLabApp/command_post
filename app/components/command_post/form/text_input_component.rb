@@ -1,7 +1,9 @@
 module CommandPost
   module Form
     class TextInputComponent < ViewComponent::Base
-      attr_reader :name, :value, :type, :placeholder, :disabled, :readonly, :has_error, :field, :current_user
+      include Concerns::FormInputBehavior
+
+      attr_reader :name, :value, :type, :placeholder, :readonly, :has_error
 
       def initialize(name:, value: nil, type: :text, placeholder: nil,
                      disabled: false, readonly: false, has_error: false,
@@ -15,18 +17,6 @@ module CommandPost
         @has_error = has_error
         @field = field
         @current_user = current_user
-      end
-
-      def theme
-        CommandPost.configuration.theme
-      end
-
-      def effectively_disabled?
-        disabled || field_readonly?
-      end
-
-      def field_readonly?
-        @field&.readonly?(@current_user) || false
       end
 
       def input_classes
