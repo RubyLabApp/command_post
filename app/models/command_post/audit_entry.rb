@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module CommandPost
-  class AuditEntry < ActiveRecord::Base
+  class AuditEntry < ApplicationRecord
     self.table_name = "command_post_audit_entries"
 
     serialize :record_changes, coder: JSON
@@ -9,7 +9,13 @@ module CommandPost
     scope :by_resource, ->(resource) { where(resource: resource) }
     scope :by_action, ->(action) { where(action: action) }
     scope :by_record_id, ->(record_id) { where(record_id: record_id) }
-    scope :from_date, ->(date) { where("created_at >= ?", date) }
-    scope :to_date, ->(date) { where("created_at <= ?", date) }
+    scope :from_date, ->(date) { where(created_at: date..) }
+    scope :to_date, ->(date) { where(created_at: ..date) }
+
+    def self.table_exists?
+      super
+    rescue ActiveRecord::NoDatabaseError, ActiveRecord::StatementInvalid
+      false
+    end
   end
 end
