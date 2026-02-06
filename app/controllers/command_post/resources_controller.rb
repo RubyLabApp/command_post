@@ -188,7 +188,7 @@ module CommandPost
     end
 
     def apply_filters(scope)
-      @resource_class.defined_filters.each do |filter|
+      @resource_class.all_filters.each do |filter|
         if filter[:type] == :date_range
           from = params.dig(:filters, "#{filter[:name]}_from")
           to = params.dig(:filters, "#{filter[:name]}_to")

@@ -327,4 +327,119 @@ RSpec.describe CommandPost::Resource do
       end
     end
   end
+
+  describe ".auto_inferred_filters" do
+    context "when model has enums" do
+      it "generates select filter for each enum" do
+        filters = TestLicenseResource.auto_inferred_filters
+        status_filter = filters.find { |f| f[:name] == :status }
+
+        expect(status_filter).to be_present
+        expect(status_filter[:type]).to eq(:select)
+      end
+
+      it "includes enum values as options" do
+        filters = TestLicenseResource.auto_inferred_filters
+        status_filter = filters.find { |f| f[:name] == :status }
+
+        expect(status_filter[:options]).to eq(%w[active expired revoked])
+      end
+    end
+
+    context "when model has no enums" do
+      it "returns empty array" do
+        expect(TestUserResource.auto_inferred_filters).to eq([])
+      end
+    end
+
+    context "when model does not respond to defined_enums" do
+      let(:resource_with_non_enum_model) do
+        model_double = Class.new do
+          def self.columns
+            []
+          end
+
+          def self.column_names
+            []
+          end
+
+          def self.model_name
+            OpenStruct.new(plural: "non_enums", human: "Non Enum")
+          end
+        end
+
+        Class.new(CommandPost::Resource) do
+          self.model_class_override = model_double
+
+          def self.name
+            "NonEnumModelResource"
+          end
+        end
+      end
+
+      it "returns empty array" do
+        expect(resource_with_non_enum_model.auto_inferred_filters).to eq([])
+      end
+    end
+  end
+
+  describe ".all_filters" do
+    it "combines auto-inferred and defined filters" do
+      all = TestLicenseResource.all_filters
+      filter_names = all.map { |f| f[:name] }
+
+      # Should have both auto-inferred status filter and defined filters
+      expect(filter_names).to include(:status)
+      expect(filter_names).to include(:created_at)
+    end
+
+    it "defined filters come after auto-inferred (allowing override)" do
+      all = TestLicenseResource.all_filters
+      status_filters = all.select { |f| f[:name] == :status }
+
+      # There should be two status filters: one auto-inferred and one defined
+      # The defined one should come last
+      expect(status_filters.length).to eq(2)
+      expect(all.rindex { |f| f[:name] == :status }).to be > all.index { |f| f[:name] == :status }
+    end
+
+    context "when resource has no defined filters" do
+      let(:resource_with_no_defined_filters) do
+        Class.new(CommandPost::Resource) do
+          self.model_class_override = License
+
+          def self.name
+            "NoDefinedFiltersResource"
+          end
+        end
+      end
+
+      it "returns only auto-inferred filters" do
+        filters = resource_with_no_defined_filters.all_filters
+        expect(filters.length).to eq(1)
+        expect(filters.first[:name]).to eq(:status)
+        expect(filters.first[:type]).to eq(:select)
+      end
+    end
+
+    context "when model has no enums" do
+      let(:resource_with_filters_no_enums) do
+        Class.new(CommandPost::Resource) do
+          self.model_class_override = User
+
+          def self.name
+            "FiltersNoEnumsResource"
+          end
+
+          filter :name, type: :text
+        end
+      end
+
+      it "returns only defined filters" do
+        filters = resource_with_filters_no_enums.all_filters
+        expect(filters.length).to eq(1)
+        expect(filters.first[:name]).to eq(:name)
+      end
+    end
+  end
 end

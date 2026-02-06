@@ -64,6 +64,22 @@ module CommandPost
         self.defined_filters = defined_filters.reject { |f| f[:name] == name }
       end
 
+      def auto_inferred_filters
+        return [] unless model.respond_to?(:defined_enums)
+
+        model.defined_enums.map do |name, values|
+          {
+            name: name.to_sym,
+            type: :select,
+            options: values.keys
+          }
+        end
+      end
+
+      def all_filters
+        auto_inferred_filters + defined_filters
+      end
+
       def scope(name, lambda, default: false)
         self.defined_scopes = defined_scopes + [{ name: name, scope: lambda, default: default }]
       end
