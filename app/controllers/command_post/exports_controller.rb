@@ -29,11 +29,14 @@ module CommandPost
     end
 
     def export_fields
-      if @resource_class.export_field_names
-        @resource_class.resolved_fields.select { |f| f.name.in?(@resource_class.export_field_names) }
-      else
-        @resource_class.resolved_fields
-      end
+      fields = if @resource_class.export_field_names
+                 @resource_class.resolved_fields.select { |f| f.name.in?(@resource_class.export_field_names) }
+               else
+                 @resource_class.resolved_fields
+               end
+
+      # Security: Filter out fields not visible to the current user
+      fields.select { |f| f.visible?(command_post_current_user) }
     end
 
     def generate_csv(records, fields)

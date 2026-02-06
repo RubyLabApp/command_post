@@ -1,4 +1,5 @@
 require "rails_helper"
+require "ostruct"
 require_relative "../../support/test_resources"
 
 RSpec.describe "CommandPost::Exports", type: :request do
@@ -7,6 +8,138 @@ RSpec.describe "CommandPost::Exports", type: :request do
     CommandPost::ResourceRegistry.reset!
     CommandPost::ResourceRegistry.register(UserResource)
     CommandPost::ResourceRegistry.register(LicenseResource)
+  end
+
+  describe "field visibility enforcement" do
+    let(:visibility_resource) do
+      Class.new(CommandPost::Resource) do
+        self.model_class_override = User
+
+        def self.name
+          "ExportVisibilityUserResource"
+        end
+
+        def self.resource_name
+          "export_visibility_users"
+        end
+
+        field :name, type: :text
+        field :email, visible: ->(user) { user&.role == "admin" }
+        field :role, visible: false
+      end
+    end
+
+    before do
+      CommandPost::ResourceRegistry.register(visibility_resource)
+    end
+
+    after do
+      CommandPost::ResourceRegistry.reset!
+      CommandPost::ResourceRegistry.register(UserResource)
+      CommandPost::ResourceRegistry.register(LicenseResource)
+    end
+
+    context "when user does not have permission to see a field" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "member") }
+        end
+      end
+
+      it "excludes invisible fields from CSV export" do
+        create(:user, name: "Test User", email: "secret@example.com", role: "admin")
+
+        get command_post.export_path("export_visibility_users", format: :csv)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Test User")
+        expect(response.body).not_to include("secret@example.com")
+        expect(response.body).not_to include("admin")
+      end
+
+      it "excludes invisible fields from JSON export" do
+        create(:user, name: "Test User", email: "secret@example.com", role: "admin")
+
+        get command_post.export_path("export_visibility_users", format: :json)
+
+        expect(response).to have_http_status(:ok)
+        json = response.parsed_body
+        expect(json.first.keys).to include("name")
+        expect(json.first.keys).not_to include("email")
+        expect(json.first.keys).not_to include("role")
+      end
+
+      it "excludes invisible field headers from CSV export" do
+        create(:user, name: "Test User", email: "secret@example.com", role: "admin")
+
+        get command_post.export_path("export_visibility_users", format: :csv)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Name")
+        expect(response.body).not_to include("Email")
+        expect(response.body).not_to include("Role")
+      end
+    end
+
+    context "when user has permission to see a field" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "admin") }
+        end
+      end
+
+      it "includes conditionally visible fields in CSV export" do
+        create(:user, name: "Test User", email: "visible@example.com", role: "member")
+
+        get command_post.export_path("export_visibility_users", format: :csv)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Test User")
+        expect(response.body).to include("visible@example.com")
+        expect(response.body).not_to include("member")
+      end
+
+      it "includes conditionally visible fields in JSON export" do
+        create(:user, name: "Test User", email: "visible@example.com", role: "member")
+
+        get command_post.export_path("export_visibility_users", format: :json)
+
+        expect(response).to have_http_status(:ok)
+        json = response.parsed_body
+        expect(json.first.keys).to include("name")
+        expect(json.first.keys).to include("email")
+        expect(json.first.keys).not_to include("role")
+      end
+    end
+
+    context "when no user is logged in" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { nil }
+        end
+      end
+
+      it "excludes conditionally visible fields from CSV export" do
+        create(:user, name: "Test User", email: "secret@example.com", role: "admin")
+
+        get command_post.export_path("export_visibility_users", format: :csv)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Test User")
+        expect(response.body).not_to include("secret@example.com")
+      end
+
+      it "excludes conditionally visible fields from JSON export" do
+        create(:user, name: "Test User", email: "secret@example.com", role: "admin")
+
+        get command_post.export_path("export_visibility_users", format: :json)
+
+        expect(response).to have_http_status(:ok)
+        json = response.parsed_body
+        expect(json.first.keys).to include("name")
+        expect(json.first.keys).not_to include("email")
+      end
+    end
   end
 
   describe "GET /:resource_name/export.csv" do
