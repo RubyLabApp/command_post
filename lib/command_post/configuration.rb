@@ -4,7 +4,7 @@ require "command_post/configuration/components"
 module CommandPost
   class Configuration
     attr_accessor :title, :logo, :per_page, :default_sort, :default_sort_direction, :search_engine,
-                  :badge_colors, :audit_enabled
+                  :badge_colors, :audit_enabled, :audit_storage
     attr_reader :authenticate_block, :current_user_block, :on_action_block, :theme_config, :components,
                 :tenant_scope_block
 
@@ -31,6 +31,7 @@ module CommandPost
       @theme_config = Theme.new
       @components = Components.new
       @audit_enabled = false
+      @audit_storage = :memory
     end
 
     def authenticate(&block)

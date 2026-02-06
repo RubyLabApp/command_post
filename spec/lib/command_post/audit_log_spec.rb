@@ -84,7 +84,7 @@ RSpec.describe CommandPost::AuditLog do
         action: :create,
         resource: "User",
         record_id: 1,
-        changes: {},
+        record_changes: {},
         ip_address: "127.0.0.1"
       )
       described_class.log(event)
@@ -165,7 +165,7 @@ RSpec.describe CommandPost::AuditLog do
       # Create test entries
       described_class.log(OpenStruct.new(
                             user: "admin", action: :create, resource: "User",
-                            record_id: 1, changes: {}, ip_address: "127.0.0.1"
+                            record_id: 1, record_changes: {}, ip_address: "127.0.0.1"
                           ))
       described_class.log(OpenStruct.new(
                             user: "admin", action: :update, resource: "User",
@@ -173,7 +173,7 @@ RSpec.describe CommandPost::AuditLog do
                           ))
       described_class.log(OpenStruct.new(
                             user: "admin", action: :destroy, resource: "Post",
-                            record_id: 5, changes: {}, ip_address: "192.168.1.1"
+                            record_id: 5, record_changes: {}, ip_address: "192.168.1.1"
                           ))
     end
 
@@ -240,7 +240,7 @@ RSpec.describe CommandPost::AuditLog do
       CommandPost.configure { |c| c.audit_enabled = true }
       described_class.log(OpenStruct.new(
                             user: "admin", action: :create, resource: "User",
-                            record_id: 1, changes: {}, ip_address: "127.0.0.1"
+                            record_id: 1, record_changes: {}, ip_address: "127.0.0.1"
                           ))
     end
 
@@ -250,6 +250,192 @@ RSpec.describe CommandPost::AuditLog do
       described_class.clear!
 
       expect(described_class.entries).to be_empty
+    end
+  end
+
+  describe "database storage backend" do
+    before do
+      CommandPost.configure do |c|
+        c.audit_enabled = true
+        c.audit_storage = :database
+      end
+      CommandPost::AuditEntry.delete_all
+    end
+
+    after do
+      CommandPost::AuditEntry.delete_all
+    end
+
+    describe ".log" do
+      let(:event) do
+        OpenStruct.new(
+          user: "admin",
+          action: :create,
+          resource: "User",
+          record_id: 1,
+          changes: { name: [nil, "John"] },
+          ip_address: "127.0.0.1"
+        )
+      end
+
+      it "creates a database record" do
+        expect { described_class.log(event) }.to change(CommandPost::AuditEntry, :count).by(1)
+      end
+
+      it "stores the correct attributes" do
+        described_class.log(event)
+        entry = CommandPost::AuditEntry.last
+
+        expect(entry.user_identifier).to eq("admin")
+        expect(entry.action).to eq("create")
+        expect(entry.resource).to eq("User")
+        expect(entry.record_id).to eq(1)
+        expect(entry.record_changes).to eq({ "name" => [nil, "John"] })
+        expect(entry.ip_address).to eq("127.0.0.1")
+      end
+
+      it "extracts user id when user responds to id" do
+        user = OpenStruct.new(id: 42, email: "admin@example.com")
+        event_with_user = OpenStruct.new(
+          user: user,
+          action: :update,
+          resource: "Post",
+          record_id: 10,
+          record_changes: {},
+          ip_address: "10.0.0.1"
+        )
+
+        described_class.log(event_with_user)
+        entry = CommandPost::AuditEntry.last
+
+        expect(entry.user_identifier).to eq("42")
+      end
+
+      it "accumulates multiple entries in database" do
+        3.times { described_class.log(event) }
+
+        expect(CommandPost::AuditEntry.count).to eq(3)
+      end
+    end
+
+    describe ".query" do
+      before do
+        # Create test entries with specific timestamps
+        CommandPost::AuditEntry.create!(
+          user_identifier: "admin",
+          action: "create",
+          resource: "User",
+          record_id: 1,
+          record_changes: {},
+          ip_address: "127.0.0.1",
+          created_at: 2.days.ago
+        )
+        CommandPost::AuditEntry.create!(
+          user_identifier: "admin",
+          action: "update",
+          resource: "User",
+          record_id: 1,
+          record_changes: { name: %w[old new] },
+          ip_address: "127.0.0.1",
+          created_at: 1.day.ago
+        )
+        CommandPost::AuditEntry.create!(
+          user_identifier: "admin",
+          action: "destroy",
+          resource: "Post",
+          record_id: 5,
+          record_changes: {},
+          ip_address: "192.168.1.1",
+          created_at: Time.current
+        )
+      end
+
+      it "returns all entries when no filters" do
+        result = described_class.query
+
+        expect(result.length).to eq(3)
+      end
+
+      it "returns entries ordered by created_at desc" do
+        result = described_class.query
+
+        expect(result.first.action).to eq("destroy")
+        expect(result.last.action).to eq("create")
+      end
+
+      it "filters by resource" do
+        result = described_class.query(resource: "User")
+
+        expect(result.length).to eq(2)
+        expect(result.all? { |e| e.resource == "User" }).to be true
+      end
+
+      it "filters by action" do
+        result = described_class.query(action: "create")
+
+        expect(result.length).to eq(1)
+        expect(result.first.action).to eq("create")
+      end
+
+      it "filters by record_id" do
+        result = described_class.query(record_id: 5)
+
+        expect(result.length).to eq(1)
+        expect(result.first.record_id).to eq(5)
+      end
+
+      it "filters by from date" do
+        result = described_class.query(from: 1.day.ago.beginning_of_day)
+
+        expect(result.length).to eq(2)
+      end
+
+      it "filters by to date" do
+        result = described_class.query(to: 1.day.ago.end_of_day)
+
+        expect(result.length).to eq(2)
+      end
+
+      it "combines multiple filters" do
+        result = described_class.query(resource: "User", action: "update")
+
+        expect(result.length).to eq(1)
+        expect(result.first.action).to eq("update")
+        expect(result.first.resource).to eq("User")
+      end
+    end
+
+    describe ".clear!" do
+      before do
+        CommandPost::AuditEntry.create!(
+          user_identifier: "admin",
+          action: "create",
+          resource: "User",
+          record_id: 1,
+          record_changes: {},
+          ip_address: "127.0.0.1"
+        )
+      end
+
+      it "removes all database entries" do
+        expect(CommandPost::AuditEntry.count).to eq(1)
+
+        described_class.clear!
+
+        expect(CommandPost::AuditEntry.count).to eq(0)
+      end
+    end
+  end
+
+  describe "audit_storage configuration" do
+    it "defaults to :memory" do
+      CommandPost.reset_configuration!
+      expect(CommandPost.configuration.audit_storage).to eq(:memory)
+    end
+
+    it "can be set to :database" do
+      CommandPost.configure { |c| c.audit_storage = :database }
+      expect(CommandPost.configuration.audit_storage).to eq(:database)
     end
   end
 end

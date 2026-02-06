@@ -1,4 +1,4 @@
-ActiveRecord::Schema[7.1].define(version: 2024_01_01_000001) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_01_000002) do
   create_table :users, force: :cascade do |t|
     t.string :name, null: false
     t.string :email, null: false
@@ -19,5 +19,19 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_000001) do
     t.timestamps
 
     t.index :license_key, unique: true
+  end
+
+  create_table :command_post_audit_entries, force: :cascade do |t|
+    t.string :user_identifier
+    t.string :action, null: false
+    t.string :resource, null: false
+    t.integer :record_id
+    t.text :record_changes
+    t.string :ip_address
+    t.timestamps
+
+    t.index :resource
+    t.index :action
+    t.index :created_at
   end
 end

@@ -1,0 +1,19 @@
+# frozen_string_literal: true
+
+class CreateCommandPostAuditEntries < ActiveRecord::Migration[7.1]
+  def change
+    create_table :command_post_audit_entries do |t|
+      t.string :user_identifier
+      t.string :action, null: false
+      t.string :resource, null: false
+      t.integer :record_id
+      t.text :record_changes
+      t.string :ip_address
+      t.timestamps
+    end
+
+    add_index :command_post_audit_entries, :resource
+    add_index :command_post_audit_entries, :action
+    add_index :command_post_audit_entries, :created_at
+  end
+end
