@@ -8,7 +8,7 @@ module CommandPost
     attr_reader :authenticate_block, :current_user_block, :on_action_block, :theme_config, :components,
                 :tenant_scope_block
 
-    DEFAULT_BADGE_COLORS = {
+    BADGE_COLOR_CLASSES = {
       green: "bg-green-100 text-green-800",
       red: "bg-red-100 text-red-800",
       yellow: "bg-yellow-100 text-yellow-800",
@@ -19,6 +19,42 @@ module CommandPost
       orange: "bg-orange-100 text-orange-800",
       teal: "bg-teal-100 text-teal-800",
       gray: "bg-gray-100 text-gray-800",
+    }.freeze
+
+    DEFAULT_BADGE_COLORS = {
+      # Common status values
+      "active" => "green",
+      "inactive" => "gray",
+      "enabled" => "green",
+      "disabled" => "gray",
+      "pending" => "yellow",
+      "processing" => "blue",
+      "in_progress" => "blue",
+      "completed" => "green",
+      "done" => "green",
+      "success" => "green",
+      "failed" => "red",
+      "error" => "red",
+      "cancelled" => "red",
+      "canceled" => "red",
+      "rejected" => "red",
+      "declined" => "red",
+      "approved" => "green",
+      "accepted" => "green",
+      "published" => "green",
+      "unpublished" => "gray",
+      "draft" => "gray",
+      "archived" => "gray",
+      "expired" => "red",
+      "suspended" => "red",
+      "blocked" => "red",
+      # Boolean representations
+      true => "green",
+      false => "red",
+      "true" => "green",
+      "false" => "red",
+      "yes" => "green",
+      "no" => "red",
     }.freeze
 
     def initialize

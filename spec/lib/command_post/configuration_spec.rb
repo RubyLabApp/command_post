@@ -61,19 +61,40 @@ RSpec.describe CommandPost::Configuration do
     end
   end
 
-  describe "badge_colors" do
-    it "is independent from the frozen constant" do
-      config.badge_colors[:custom] = "bg-custom-100 text-custom-800"
+  describe "#badge_colors" do
+    it "includes default colors for common status values" do
+      expect(config.badge_colors["active"]).to eq("green")
+      expect(config.badge_colors["pending"]).to eq("yellow")
+      expect(config.badge_colors["failed"]).to eq("red")
+    end
 
-      expect(config.badge_colors[:custom]).to eq("bg-custom-100 text-custom-800")
-      expect(described_class::DEFAULT_BADGE_COLORS).not_to have_key(:custom)
+    it "includes default colors for boolean values" do
+      expect(config.badge_colors[true]).to eq("green")
+      expect(config.badge_colors[false]).to eq("red")
+    end
+
+    it "allows adding custom colors" do
+      config.badge_colors["custom"] = "purple"
+      expect(config.badge_colors["custom"]).to eq("purple")
+    end
+
+    it "allows overriding default colors" do
+      config.badge_colors["active"] = "blue"
+      expect(config.badge_colors["active"]).to eq("blue")
+    end
+
+    it "is independent from the frozen constant" do
+      config.badge_colors["custom"] = "purple"
+
+      expect(config.badge_colors["custom"]).to eq("purple")
+      expect(described_class::DEFAULT_BADGE_COLORS).not_to have_key("custom")
     end
 
     it "does not share state between instances" do
-      config.badge_colors[:new_color] = "test"
+      config.badge_colors["new_color"] = "test"
       other = described_class.new
 
-      expect(other.badge_colors).not_to have_key(:new_color)
+      expect(other.badge_colors).not_to have_key("new_color")
     end
   end
 
