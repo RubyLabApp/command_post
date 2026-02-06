@@ -164,20 +164,24 @@ module CommandPost
     end
 
     def index_fields
-      if @resource_class.index_field_names
-        fields_by_name = @resource_class.resolved_fields.index_by(&:name)
-        @resource_class.index_field_names.filter_map { |name| fields_by_name[name] }
-      else
-        @resource_class.resolved_fields
-      end
+      base_fields = if @resource_class.index_field_names
+                      fields_by_name = @resource_class.resolved_fields.index_by(&:name)
+                      @resource_class.index_field_names.filter_map { |name| fields_by_name[name] }
+                    else
+                      @resource_class.resolved_fields
+                    end
+
+      base_fields.select { |f| f.visible?(command_post_current_user) }
     end
 
     def form_fields
-      if @resource_class.form_field_names
-        @resource_class.resolved_fields.select { |f| f.name.in?(@resource_class.form_field_names) }
-      else
-        @resource_class.resolved_fields.reject { |f| f.name.in?(%i[id created_at updated_at]) }
-      end
+      base_fields = if @resource_class.form_field_names
+                      @resource_class.resolved_fields.select { |f| f.name.in?(@resource_class.form_field_names) }
+                    else
+                      @resource_class.resolved_fields.reject { |f| f.name.in?(%i[id created_at updated_at]) }
+                    end
+
+      base_fields.select { |f| f.visible?(command_post_current_user) }
     end
 
     def resource_params
