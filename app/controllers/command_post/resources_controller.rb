@@ -137,10 +137,9 @@ module CommandPost
     end
 
     def resource_policy
-      @resource_policy ||= begin
-        return nil unless @resource_class._policy_block
-        Policy.new(&@resource_class._policy_block)
-      end
+      return @resource_policy if defined?(@resource_policy)
+
+      @resource_policy = (Policy.new(&@resource_class._policy_block) if @resource_class._policy_block)
     end
 
     def check_action_allowed
@@ -254,6 +253,7 @@ module CommandPost
 
     def apply_field_search(scope, field, value)
       return scope unless @resource_class.model.column_names.include?(field)
+      return scope unless field_visible?(field.to_sym)
 
       conn = @resource_class.model.connection
       table = conn.quote_table_name(@resource_class.model.table_name)
@@ -277,12 +277,29 @@ module CommandPost
     end
 
     def apply_general_search(scope, query)
-      columns = @resource_class.searchable_columns
+      columns = visible_searchable_columns
+      return scope if columns.empty?
+
       conn = @resource_class.model.connection
       table = conn.quote_table_name(@resource_class.model.table_name)
       like_operator = conn.adapter_name.downcase.include?("postgresql") ? "ILIKE" : "LIKE"
       conditions = columns.map { |col| "#{table}.#{conn.quote_column_name(col)} #{like_operator} :q" }
       scope.where(conditions.join(" OR "), q: "%#{query}%")
+    end
+
+    def visible_searchable_columns
+      visible_names = visible_field_names
+      @resource_class.searchable_columns.select { |col| visible_names.include?(col) }
+    end
+
+    def field_visible?(field_name)
+      visible_field_names.include?(field_name)
+    end
+
+    def visible_field_names
+      @visible_field_names ||= @resource_class.resolved_fields
+        .select { |f| f.visible?(command_post_current_user) }
+        .map(&:name)
     end
 
     def apply_sorting(scope)

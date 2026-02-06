@@ -1079,6 +1079,95 @@ RSpec.describe "CommandPost::Resources", type: :request do
         expect(response.body).to include("Test User")
       end
     end
+
+    context "when searching with invisible fields" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "member") }
+        end
+      end
+
+      it "does not search invisible fields in general search" do
+        # Create users with unique values in email (invisible to member) and name (visible)
+        create(:user, name: "Visible Name", email: "secret123@example.com")
+        create(:user, name: "Other Name", email: "other@example.com")
+
+        # Search for "secret123" which only exists in the email (invisible) field
+        get command_post.resources_path("visibility_users"), params: { q: "secret123" }, as: :html
+
+        expect(response).to have_http_status(:ok)
+        # Should NOT find the user since email is not visible and not searchable
+        expect(response.body).not_to include("Visible Name")
+      end
+
+      it "searches visible fields in general search" do
+        create(:user, name: "Findable User", email: "hidden@example.com")
+        create(:user, name: "Other User", email: "other@example.com")
+
+        # Search for "Findable" which exists in the name (visible) field
+        get command_post.resources_path("visibility_users"), params: { q: "Findable" }, as: :html
+
+        expect(response).to have_http_status(:ok)
+        # Should find the user since name is visible and searchable
+        expect(response.body).to include("Findable User")
+      end
+
+      it "does not search invisible fields with field:value syntax" do
+        # Create two users - one with matching email, one without
+        create(:user, name: "Secret Email User", email: "secret@hidden.com")
+        create(:user, name: "Normal Email User", email: "normal@example.com")
+
+        # Try to search email field directly which is invisible to member
+        get command_post.resources_path("visibility_users"), params: { q: "email:secret" }, as: :html
+
+        expect(response).to have_http_status(:ok)
+        # When field is invisible, filter should be ignored and ALL users shown
+        # (not just the one with matching email - that would leak data)
+        expect(response.body).to include("Secret Email User")
+        expect(response.body).to include("Normal Email User")
+      end
+
+      it "searches visible fields with field:value syntax" do
+        create(:user, name: "Searchable User", email: "any@example.com")
+
+        # Search name field directly which is visible
+        get command_post.resources_path("visibility_users"), params: { q: "name:Searchable" }, as: :html
+
+        expect(response).to have_http_status(:ok)
+        # Should find the user since name field is visible
+        expect(response.body).to include("Searchable User")
+      end
+    end
+
+    context "when admin user searches" do
+      before do
+        CommandPost.configure do |config|
+          config.current_user { OpenStruct.new(role: "admin") }
+        end
+      end
+
+      it "searches conditionally visible fields for authorized users" do
+        create(:user, name: "Admin Visible", email: "admin-secret@example.com")
+
+        # Admin should be able to search email field
+        get command_post.resources_path("visibility_users"), params: { q: "admin-secret" }, as: :html
+
+        expect(response).to have_http_status(:ok)
+        # Should find the user since email is visible to admin
+        expect(response.body).to include("Admin Visible")
+      end
+
+      it "searches with field:value syntax on conditionally visible fields" do
+        create(:user, name: "Test Admin", email: "findme@admin.com")
+
+        # Admin should be able to use email:value syntax
+        get command_post.resources_path("visibility_users"), params: { q: "email:findme" }, as: :html
+
+        expect(response).to have_http_status(:ok)
+        # Should find the user since email is visible to admin
+        expect(response.body).to include("Test Admin")
+      end
+    end
   end
 
   describe "policy caching" do
