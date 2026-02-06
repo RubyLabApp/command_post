@@ -96,6 +96,16 @@ module CommandPost
         self._policy_block = block
       end
 
+      def resource_policy
+        return @resource_policy if defined?(@resource_policy)
+
+        @resource_policy = Policy.new(&_policy_block) if _policy_block
+      end
+
+      def reset_resource_policy!
+        remove_instance_variable(:@resource_policy) if defined?(@resource_policy)
+      end
+
       def deny_actions(*actions)
         self.denied_crud_actions = actions.map(&:to_sym)
       end

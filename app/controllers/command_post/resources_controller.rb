@@ -66,22 +66,23 @@ module CommandPost
     end
 
     def execute_action
-      @record = find_record_for_action
       action = @resource_class.defined_actions.find { |a| a[:name].to_s == params[:action_name] }
-
       return head(:not_found) unless action
       return head(:forbidden) unless action_authorized?(action[:name])
+
+      @record = find_record_for_action
 
       ActiveRecord::Base.transaction do
         result = action[:block].call(@record)
         emit_event(params[:action_name], @record)
-
         raise ActiveRecord::Rollback if result == false
       end
 
       redirect_to resource_path(@resource_class.resource_name, @record), notice: "Action completed"
+    rescue ActiveRecord::RecordNotFound
+      head(:not_found)
     rescue StandardError => e
-      redirect_to resource_path(@resource_class.resource_name, @record), alert: "Action failed: #{e.message}"
+      redirect_to resources_path(@resource_class.resource_name), alert: "Action failed: #{e.message}"
     end
 
     def execute_bulk_action
@@ -137,9 +138,7 @@ module CommandPost
     end
 
     def resource_policy
-      return @resource_policy if defined?(@resource_policy)
-
-      @resource_policy = (Policy.new(&@resource_class._policy_block) if @resource_class._policy_block)
+      @resource_class.resource_policy
     end
 
     def check_action_allowed

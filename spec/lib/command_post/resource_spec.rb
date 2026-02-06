@@ -115,7 +115,7 @@ RSpec.describe CommandPost::Resource do
 
       # When explicit searchable is set, unsearchable is ignored
       columns = resource.searchable_columns
-      expect(columns).to eq([:email, :name])
+      expect(columns).to eq(%i[email name])
     end
   end
 
@@ -217,6 +217,55 @@ RSpec.describe CommandPost::Resource do
 
     it "stores priority in menu options" do
       expect(TestUserResource.menu_options[:priority]).to eq(0)
+    end
+  end
+
+  describe ".resource_policy" do
+    context "when policy block is defined" do
+      let(:resource_with_policy) do
+        Class.new(CommandPost::Resource) do
+          self.model_class_override = User
+
+          def self.name
+            "PolicyTestResource"
+          end
+
+          policy do
+            allow :create
+          end
+        end
+      end
+
+      after do
+        resource_with_policy.reset_resource_policy!
+      end
+
+      it "returns a Policy instance" do
+        expect(resource_with_policy.resource_policy).to be_a(CommandPost::Policy)
+      end
+
+      it "caches the policy instance" do
+        first_call = resource_with_policy.resource_policy
+        second_call = resource_with_policy.resource_policy
+
+        expect(first_call).to be(second_call)
+      end
+    end
+
+    context "when no policy block is defined" do
+      let(:resource_without_policy) do
+        Class.new(CommandPost::Resource) do
+          self.model_class_override = User
+
+          def self.name
+            "NoPolicyTestResource"
+          end
+        end
+      end
+
+      it "returns nil" do
+        expect(resource_without_policy.resource_policy).to be_nil
+      end
     end
   end
 
