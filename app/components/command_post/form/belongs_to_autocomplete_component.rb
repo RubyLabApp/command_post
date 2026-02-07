@@ -21,7 +21,7 @@ module CommandPost
       end
 
       def before_render
-        @autocomplete_url ||= helpers.command_post.autocomplete_path(resource_name)
+        self.autocomplete_url = helpers.command_post.autocomplete_path(resource_name)
       end
 
       def input_classes

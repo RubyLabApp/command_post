@@ -9,10 +9,10 @@ module CommandPost
 
       def create_migration
         migration_template "create_command_post_audit_entries.rb.tt",
-          "db/migrate/create_command_post_audit_entries.rb"
+                           "db/migrate/create_command_post_audit_entries.rb"
       end
 
-      def self.next_migration_number(dirname)
+      def self.next_migration_number(_dirname)
         Time.now.utc.strftime("%Y%m%d%H%M%S")
       end
     end

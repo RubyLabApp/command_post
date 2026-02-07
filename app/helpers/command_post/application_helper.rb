@@ -70,8 +70,12 @@ module CommandPost
       value = record.public_send(field.name)
       return if value.nil?
 
+      # First check field-level color overrides, then global badge_colors, then default to gray
       colors = field.options[:colors] || {}
-      color = colors[value.to_sym] || :gray
+      color = colors[value.to_sym] ||
+              CommandPost.configuration.badge_colors[value.to_s] ||
+              CommandPost.configuration.badge_colors[value] ||
+              :gray
       color_classes = badge_color_classes(color)
 
       content_tag(:span, value.to_s.humanize,
@@ -79,8 +83,8 @@ module CommandPost
     end
 
     def badge_color_classes(color)
-      colors = CommandPost.configuration.badge_colors
-      colors[color.to_sym] || colors[:gray] || "bg-gray-100 text-gray-800"
+      CommandPost::Configuration::BADGE_COLOR_CLASSES[color.to_sym] ||
+        CommandPost::Configuration::BADGE_COLOR_CLASSES[:gray]
     end
   end
 end

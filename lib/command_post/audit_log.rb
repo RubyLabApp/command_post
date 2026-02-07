@@ -31,7 +31,7 @@ module CommandPost
       def log(event)
         return unless CommandPost.configuration.audit_enabled
 
-        if CommandPost.configuration.audit_storage == :database
+        if database_storage_available?
           log_to_database(event)
         else
           log_to_memory(event)
@@ -39,7 +39,7 @@ module CommandPost
       end
 
       def query(filters = {})
-        if CommandPost.configuration.audit_storage == :database
+        if database_storage_available?
           query_database(filters)
         else
           query_memory(filters)
@@ -48,9 +48,15 @@ module CommandPost
 
       def clear!
         @entries = []
-        if CommandPost.configuration.audit_storage == :database
-          AuditEntry.delete_all if defined?(AuditEntry) && AuditEntry.table_exists?
-        end
+        AuditEntry.delete_all if database_storage_available?
+      end
+
+      def database_storage_available?
+        CommandPost.configuration.audit_storage == :database &&
+          defined?(AuditEntry) &&
+          AuditEntry.table_exists?
+      rescue ActiveRecord::StatementInvalid, ActiveRecord::NoDatabaseError
+        false
       end
 
       private

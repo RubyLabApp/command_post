@@ -768,9 +768,9 @@ RSpec.describe "CommandPost::Resources", type: :request do
         expect(flash[:alert]).to eq("Action failed: Something went wrong")
       end
 
-      it "redirects to show page when action raises" do
+      it "redirects to index page when action raises" do
         post command_post.resource_action_path("transaction_licenses", license, "failing_action"), as: :html
-        expect(response).to redirect_to(command_post.resource_path("transaction_licenses", license))
+        expect(response).to redirect_to(command_post.resources_path("transaction_licenses"))
       end
 
       it "rolls back changes when action returns false" do

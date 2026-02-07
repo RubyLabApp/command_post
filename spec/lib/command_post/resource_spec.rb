@@ -386,7 +386,7 @@ RSpec.describe CommandPost::Resource do
   describe ".all_filters" do
     it "combines auto-inferred and defined filters" do
       all = TestLicenseResource.all_filters
-      filter_names = all.map { |f| f[:name] }
+      filter_names = all.pluck(:name)
 
       # Should have both auto-inferred status filter and defined filters
       expect(filter_names).to include(:status)

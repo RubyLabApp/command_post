@@ -143,3 +143,9 @@ Resource class name maps to model: `UserResource` → `User` model (strips "Reso
 ### Theme Customization
 
 All UI classes are configurable via `CommandPost.configure { |c| c.theme { |t| ... } }`. Theme properties return Tailwind CSS classes.
+
+## Important Guidelines
+
+### Rubocop Configuration
+
+**NEVER modify `.rubocop.yml` unless absolutely necessary.** Always refactor the code to comply with Rubocop rules instead of adding exceptions. Adding exceptions leads to bad practices accumulating over time. Only modify `.rubocop.yml` as a last resort when there is genuinely no other way to fix the issue.

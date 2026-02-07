@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Built-in audit log with `AuditLog.log(event)`
   - Audit log viewer at `/admin/audit`
   - Enable with `config.audit_enabled = true`
+  - Optional database persistence with `config.audit_storage = :database`
+  - 100% optional - works without any configuration
+  - Graceful fallback to memory if database table doesn't exist
 
 - **Multi-Tenant Support**
   - `config.tenant_scope` for automatic query scoping
@@ -37,6 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Advanced Search**
   - Field-specific search syntax (`email:john@example.com`)
   - Date range search (`created_at:2025-01-01..2025-12-31`)
+  - Search respects field visibility (security)
+
+- **Convention-over-Configuration Enhancements**
+  - Auto-generate select filters for model enums
+  - Default badge colors for common status values (active, pending, completed, etc.)
+  - Policy instances cached at Resource class level for performance
 
 - **Comprehensive ViewComponent Library**
   - UI: Badge, Button, Card, Alert, Modal, Dropdown, Tooltip, Pagination, Scopes, EmptyState
@@ -51,11 +60,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Custom actions wrapped in database transactions with proper error handling
 - Date filter parsing for invalid dates
 - Filter bypass attempts via URL manipulation
+- **Security**: Field visibility now enforced in exports (CSV/JSON)
+- **Security**: Field visibility now enforced in search queries
+- **Security**: `execute_action` error handling order (validates action before finding record)
+- AuditEntry.table_exists? now handles database errors gracefully
 
 ### Changed
 
-- 841 tests with 96%+ coverage
-- 0 Rubocop offenses
+- 922 tests with 96.74% coverage
+- Refactored form components to use shared `FormInputBehavior` concern
+- Policy instances now cached at Resource class level
+- Field visibility filtering applied consistently in index, show, forms, exports, and search
 
 ## [0.1.0] - 2026-02-03
 

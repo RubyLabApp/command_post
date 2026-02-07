@@ -71,7 +71,7 @@ module CommandPost
           {
             name: name.to_sym,
             type: :select,
-            options: values.keys
+            options: values.keys,
           }
         end
       end

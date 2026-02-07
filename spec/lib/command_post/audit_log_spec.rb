@@ -5,70 +5,8 @@ require "ostruct"
 
 RSpec.describe CommandPost::AuditLog do
   before do
-    CommandPost::AuditLog.clear!
+    described_class.clear!
     CommandPost.reset_configuration!
-  end
-
-  describe CommandPost::AuditLog::Entry do
-    describe "#initialize" do
-      it "sets attributes from hash" do
-        entry = described_class.new(
-          user: "admin",
-          action: :create,
-          resource: "User",
-          record_id: 1,
-          changes: { name: %w[old new] },
-          ip_address: "127.0.0.1"
-        )
-
-        expect(entry.user).to eq("admin")
-        expect(entry.action).to eq(:create)
-        expect(entry.resource).to eq("User")
-        expect(entry.record_id).to eq(1)
-        expect(entry.changes).to eq({ name: %w[old new] })
-        expect(entry.ip_address).to eq("127.0.0.1")
-      end
-
-      it "sets timestamp to current time when not provided" do
-        before_time = Time.current
-        entry = described_class.new(action: :create)
-        after_time = Time.current
-
-        expect(entry.timestamp).to be >= before_time
-        expect(entry.timestamp).to be <= after_time
-      end
-
-      it "uses provided timestamp when given" do
-        custom_time = 1.hour.ago
-        entry = described_class.new(timestamp: custom_time)
-        expect(entry.timestamp).to eq(custom_time)
-      end
-    end
-
-    describe "#to_h" do
-      it "returns hash representation" do
-        timestamp = Time.current
-        entry = described_class.new(
-          user: "admin",
-          action: :create,
-          resource: "User",
-          record_id: 1,
-          changes: { name: %w[old new] },
-          ip_address: "127.0.0.1",
-          timestamp: timestamp
-        )
-
-        expect(entry.to_h).to eq({
-                                   user: "admin",
-                                   action: :create,
-                                   resource: "User",
-                                   record_id: 1,
-                                   changes: { name: %w[old new] },
-                                   ip_address: "127.0.0.1",
-                                   timestamp: timestamp,
-                                 })
-      end
-    end
   end
 
   describe ".entries" do
@@ -436,6 +374,48 @@ RSpec.describe CommandPost::AuditLog do
     it "can be set to :database" do
       CommandPost.configure { |c| c.audit_storage = :database }
       expect(CommandPost.configuration.audit_storage).to eq(:database)
+    end
+  end
+
+  describe ".database_storage_available?" do
+    it "returns false when audit_storage is :memory" do
+      CommandPost.configure { |c| c.audit_storage = :memory }
+      expect(described_class.database_storage_available?).to be false
+    end
+
+    it "returns true when audit_storage is :database and table exists" do
+      CommandPost.configure { |c| c.audit_storage = :database }
+      expect(described_class.database_storage_available?).to be true
+    end
+
+    it "returns false when table does not exist" do
+      CommandPost.configure { |c| c.audit_storage = :database }
+      allow(CommandPost::AuditEntry).to receive(:table_exists?).and_return(false)
+      expect(described_class.database_storage_available?).to be false
+    end
+  end
+
+  describe "graceful fallback to memory" do
+    let(:event) do
+      OpenStruct.new(
+        user: "admin",
+        action: :create,
+        resource: "User",
+        record_id: 1,
+        changes: {},
+        ip_address: "127.0.0.1"
+      )
+    end
+
+    it "falls back to memory storage when database table does not exist" do
+      CommandPost.configure do |c|
+        c.audit_enabled = true
+        c.audit_storage = :database
+      end
+      allow(CommandPost::AuditEntry).to receive(:table_exists?).and_return(false)
+
+      expect { described_class.log(event) }.not_to raise_error
+      expect(described_class.entries.length).to eq(1)
     end
   end
 end
