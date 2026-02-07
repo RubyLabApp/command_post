@@ -5,7 +5,7 @@ module CommandPost
     include Concerns::Searchable
 
     before_action :set_resource_class
-    before_action :check_action_allowed, only: %i[new create edit update destroy]
+    before_action :check_action_allowed, only: %i[show new create edit update destroy]
 
     def index
       scope = apply_scopes(apply_filters(base_scope))
@@ -88,22 +88,20 @@ module CommandPost
     end
 
     def execute_bulk_action
-      ids = params[:ids] || []
+      ids = bulk_action_ids
+      return redirect_bulk(:alert, "No records selected") if ids.empty?
+
       records = base_scope.where(id: ids)
-      action = @resource_class.defined_bulk_actions.find { |a| a[:name].to_s == params[:action_name] }
+      action = find_bulk_action
 
       return head(:not_found) unless action
       return head(:forbidden) unless action_authorized?(action[:name])
+      return redirect_bulk(:alert, "Some records are not accessible") unless all_records_accessible?(records, ids)
 
-      ActiveRecord::Base.transaction do
-        result = action[:block].call(records)
-
-        raise ActiveRecord::Rollback if result == false
-      end
-
-      redirect_to resources_path(@resource_class.resource_name), notice: "Bulk action completed"
+      run_bulk_action_in_transaction(action, records)
+      redirect_bulk(:notice, "Bulk action completed")
     rescue StandardError => e
-      redirect_to resources_path(@resource_class.resource_name), alert: "Action failed: #{e.message}"
+      redirect_bulk(:alert, "Action failed: #{e.message}")
     end
 
     def autocomplete
@@ -145,6 +143,7 @@ module CommandPost
 
     def check_action_allowed
       crud_action = case action_name.to_sym
+                    when :show then :read
                     when :new, :create then :create
                     when :edit, :update then :update
                     when :destroy then :destroy
@@ -163,6 +162,29 @@ module CommandPost
       return true unless resource_policy
 
       resource_policy.action_allowed?(action_name, command_post_current_user)
+    end
+
+    def bulk_action_ids
+      Array(params[:ids]).map(&:to_i).reject(&:zero?)
+    end
+
+    def find_bulk_action
+      @resource_class.defined_bulk_actions.find { |a| a[:name].to_s == params[:action_name] }
+    end
+
+    def all_records_accessible?(records, ids)
+      records.count == ids.size
+    end
+
+    def redirect_bulk(type, message)
+      redirect_to resources_path(@resource_class.resource_name), type => message
+    end
+
+    def run_bulk_action_in_transaction(action, records)
+      ActiveRecord::Base.transaction do
+        result = action[:block].call(records)
+        raise ActiveRecord::Rollback if result == false
+      end
     end
 
     def index_fields

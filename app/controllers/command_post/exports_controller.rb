@@ -3,7 +3,7 @@ module CommandPost
     before_action :set_resource_class
 
     def show
-      records = @resource_class.model.all
+      records = base_scope
       fields = export_fields
 
       respond_to do |format|
@@ -26,6 +26,12 @@ module CommandPost
     def set_resource_class
       @resource_class = ResourceRegistry.find(params[:resource_name])
       head(:not_found) and return unless @resource_class
+    end
+
+    def base_scope
+      scope = @resource_class.model.all
+      scope = CommandPost.configuration.tenant_scope_block.call(scope) if CommandPost.configuration.tenant_scope_block
+      scope
     end
 
     def export_fields
