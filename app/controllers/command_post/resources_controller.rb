@@ -267,7 +267,7 @@ module CommandPost
       permitted = form_fields.map do |field|
         field.type == :belongs_to ? field.options[:foreign_key] : field.name
       end
-      params.require(:record).permit(*permitted)
+      params.require(:record).permit(*permitted) # rubocop:disable Rails/StrongParametersExpect
     end
 
     def apply_filters(scope)
