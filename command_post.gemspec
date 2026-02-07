@@ -5,7 +5,9 @@ Gem::Specification.new do |spec|
   spec.version     = CommandPost::VERSION
   spec.authors     = ["RubyLab"]
   spec.summary     = "Convention-over-configuration admin panel engine for Rails"
-  spec.description = "CommandPost is a convention-over-configuration admin panel engine for Ruby on Rails that automatically generates CRUD interfaces from your models with built-in support for search, filters, scopes, custom actions, theming, and policy-based authorization."
+  spec.description = "CommandPost is a convention-over-configuration admin panel engine for Ruby on Rails " \
+                     "that automatically generates CRUD interfaces from your models with built-in support " \
+                     "for search, filters, scopes, custom actions, theming, and policy-based authorization."
   spec.homepage    = "https://github.com/RubyLabApp/command_post"
   spec.license     = "MIT"
 
