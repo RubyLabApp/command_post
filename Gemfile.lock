@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    command-post (0.1.0)
+    command-post (0.2.0)
       haml-rails (>= 2.0)
       heroicon (>= 1.0)
       pagy (>= 6.0)
@@ -155,6 +155,8 @@ GEM
     nio4r (2.7.5)
     nokogiri (1.19.0-arm64-darwin)
       racc (~> 1.4)
+    nokogiri (1.19.0-x86_64-linux-gnu)
+      racc (~> 1.4)
     pagy (43.2.8)
       json
       yaml
@@ -273,6 +275,7 @@ GEM
     simplecov-html (0.13.2)
     simplecov_json_formatter (0.1.4)
     sqlite3 (2.9.0-arm64-darwin)
+    sqlite3 (2.9.0-x86_64-linux-gnu)
     stimulus-rails (1.3.4)
       railties (>= 6.0.0)
     stringio (3.2.0)
@@ -307,6 +310,7 @@ GEM
 
 PLATFORMS
   arm64-darwin
+  x86_64-linux
 
 DEPENDENCIES
   command-post!
