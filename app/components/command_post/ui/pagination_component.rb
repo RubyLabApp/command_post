@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 module CommandPost
-  module UI
+  module Ui
     # Renders pagination controls for record lists.
     #
     # Uses Pagy for pagination logic.
     #
     # @example Basic pagination
-    #   render CommandPost::UI::PaginationComponent.new(pagy: @pagy)
+    #   render CommandPost::Ui::PaginationComponent.new(pagy: @pagy)
     class PaginationComponent < ViewComponent::Base
       include Pagy::Frontend
 

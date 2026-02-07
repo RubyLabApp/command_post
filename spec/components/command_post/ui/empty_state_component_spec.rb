@@ -1,7 +1,7 @@
 require "rails_helper"
 require_relative "../../../../app/components/command_post/ui/empty_state_component"
 
-RSpec.describe CommandPost::UI::EmptyStateComponent, type: :component do
+RSpec.describe CommandPost::Ui::EmptyStateComponent, type: :component do
   describe "#initialize" do
     it "has default title" do
       component = described_class.new

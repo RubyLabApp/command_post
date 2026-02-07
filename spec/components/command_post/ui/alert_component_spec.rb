@@ -1,7 +1,7 @@
 require "rails_helper"
 require_relative "../../../../app/components/command_post/ui/alert_component"
 
-RSpec.describe CommandPost::UI::AlertComponent, type: :component do
+RSpec.describe CommandPost::Ui::AlertComponent, type: :component do
   describe "#initialize" do
     it "stores message" do
       component = described_class.new(message: "Test message")

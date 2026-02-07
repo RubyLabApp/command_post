@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 module CommandPost
-  module UI
+  module Ui
     # Renders an empty state placeholder when no records exist.
     #
     # @example Basic empty state
-    #   render CommandPost::UI::EmptyStateComponent.new(
+    #   render CommandPost::Ui::EmptyStateComponent.new(
     #     title: "No users yet",
     #     description: "Get started by creating your first user."
     #   )

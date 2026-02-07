@@ -1,21 +1,21 @@
 # frozen_string_literal: true
 
 module CommandPost
-  module UI
+  module Ui
     # Renders a styled button or link styled as a button.
     #
     # @example Primary button
-    #   render CommandPost::UI::ButtonComponent.new(text: "Save")
+    #   render CommandPost::Ui::ButtonComponent.new(text: "Save")
     #
     # @example Danger button with confirmation
-    #   render CommandPost::UI::ButtonComponent.new(
+    #   render CommandPost::Ui::ButtonComponent.new(
     #     text: "Delete",
     #     variant: :danger,
     #     confirm: "Are you sure?"
     #   )
     #
     # @example Link styled as button
-    #   render CommandPost::UI::ButtonComponent.new(
+    #   render CommandPost::Ui::ButtonComponent.new(
     #     text: "View",
     #     href: user_path(@user),
     #     variant: :secondary

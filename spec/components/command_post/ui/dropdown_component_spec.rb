@@ -1,7 +1,7 @@
 require "rails_helper"
 require_relative "../../../../app/components/command_post/ui/dropdown_component"
 
-RSpec.describe CommandPost::UI::DropdownComponent, type: :component do
+RSpec.describe CommandPost::Ui::DropdownComponent, type: :component do
   describe "#initialize" do
     it "defaults align to right" do
       component = described_class.new
@@ -57,7 +57,7 @@ RSpec.describe CommandPost::UI::DropdownComponent, type: :component do
   end
 end
 
-RSpec.describe CommandPost::UI::DropdownComponent::ItemComponent, type: :component do
+RSpec.describe CommandPost::Ui::DropdownComponent::ItemComponent, type: :component do
   describe "#initialize" do
     it "defaults href to nil" do
       component = described_class.new

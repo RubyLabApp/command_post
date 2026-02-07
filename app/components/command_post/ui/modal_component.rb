@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 module CommandPost
-  module UI
+  module Ui
     # Renders a modal dialog overlay.
     #
     # @example Basic modal
-    #   render CommandPost::UI::ModalComponent.new do |modal|
+    #   render CommandPost::Ui::ModalComponent.new do |modal|
     #     modal.with_title { "Confirm Action" }
     #     "Are you sure?"
     #     modal.with_footer { render ButtonComponent.new(text: "Confirm") }

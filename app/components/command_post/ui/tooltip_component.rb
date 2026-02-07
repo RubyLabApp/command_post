@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 module CommandPost
-  module UI
+  module Ui
     # Renders a tooltip that appears on hover.
     #
     # @example Basic tooltip
-    #   render CommandPost::UI::TooltipComponent.new(text: "More info") do
+    #   render CommandPost::Ui::TooltipComponent.new(text: "More info") do
     #     heroicon("information-circle")
     #   end
     class TooltipComponent < ViewComponent::Base

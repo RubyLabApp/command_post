@@ -1,7 +1,7 @@
 require "rails_helper"
 require_relative "../../../../app/components/command_post/ui/button_component"
 
-RSpec.describe CommandPost::UI::ButtonComponent, type: :component do
+RSpec.describe CommandPost::Ui::ButtonComponent, type: :component do
   describe "#initialize" do
     it "defaults variant to primary" do
       component = described_class.new(text: "Click")

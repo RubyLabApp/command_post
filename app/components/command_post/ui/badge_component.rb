@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 module CommandPost
-  module UI
+  module Ui
     # Displays a colored badge/tag for status indicators and labels.
     #
     # @example Basic usage
-    #   render CommandPost::UI::BadgeComponent.new(text: "Active", color: :green)
+    #   render CommandPost::Ui::BadgeComponent.new(text: "Active", color: :green)
     #
     # @example With size
-    #   render CommandPost::UI::BadgeComponent.new(text: "New", color: :blue, size: :sm)
+    #   render CommandPost::Ui::BadgeComponent.new(text: "New", color: :blue, size: :sm)
     class BadgeComponent < ViewComponent::Base
       # @return [String] The text displayed in the badge
       attr_reader :text

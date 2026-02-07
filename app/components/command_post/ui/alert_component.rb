@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
 module CommandPost
-  module UI
+  module Ui
     # Renders a styled alert/notification message.
     #
     # @example Success alert
-    #   render CommandPost::UI::AlertComponent.new(
+    #   render CommandPost::Ui::AlertComponent.new(
     #     message: "Record saved successfully",
     #     type: :success
     #   )
     #
     # @example Error alert
-    #   render CommandPost::UI::AlertComponent.new(
+    #   render CommandPost::Ui::AlertComponent.new(
     #     message: "Something went wrong",
     #     type: :error
     #   )

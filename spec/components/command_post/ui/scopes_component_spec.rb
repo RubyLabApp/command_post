@@ -1,7 +1,7 @@
 require "rails_helper"
 require_relative "../../../../app/components/command_post/ui/scopes_component"
 
-RSpec.describe CommandPost::UI::ScopesComponent, type: :component do
+RSpec.describe CommandPost::Ui::ScopesComponent, type: :component do
   let(:scopes) do
     [
       { name: :all, label: "All" },

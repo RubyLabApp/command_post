@@ -1,7 +1,7 @@
 require "rails_helper"
 require_relative "../../../../app/components/command_post/ui/tooltip_component"
 
-RSpec.describe CommandPost::UI::TooltipComponent, type: :component do
+RSpec.describe CommandPost::Ui::TooltipComponent, type: :component do
   describe "#initialize" do
     it "stores text" do
       component = described_class.new(text: "Helpful info")

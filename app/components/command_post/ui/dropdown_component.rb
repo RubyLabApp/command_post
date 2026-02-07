@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 module CommandPost
-  module UI
+  module Ui
     # Renders a dropdown menu with trigger and items.
     #
     # @example Basic dropdown
-    #   render CommandPost::UI::DropdownComponent.new do |dropdown|
+    #   render CommandPost::Ui::DropdownComponent.new do |dropdown|
     #     dropdown.with_trigger { render ButtonComponent.new(text: "Actions") }
     #     dropdown.with_item(href: edit_path) { "Edit" }
     #     dropdown.with_item(href: delete_path, destructive: true) { "Delete" }

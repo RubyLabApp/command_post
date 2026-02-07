@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 module CommandPost
-  module UI
+  module Ui
     # Renders scope tabs for filtering resource lists.
     #
     # @example Scopes from resource
-    #   render CommandPost::UI::ScopesComponent.new(
+    #   render CommandPost::Ui::ScopesComponent.new(
     #     scopes: @resource_class.defined_scopes,
     #     current_scope: @current_scope,
     #     base_path: resources_path(@resource_class.resource_name)

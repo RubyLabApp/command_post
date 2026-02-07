@@ -1,7 +1,7 @@
 require "rails_helper"
 require_relative "../../../../app/components/command_post/ui/modal_component"
 
-RSpec.describe CommandPost::UI::ModalComponent, type: :component do
+RSpec.describe CommandPost::Ui::ModalComponent, type: :component do
   describe "#initialize" do
     it "defaults size to md" do
       component = described_class.new

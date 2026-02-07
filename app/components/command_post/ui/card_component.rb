@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
 module CommandPost
-  # UI components for common interface elements.
-  module UI
+  # Ui components for common interface elements.
+  module Ui
     # Renders a card container with optional header and footer.
     #
     # @example Basic card
-    #   render CommandPost::UI::CardComponent.new do
+    #   render CommandPost::Ui::CardComponent.new do
     #     "Card content here"
     #   end
     #
     # @example Card with header and footer
-    #   render CommandPost::UI::CardComponent.new do |card|
+    #   render CommandPost::Ui::CardComponent.new do |card|
     #     card.with_header { "Title" }
     #     card.with_footer { "Footer" }
     #     "Content"
