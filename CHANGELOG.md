@@ -35,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Multi-Tenant Support**
   - `config.tenant_scope` for automatic query scoping
-  - Applied to all resource queries (index, show, edit, update, destroy)
+  - Applied to all resource queries (index, show, edit, update, destroy, exports, bulk actions)
 
 - **Advanced Search**
   - Field-specific search syntax (`email:john@example.com`)
@@ -63,11 +63,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Security**: Field visibility now enforced in exports (CSV/JSON)
 - **Security**: Field visibility now enforced in search queries
 - **Security**: `execute_action` error handling order (validates action before finding record)
+- **Security**: Export controller now respects tenant scoping
+- **Security**: Show action now requires authorization (`:read` permission)
+- **Security**: Bulk actions validate all selected records are accessible in tenant scope
+- **Security**: Policy supports bidirectional action aliases (`:show`/`:index` ↔ `:read`)
 - AuditEntry.table_exists? now handles database errors gracefully
 
 ### Changed
 
-- 922 tests with 96.74% coverage
+- 922 tests with 96.67% coverage
 - Refactored form components to use shared `FormInputBehavior` concern
 - Policy instances now cached at Resource class level
 - Field visibility filtering applied consistently in index, show, forms, exports, and search

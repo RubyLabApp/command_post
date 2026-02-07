@@ -87,6 +87,15 @@ end
 | `:update` | Edit and update |
 | `:delete` | Destroy |
 
+You can use either the CRUD action names (`:read`, `:create`, `:update`, `:delete`) or the controller action names (`:index`, `:show`, `:new`, `:edit`, `:destroy`). They are automatically mapped:
+
+```ruby
+policy do
+  allow :index, :show  # Same as allow :read
+  allow :create
+end
+```
+
 ### Conditional Policies
 
 - `allow` with `if:` receives the **current user**
@@ -100,6 +109,28 @@ policy do
 end
 ```
 
+### Custom Action Authorization
+
+Custom actions and bulk actions require explicit policy permission:
+
+```ruby
+class UserResource < CommandPost::Resource
+  action :lock do |record|
+    record.update!(locked_at: Time.current)
+  end
+
+  bulk_action :archive do |records|
+    records.update_all(archived: true)
+  end
+
+  policy do
+    allow :read, :update
+    allow :lock      # Authorize the custom action
+    allow :archive   # Authorize the bulk action
+  end
+end
+```
+
 ### CRUD Restrictions
 
 For simple cases:
@@ -110,7 +141,64 @@ class AuditLogResource < CommandPost::Resource
 end
 ```
 
+## Field-Level Authorization
+
+Control field visibility and editability per user:
+
+```ruby
+class UserResource < CommandPost::Resource
+  field :salary, visible: ->(user) { user.admin? || user.hr? }
+  field :role, readonly: ->(user) { !user.admin? }
+  field :ssn, visible: ->(user) { user.admin? }
+end
+```
+
+Field visibility is enforced across:
+- Index table columns
+- Show page fields
+- Form fields
+- CSV/JSON exports
+- Search queries
+
 ## Audit Logging
+
+CommandPost provides two approaches for audit logging.
+
+### Built-in Audit Logging (Recommended)
+
+Zero-configuration audit logging with optional database persistence:
+
+```ruby
+CommandPost.configure do |config|
+  config.audit_enabled = true
+  config.audit_storage = :memory  # Default: in-memory storage
+end
+```
+
+For persistent storage:
+
+```ruby
+config.audit_storage = :database
+```
+
+Then run the migration:
+
+```bash
+rails generate command_post:audit_migration
+rails db:migrate
+```
+
+View audit logs at `/admin/audit`.
+
+The built-in audit log:
+- Stores the last 1000 entries in memory (or unlimited in database)
+- Records user, action, resource, record ID, changes, and IP address
+- Works without any database table (graceful fallback)
+- Is 100% optional - no configuration required if not needed
+
+### Custom Audit Logging
+
+For custom audit implementations:
 
 ```ruby
 config.on_action do |event|
@@ -130,8 +218,28 @@ end
 | Property | Description |
 |----------|-------------|
 | `event.user` | Current admin user |
-| `event.action` | Action performed |
+| `event.action` | Action performed (`:create`, `:update`, `:destroy`, or custom action name) |
 | `event.resource` | Resource class name |
 | `event.record_id` | ID of affected record |
 | `event.changes` | Hash of changed attributes |
 | `event.ip_address` | Client IP address |
+
+## Multi-Tenant Support
+
+Automatically scope all queries to the current tenant:
+
+```ruby
+CommandPost.configure do |config|
+  config.tenant_scope do |scope|
+    scope.where(organization_id: Current.organization.id)
+  end
+end
+```
+
+The tenant scope is applied to:
+- All index queries
+- Record lookups (show, edit, update, destroy)
+- Export queries (CSV/JSON)
+- Bulk action record validation
+
+This ensures users can only access records belonging to their tenant.

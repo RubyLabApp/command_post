@@ -69,6 +69,26 @@ end
 
 If not specified, all `string` and `text` columns are searchable (excluding `*_digest` columns).
 
+### Advanced Search Syntax
+
+CommandPost supports field-specific search queries:
+
+```
+email:john@example.com     # Search email field only
+name:John                  # Search name field only
+role:admin                 # Search role field only
+```
+
+Date range search:
+
+```
+created_at:2025-01-01..2025-12-31    # Records created in 2025
+created_at:2025-06-01..              # Records from June 2025 onwards
+created_at:..2025-06-30              # Records before July 2025
+```
+
+Search respects field visibility - users cannot search fields they don't have permission to see.
+
 ## Filters
 
 ```ruby
@@ -93,6 +113,23 @@ remove_filter :some_column
 | `:date_range` | Date range picker |
 | `:boolean` | True/false toggle |
 
+### Auto-Generated Enum Filters
+
+If your model uses Rails enums, CommandPost automatically creates select filters:
+
+```ruby
+# app/models/order.rb
+class Order < ApplicationRecord
+  enum :status, { pending: 0, processing: 1, shipped: 2, delivered: 3 }
+end
+
+# No filter definition needed - auto-generated from enum
+class OrderResource < CommandPost::Resource
+end
+```
+
+The filter will display with humanized labels (Pending, Processing, Shipped, Delivered).
+
 ## Scopes
 
 Scopes are predefined query filters shown as tabs:
@@ -105,6 +142,24 @@ class UserResource < CommandPost::Resource
   scope :locked, -> { where.not(locked_at: nil) }
 end
 ```
+
+## Soft Delete Support
+
+CommandPost auto-detects models with a `deleted_at` column and provides:
+
+- **Auto-registered scopes**: `with_deleted` and `only_deleted`
+- **Auto-registered restore action**: Restores soft-deleted records
+
+```ruby
+# If your model has deleted_at column, these are auto-registered:
+class PostResource < CommandPost::Resource
+  # Auto: scope :with_deleted, -> { unscoped }
+  # Auto: scope :only_deleted, -> { only_deleted }
+  # Auto: action :restore { |r| r.update!(deleted_at: nil) }
+end
+```
+
+Works with gems like `paranoia`, `discard`, or custom soft delete implementations.
 
 ## Actions
 
@@ -122,6 +177,15 @@ class UserResource < CommandPost::Resource
 end
 ```
 
+Actions are wrapped in database transactions. Return `false` to rollback:
+
+```ruby
+action :process do |record|
+  return false unless record.can_process?
+  record.process!
+end
+```
+
 ### Bulk Actions
 
 ```ruby
@@ -135,6 +199,8 @@ class UserResource < CommandPost::Resource
   end
 end
 ```
+
+Bulk actions validate that all selected records are accessible to the current user (respecting tenant scope).
 
 ## CRUD Restrictions
 
@@ -155,6 +221,33 @@ class UserResource < CommandPost::Resource
 end
 ```
 
+### Association Preloading
+
+CommandPost automatically preloads associations to prevent N+1 queries:
+
+- `belongs_to` associations shown in index are preloaded
+- Related records displayed on show pages are preloaded
+- Custom preloads can be added:
+
+```ruby
+class OrderResource < CommandPost::Resource
+  preload :customer, :line_items, :shipping_address
+end
+```
+
+### Large Association Handling
+
+For `belongs_to` fields with many options (>100 records), CommandPost automatically uses an autocomplete component instead of a dropdown:
+
+```ruby
+class OrderResource < CommandPost::Resource
+  field :customer_id, type: :belongs_to,
+        association: :customer,
+        display: :name
+  # Autocomplete is used automatically if Customer has >100 records
+end
+```
+
 ## Menu Configuration
 
 ```ruby
@@ -172,6 +265,11 @@ class UserResource < CommandPost::Resource
 end
 ```
 
+Exports respect:
+- Tenant scoping (if configured)
+- Field visibility (users only see fields they have permission to view)
+- Current filters and search query
+
 ## Policies
 
 ```ruby
@@ -182,6 +280,8 @@ class UserResource < CommandPost::Resource
   end
 end
 ```
+
+See [Authentication & Authorization](authentication.md) for details.
 
 ## Component Overrides
 

@@ -1,5 +1,7 @@
 # Configuration Reference
 
+All configuration options for CommandPost.
+
 ```ruby
 CommandPost.configure do |config|
   # --- General ---
@@ -8,7 +10,11 @@ CommandPost.configure do |config|
   config.per_page = 25
   config.default_sort = :created_at
   config.default_sort_direction = :desc
-  config.search_engine = :default
+
+  # --- Multi-Tenant Support ---
+  config.tenant_scope do |scope|
+    scope.where(organization_id: Current.organization.id)
+  end
 
   # --- Badge Colors ---
   config.badge_colors = {
@@ -32,6 +38,9 @@ CommandPost.configure do |config|
   end
 
   # --- Audit Logging ---
+  config.audit_enabled = true
+  config.audit_storage = :memory  # or :database
+
   config.on_action do |event|
   end
 
@@ -50,6 +59,75 @@ CommandPost.configure do |config|
   config.components.fields[:type] = nil
 end
 ```
+
+## Configuration Options
+
+### General
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `title` | String | `"Admin"` | Title shown in navbar |
+| `logo` | String | `nil` | Path to logo image |
+| `per_page` | Integer | `25` | Records per page |
+| `default_sort` | Symbol | `:created_at` | Default sort column |
+| `default_sort_direction` | Symbol | `:desc` | Default sort direction (`:asc` or `:desc`) |
+
+### Multi-Tenant Support
+
+Automatically scope all resource queries to the current tenant:
+
+```ruby
+config.tenant_scope do |scope|
+  scope.where(organization_id: Current.organization.id)
+end
+```
+
+The tenant scope is applied to:
+- Index queries
+- Show, edit, update, destroy lookups
+- Export queries
+- Bulk action record validation
+
+### Audit Logging
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `audit_enabled` | Boolean | `false` | Enable built-in audit logging |
+| `audit_storage` | Symbol | `:memory` | Storage backend (`:memory` or `:database`) |
+
+When `audit_storage: :database`, run the migration:
+
+```bash
+rails generate command_post:audit_migration
+rails db:migrate
+```
+
+View audit logs at `/admin/audit`.
+
+For custom audit logging, use the `on_action` callback instead.
+
+### Badge Colors
+
+Default color palette for badge fields. Add custom colors:
+
+```ruby
+config.badge_colors[:cyan] = "bg-cyan-100 text-cyan-800"
+```
+
+### Components
+
+Override global components:
+
+| Component | Description |
+|-----------|-------------|
+| `table` | Data table component |
+| `form` | Form wrapper component |
+| `filter_bar` | Filter bar component |
+| `search` | Search input component |
+| `navbar` | Top navigation component |
+| `sidebar` | Side navigation component |
+| `shell` | Layout shell component |
+| `fields[:type]` | Field-type specific components |
 
 ## Reset
 

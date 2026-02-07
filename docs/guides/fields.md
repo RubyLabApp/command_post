@@ -49,6 +49,13 @@ class SalaryResource < CommandPost::Resource
 end
 ```
 
+Visibility and readonly rules are enforced across:
+- Index table columns
+- Show page fields
+- Form fields (readonly fields are disabled)
+- CSV/JSON exports
+- Search queries
+
 ## Badge Colors
 
 Available keys: `:green`, `:red`, `:yellow`, `:blue`, `:indigo`, `:purple`, `:pink`, `:orange`, `:teal`, `:gray`
@@ -59,4 +66,40 @@ Add custom colors:
 CommandPost.configure do |config|
   config.badge_colors[:cyan] = "bg-cyan-100 text-cyan-800"
 end
+```
+
+### Default Badge Colors for Common Status Values
+
+CommandPost automatically assigns colors to common status values without configuration:
+
+| Status Value | Color |
+|--------------|-------|
+| `active`, `published`, `enabled`, `approved`, `success` | Green |
+| `pending`, `draft`, `waiting`, `processing` | Yellow |
+| `completed`, `done`, `finished` | Blue |
+| `failed`, `error`, `rejected`, `cancelled`, `disabled` | Red |
+| `inactive`, `archived`, `suspended` | Gray |
+| `admin`, `superuser`, `owner` | Purple |
+| `user`, `member`, `subscriber` | Blue |
+| `guest`, `visitor` | Gray |
+
+Example:
+
+```ruby
+class OrderResource < CommandPost::Resource
+  # No colors needed - auto-detected from value
+  field :status, type: :badge
+end
+
+# Order with status "pending" will show a yellow badge
+# Order with status "completed" will show a blue badge
+```
+
+Override auto-detected colors by providing explicit colors:
+
+```ruby
+field :status, type: :badge, colors: {
+  pending: :orange,    # Override default yellow
+  completed: :green    # Override default blue
+}
 ```
