@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-02-07
+
 ### Added
 
 - **Authorization System Improvements**
@@ -71,7 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- 922 tests with 96.67% coverage
+- 997 tests with 95%+ coverage
+- 100% YARD documentation coverage
 - Refactored form components to use shared `FormInputBehavior` concern
 - Policy instances now cached at Resource class level
 - Field visibility filtering applied consistently in index, show, forms, exports, and search
@@ -98,5 +101,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Haml templates for views
 - SQLite and PostgreSQL support
 
-[Unreleased]: https://github.com/rubylab/command-post/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/rubylab/command-post/releases/tag/v0.1.0
+[Unreleased]: https://github.com/RubyLabApp/command_post/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/RubyLabApp/command_post/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/RubyLabApp/command_post/releases/tag/v0.1.0
