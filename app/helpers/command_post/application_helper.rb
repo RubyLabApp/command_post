@@ -1,10 +1,20 @@
+# frozen_string_literal: true
+
 module CommandPost
+  # Main application helper for CommandPost views.
   module ApplicationHelper
     include Heroicon::ApplicationHelper
     include CommandPost::ThemeHelper
 
+    # Methods checked when displaying a record's label.
+    # @return [Array<Symbol>]
     DISPLAY_METHODS = %i[name title email label slug].freeze
 
+    # Displays a field value with appropriate formatting.
+    #
+    # @param record [ActiveRecord::Base] The record
+    # @param field [CommandPost::Field] Field configuration
+    # @return [String, nil] Formatted value
     def display_field_value(record, field)
       case field.type
       when :belongs_to
@@ -16,6 +26,11 @@ module CommandPost
       end
     end
 
+    # Returns a display label for a record.
+    #
+    # @param record [ActiveRecord::Base] The record
+    # @param display_method [Symbol, Proc, nil] Custom display method
+    # @return [String] Display label
     def display_record_label(record, display_method = nil)
       return display_method.call(record) if display_method.is_a?(Proc)
 
@@ -28,6 +43,11 @@ module CommandPost
       "#{record.class.model_name.human} ##{record.id}"
     end
 
+    # Returns options for a filter select dropdown.
+    #
+    # @param resource_class [Class] The resource class
+    # @param filter [Hash] Filter configuration
+    # @return [Array<Array(String, String)>] Options for select tag
     def filter_options_for(resource_class, filter)
       model = resource_class.model
       column_name = filter[:name].to_s

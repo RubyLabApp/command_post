@@ -30,29 +30,28 @@ RSpec.describe "Bulk Actions Flow", type: :request do
       end
     end
   end
+  let!(:alice) { create(:user, active: true, role: "user") }
+  let!(:bob) { create(:user, active: true, role: "user") }
+  let!(:charlie) { create(:user, active: true, role: "admin") }
 
   before do
     CommandPost::ResourceRegistry.register(bulk_resource)
   end
 
-  let!(:user1) { create(:user, active: true, role: "user") }
-  let!(:user2) { create(:user, active: true, role: "user") }
-  let!(:user3) { create(:user, active: true, role: "admin") }
-
   describe "executing bulk actions" do
     it "applies action to selected records" do
       post command_post.resource_bulk_action_path("bulk_users", "deactivate"),
-           params: { ids: [user1.id, user2.id] }
+           params: { ids: [alice.id, bob.id] }
 
       expect(response).to redirect_to(command_post.resources_path("bulk_users"))
 
-      user1.reload
-      user2.reload
-      user3.reload
+      alice.reload
+      bob.reload
+      charlie.reload
 
-      expect(user1.active).to be false
-      expect(user2.active).to be false
-      expect(user3.active).to be true # Not selected
+      expect(alice.active).to be false
+      expect(bob.active).to be false
+      expect(charlie.active).to be true # Not selected
     end
 
     it "handles empty selection" do
@@ -65,7 +64,7 @@ RSpec.describe "Bulk Actions Flow", type: :request do
 
     it "returns not_found for unknown action" do
       post command_post.resource_bulk_action_path("bulk_users", "nonexistent"),
-           params: { ids: [user1.id] }
+           params: { ids: [alice.id] }
 
       expect(response).to have_http_status(:not_found)
     end
@@ -73,36 +72,36 @@ RSpec.describe "Bulk Actions Flow", type: :request do
 
   describe "bulk action with rollback" do
     it "rolls back transaction when action returns false" do
-      original_role = user1.role
+      original_role = alice.role
 
       post command_post.resource_bulk_action_path("bulk_users", "failing_action"),
-           params: { ids: [user1.id, user2.id] }
+           params: { ids: [alice.id, bob.id] }
 
-      user1.reload
-      expect(user1.role).to eq(original_role)
+      alice.reload
+      expect(alice.role).to eq(original_role)
     end
   end
 
   describe "bulk action with invalid IDs" do
     it "ignores non-existent IDs" do
       post command_post.resource_bulk_action_path("bulk_users", "deactivate"),
-           params: { ids: [user1.id, 99999] }
+           params: { ids: [alice.id, 99_999] }
 
       # Should redirect with alert about inaccessible records
       expect(response).to redirect_to(command_post.resources_path("bulk_users"))
     end
 
     it "filters out zero and empty IDs but rejects if non-existent IDs remain" do
-      # IDs [user1.id, 0, -1, ""] become [user1.id, -1] after filtering
+      # IDs [alice.id, 0, -1, ""] become [alice.id, -1] after filtering
       # Since -1 doesn't exist, security check fails
       post command_post.resource_bulk_action_path("bulk_users", "deactivate"),
-           params: { ids: [user1.id, 0, -1, ""] }
+           params: { ids: [alice.id, 0, -1, ""] }
 
       expect(response).to redirect_to(command_post.resources_path("bulk_users"))
       expect(flash[:alert]).to include("not accessible")
 
-      user1.reload
-      expect(user1.active).to be true # Action did not execute due to security check
+      alice.reload
+      expect(alice.active).to be true # Action did not execute due to security check
     end
   end
 
@@ -116,11 +115,11 @@ RSpec.describe "Bulk Actions Flow", type: :request do
     end
 
     it "only affects records within tenant scope" do
-      # user3 is admin, outside tenant scope
+      # charlie is admin, outside tenant scope
       post command_post.resource_bulk_action_path("bulk_users", "deactivate"),
-           params: { ids: [user1.id, user2.id, user3.id] }
+           params: { ids: [alice.id, bob.id, charlie.id] }
 
-      # Should fail because user3 is not accessible
+      # Should fail because charlie is not accessible
       expect(response).to redirect_to(command_post.resources_path("bulk_users"))
       expect(flash[:alert]).to include("not accessible")
     end

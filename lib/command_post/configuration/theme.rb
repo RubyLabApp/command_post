@@ -1,46 +1,166 @@
+# frozen_string_literal: true
+
 module CommandPost
   class Configuration
+    # Theme configuration for customizing the admin panel appearance.
+    #
+    # All theme properties accept Tailwind CSS class strings. This allows
+    # complete customization of colors, spacing, and visual styles.
+    #
+    # @example Customizing the theme
+    #   CommandPost.configure do |config|
+    #     config.theme do |t|
+    #       t.btn_primary = "bg-blue-600 text-white hover:bg-blue-700"
+    #       t.sidebar_bg = "bg-slate-900"
+    #       t.link = "text-blue-600 hover:text-blue-800"
+    #     end
+    #   end
+    #
+    # @see CommandPost::Configuration#theme
     class Theme
-      # --- Buttons ---
-      attr_accessor :btn_primary, :btn_secondary, :btn_danger, :btn_ghost
+      # @!group Button Styles
 
-      # --- Links ---
-      attr_accessor :link, :link_muted
+      # @return [String] Primary button classes (default: indigo)
+      attr_accessor :btn_primary
 
-      # --- Focus ring ---
+      # @return [String] Secondary button classes (default: white with border)
+      attr_accessor :btn_secondary
+
+      # @return [String] Danger/destructive button classes (default: red)
+      attr_accessor :btn_danger
+
+      # @return [String] Ghost button classes (default: gray background)
+      attr_accessor :btn_ghost
+
+      # @!endgroup
+
+      # @!group Link Styles
+
+      # @return [String] Primary link classes
+      attr_accessor :link
+
+      # @return [String] Muted/secondary link classes
+      attr_accessor :link_muted
+
+      # @!endgroup
+
+      # @!group Form Styles
+
+      # @return [String] Focus ring classes for interactive elements
       attr_accessor :focus_ring
 
-      # --- Inputs ---
-      attr_accessor :input_border, :input_focus
+      # @return [String] Input border classes
+      attr_accessor :input_border
 
-      # --- Checkbox ---
+      # @return [String] Input focus state classes
+      attr_accessor :input_focus
+
+      # @return [String] Checked checkbox classes
       attr_accessor :checkbox_checked
 
-      # --- Scopes / Tabs ---
-      attr_accessor :scope_active, :scope_inactive
+      # @!endgroup
 
-      # --- Badge counter ---
+      # @!group Tab/Scope Styles
+
+      # @return [String] Active scope/tab classes
+      attr_accessor :scope_active
+
+      # @return [String] Inactive scope/tab classes
+      attr_accessor :scope_inactive
+
+      # @return [String] Badge counter classes
       attr_accessor :badge_count
 
-      # --- Sidebar ---
-      attr_accessor :sidebar_bg, :sidebar_title, :sidebar_link, :sidebar_link_hover,
-                    :sidebar_group_label
+      # @!endgroup
 
-      # --- Navbar ---
-      attr_accessor :navbar_bg, :navbar_border, :navbar_search_bg, :navbar_search_focus_bg
+      # @!group Sidebar Styles
 
-      # --- Table ---
-      attr_accessor :table_header_bg, :table_row_hover, :table_border
+      # @return [String] Sidebar background classes
+      attr_accessor :sidebar_bg
 
-      # --- Cards / Panels ---
-      attr_accessor :card_bg, :card_border, :card_shadow
+      # @return [String] Sidebar title text classes
+      attr_accessor :sidebar_title
 
-      # --- Typography ---
-      attr_accessor :font_family, :heading_weight, :body_text, :muted_text, :label_text
+      # @return [String] Sidebar link classes
+      attr_accessor :sidebar_link
 
-      # --- Layout ---
+      # @return [String] Sidebar link hover classes
+      attr_accessor :sidebar_link_hover
+
+      # @return [String] Sidebar group label classes
+      attr_accessor :sidebar_group_label
+
+      # @!endgroup
+
+      # @!group Navbar Styles
+
+      # @return [String] Navbar background classes
+      attr_accessor :navbar_bg
+
+      # @return [String] Navbar border classes
+      attr_accessor :navbar_border
+
+      # @return [String] Navbar search input background
+      attr_accessor :navbar_search_bg
+
+      # @return [String] Navbar search input focus background
+      attr_accessor :navbar_search_focus_bg
+
+      # @!endgroup
+
+      # @!group Table Styles
+
+      # @return [String] Table header background classes
+      attr_accessor :table_header_bg
+
+      # @return [String] Table row hover classes
+      attr_accessor :table_row_hover
+
+      # @return [String] Table border/divider classes
+      attr_accessor :table_border
+
+      # @!endgroup
+
+      # @!group Card Styles
+
+      # @return [String] Card background classes
+      attr_accessor :card_bg
+
+      # @return [String] Card border classes
+      attr_accessor :card_border
+
+      # @return [String] Card shadow classes
+      attr_accessor :card_shadow
+
+      # @!endgroup
+
+      # @!group Typography
+
+      # @return [String] Font family classes (empty = system default)
+      attr_accessor :font_family
+
+      # @return [String] Heading weight classes
+      attr_accessor :heading_weight
+
+      # @return [String] Body text color classes
+      attr_accessor :body_text
+
+      # @return [String] Muted text color classes
+      attr_accessor :muted_text
+
+      # @return [String] Label text color classes
+      attr_accessor :label_text
+
+      # @!endgroup
+
+      # @!group Layout
+
+      # @return [String] Border radius classes
       attr_accessor :border_radius
 
+      # @!endgroup
+
+      # Creates a new Theme with default values.
       def initialize
         # --- Buttons ---
         @btn_primary = "bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500/20 focus:ring-offset-1"

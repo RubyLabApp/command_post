@@ -1,10 +1,45 @@
+# frozen_string_literal: true
+
 module CommandPost
   module Form
+    # Renders a textarea field.
+    #
+    # @example Basic textarea
+    #   render CommandPost::Form::TextareaComponent.new(
+    #     name: "record[description]",
+    #     value: @record.description,
+    #     rows: 6
+    #   )
     class TextareaComponent < ViewComponent::Base
       include Concerns::FormInputBehavior
 
-      attr_reader :name, :value, :rows, :placeholder, :readonly, :has_error
+      # @return [String] Textarea name attribute
+      attr_reader :name
 
+      # @return [String, nil] Current value
+      attr_reader :value
+
+      # @return [Integer] Number of rows
+      attr_reader :rows
+
+      # @return [String, nil] Placeholder text
+      attr_reader :placeholder
+
+      # @return [Boolean] Whether textarea is read-only
+      attr_reader :readonly
+
+      # @return [Boolean] Whether textarea has error state
+      attr_reader :has_error
+
+      # @param name [String] Textarea name
+      # @param value [String, nil] Current value
+      # @param rows [Integer] Number of rows (default: 4)
+      # @param placeholder [String, nil] Placeholder
+      # @param disabled [Boolean] Disabled state
+      # @param readonly [Boolean] Read-only state
+      # @param has_error [Boolean] Error state
+      # @param field [CommandPost::Field, nil] Field config
+      # @param current_user [Object, nil] Current user
       def initialize(name:, value: nil, rows: 4, placeholder: nil,
                      disabled: false, readonly: false, has_error: false,
                      field: nil, current_user: nil)
@@ -19,6 +54,8 @@ module CommandPost
         @current_user = current_user
       end
 
+      # @api private
+      # @return [String] CSS classes for textarea element
       def textarea_classes
         base = "block w-full border px-3 py-2 text-sm shadow-sm outline-none transition duration-150 ease-in-out " \
                "resize-y #{theme.border_radius} #{theme.input_border} #{theme.card_bg} #{theme.body_text} #{theme.input_focus}"
@@ -27,6 +64,8 @@ module CommandPost
         base
       end
 
+      # Renders the textarea.
+      # @return [String] HTML content
       def call
         tag.textarea(
           value,

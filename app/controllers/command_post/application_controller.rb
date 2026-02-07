@@ -1,4 +1,13 @@
+# frozen_string_literal: true
+
 module CommandPost
+  # Base controller for all CommandPost admin panel controllers.
+  #
+  # Provides authentication and current user handling for the admin panel.
+  # All other CommandPost controllers inherit from this class.
+  #
+  # @see CommandPost::Configuration#authenticate
+  # @see CommandPost::Configuration#current_user
   class ApplicationController < ::ActionController::Base
     include Pagy::Method
 
@@ -8,12 +17,14 @@ module CommandPost
 
     private
 
+    # @api private
     def authenticate_command_post_user!
       return unless CommandPost.configuration.authenticate_block
 
       instance_exec(self, &CommandPost.configuration.authenticate_block)
     end
 
+    # @api private
     def command_post_current_user
       return unless CommandPost.configuration.current_user_block
 

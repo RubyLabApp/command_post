@@ -1,10 +1,48 @@
+# frozen_string_literal: true
+
 module CommandPost
   module Form
+    # Renders a date/time picker input.
+    #
+    # @example Date picker
+    #   render CommandPost::Form::DatePickerComponent.new(
+    #     name: "record[birth_date]",
+    #     value: @record.birth_date,
+    #     type: :date
+    #   )
     class DatePickerComponent < ViewComponent::Base
-      attr_reader :name, :value, :type, :min, :max, :disabled, :has_error
+      # @return [String] Input name attribute
+      attr_reader :name
 
+      # @return [Date, DateTime, nil] Current value
+      attr_reader :value
+
+      # @return [Symbol] Picker type (:date, :datetime, :datetime_local, :time)
+      attr_reader :type
+
+      # @return [Date, nil] Minimum date
+      attr_reader :min
+
+      # @return [Date, nil] Maximum date
+      attr_reader :max
+
+      # @return [Boolean] Whether input is disabled
+      attr_reader :disabled
+
+      # @return [Boolean] Whether input has error state
+      attr_reader :has_error
+
+      # Supported date/time types.
+      # @return [Array<Symbol>]
       TYPES = %i[date datetime datetime_local time].freeze
 
+      # @param name [String] Input name
+      # @param value [Date, DateTime, nil] Current value
+      # @param type [Symbol] Picker type (default: :datetime_local)
+      # @param min [Date, nil] Minimum date
+      # @param max [Date, nil] Maximum date
+      # @param disabled [Boolean] Disabled state
+      # @param has_error [Boolean] Error state
       def initialize(name:, value: nil, type: :datetime_local, min: nil, max: nil,
                      disabled: false, has_error: false)
         @name = name
@@ -16,10 +54,14 @@ module CommandPost
         @has_error = has_error
       end
 
+      # @api private
+      # @return [CommandPost::Configuration::Theme] Theme configuration
       def theme
         CommandPost.configuration.theme
       end
 
+      # @api private
+      # @return [String] HTML input type attribute value
       def input_type
         case @type
         when :datetime_local then "datetime-local"
@@ -28,6 +70,8 @@ module CommandPost
         end
       end
 
+      # @api private
+      # @return [String] CSS classes for date input field
       def input_classes
         base = "block w-full border px-3 py-2 text-sm shadow-sm outline-none transition duration-150 ease-in-out " \
                "#{theme.border_radius} #{theme.input_border} #{theme.card_bg} #{theme.body_text} #{theme.input_focus}"
@@ -36,6 +80,8 @@ module CommandPost
         base
       end
 
+      # @api private
+      # @return [String, nil] Value formatted for HTML input
       def formatted_value
         return nil unless value
 
@@ -51,6 +97,8 @@ module CommandPost
         end
       end
 
+      # Renders the date picker input.
+      # @return [String] HTML content
       def call
         tag.input(
           type: input_type,

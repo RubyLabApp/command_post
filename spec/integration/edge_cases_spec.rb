@@ -32,28 +32,28 @@ RSpec.describe "Edge Cases", type: :request do
 
   describe "invalid record handling" do
     it "raises error for non-existent record on show" do
-      expect {
-        get command_post.resource_path("users", 99999)
-      }.to raise_error(ActiveRecord::RecordNotFound)
+      expect do
+        get command_post.resource_path("users", 99_999)
+      end.to raise_error(ActiveRecord::RecordNotFound)
     end
 
     it "raises error for non-existent record on edit" do
-      expect {
-        get command_post.edit_resource_path("users", 99999)
-      }.to raise_error(ActiveRecord::RecordNotFound)
+      expect do
+        get command_post.edit_resource_path("users", 99_999)
+      end.to raise_error(ActiveRecord::RecordNotFound)
     end
 
     it "raises error for non-existent record on update" do
-      expect {
-        patch command_post.resource_path("users", 99999),
+      expect do
+        patch command_post.resource_path("users", 99_999),
               params: { record: { name: "Test" } }
-      }.to raise_error(ActiveRecord::RecordNotFound)
+      end.to raise_error(ActiveRecord::RecordNotFound)
     end
 
     it "raises error for non-existent record on destroy" do
-      expect {
-        delete command_post.resource_path("users", 99999)
-      }.to raise_error(ActiveRecord::RecordNotFound)
+      expect do
+        delete command_post.resource_path("users", 99_999)
+      end.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
 

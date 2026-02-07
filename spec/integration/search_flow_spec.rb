@@ -76,7 +76,7 @@ RSpec.describe "Search Flow", type: :request do
     end
 
     it "handles unicode characters" do
-      user = create(:user, name: "José García", email: "jose@example.com")
+      create(:user, name: "José García", email: "jose@example.com")
 
       get command_post.resources_path("users"), params: { q: "José" }
 

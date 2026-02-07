@@ -8,8 +8,7 @@ RSpec.describe "CRUD Flow", type: :request do
   end
 
   describe "complete CRUD lifecycle" do
-    it "creates, reads, updates, and deletes a record" do
-      # CREATE
+    it "creates a record and redirects to show page" do
       post command_post.resources_path("users"),
            params: { record: { name: "John Doe", email: "john@example.com", role: "admin" } }
 
@@ -19,18 +18,23 @@ RSpec.describe "CRUD Flow", type: :request do
 
       user = User.find_by(email: "john@example.com")
       expect(user).to be_present
+    end
 
-      # READ (index)
+    it "reads records on index and show pages" do
+      user = create(:user, name: "John Doe", email: "john@example.com")
+
       get command_post.resources_path("users")
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("John Doe")
 
-      # READ (show)
       get command_post.resource_path("users", user)
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("john@example.com")
+    end
 
-      # UPDATE
+    it "updates a record" do
+      user = create(:user, name: "John Doe", email: "john@example.com", role: "admin")
+
       patch command_post.resource_path("users", user),
             params: { record: { name: "Jane Doe", email: "jane@example.com", role: "admin" } }
 
@@ -38,8 +42,11 @@ RSpec.describe "CRUD Flow", type: :request do
       user.reload
       expect(user.name).to eq("Jane Doe")
       expect(user.email).to eq("jane@example.com")
+    end
 
-      # DELETE
+    it "deletes a record" do
+      user = create(:user)
+
       delete command_post.resource_path("users", user)
       expect(response).to redirect_to(command_post.resources_path("users"))
       expect(User.find_by(id: user.id)).to be_nil

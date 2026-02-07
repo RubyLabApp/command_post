@@ -1,13 +1,28 @@
 # frozen_string_literal: true
 
 module CommandPost
+  # Controller for viewing the audit log.
+  #
+  # Provides a filterable view of all admin panel actions when
+  # audit logging is enabled.
+  #
+  # Access via /admin/audit
+  #
+  # @see CommandPost::AuditLog
+  # @see CommandPost::Configuration#audit_enabled
   class AuditController < ApplicationController
+    # Lists audit log entries with optional filters.
+    #
+    # Supports filtering by resource, action, and date range.
+    #
+    # @return [void]
     def index
       @entries = filtered_entries.reverse
     end
 
     private
 
+    # @api private
     def filtered_entries
       filters = {}
       filters[:resource] = params[:resource] if params[:resource].present?

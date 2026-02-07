@@ -56,7 +56,7 @@ RSpec.describe "Export Flow", type: :request do
 
       json = JSON.parse(response.body)
       expect(json.length).to eq(3)
-      expect(json.map { |u| u["name"] }).to include("Alice", "Bob", "Charlie")
+      expect(json.pluck("name")).to include("Alice", "Bob", "Charlie")
     end
 
     it "includes all exported fields" do
@@ -84,7 +84,7 @@ RSpec.describe "Export Flow", type: :request do
       get command_post.export_path("users"), params: { format: :json }
 
       json = JSON.parse(response.body)
-      names = json.map { |u| u["name"] }
+      names = json.pluck("name")
 
       expect(names).to include("Bob", "Charlie")
       expect(names).not_to include("Alice") # Admin excluded by tenant scope

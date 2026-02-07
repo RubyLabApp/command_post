@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "pagy"
 require "view_component"
 require "heroicon"
@@ -6,6 +8,17 @@ require "turbo-rails"
 require "stimulus-rails"
 
 module CommandPost
+  # Rails Engine that provides the admin panel functionality.
+  #
+  # The Engine is mounted in your application's routes to expose
+  # the admin panel at a path of your choice (typically /admin).
+  #
+  # @example Mounting the engine in config/routes.rb
+  #   Rails.application.routes.draw do
+  #     mount CommandPost::Engine => "/admin"
+  #   end
+  #
+  # @see file:docs/getting-started/installation.md Installation Guide
   class Engine < ::Rails::Engine
     isolate_namespace CommandPost
 

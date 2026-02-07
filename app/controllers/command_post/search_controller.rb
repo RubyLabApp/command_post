@@ -1,5 +1,12 @@
+# frozen_string_literal: true
+
 module CommandPost
+  # Controller for global search across all resources.
+  #
+  # Searches all registered resources and returns matching records.
   class SearchController < ApplicationController
+    # Renders global search results.
+    # @return [void]
     def index
       @query = params[:q].to_s.strip
       @results = search_all_resources if @query.present?

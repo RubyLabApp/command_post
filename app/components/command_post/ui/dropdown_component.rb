@@ -1,20 +1,40 @@
+# frozen_string_literal: true
+
 module CommandPost
   module UI
+    # Renders a dropdown menu with trigger and items.
+    #
+    # @example Basic dropdown
+    #   render CommandPost::UI::DropdownComponent.new do |dropdown|
+    #     dropdown.with_trigger { render ButtonComponent.new(text: "Actions") }
+    #     dropdown.with_item(href: edit_path) { "Edit" }
+    #     dropdown.with_item(href: delete_path, destructive: true) { "Delete" }
+    #   end
     class DropdownComponent < ViewComponent::Base
       renders_one :trigger
       renders_many :items, "ItemComponent"
 
-      attr_reader :align, :width
+      # @return [Symbol] Dropdown alignment (:left, :right)
+      attr_reader :align
 
+      # @return [Integer] Dropdown width in Tailwind units
+      attr_reader :width
+
+      # @param align [Symbol] Alignment (default: :right)
+      # @param width [Integer] Width (default: 48)
       def initialize(align: :right, width: 48)
         @align = align
         @width = width
       end
 
+      # @api private
+      # @return [CommandPost::Configuration::Theme] Theme configuration
       def theme
         CommandPost.configuration.theme
       end
 
+      # @api private
+      # @return [String] CSS classes for dropdown panel
       def dropdown_classes
         align_class = align == :right ? "right-0" : "left-0"
         width_class = "w-#{width}"
@@ -22,9 +42,25 @@ module CommandPost
           "#{theme.card_bg} border #{theme.card_border} #{theme.card_shadow}-lg z-50"
       end
 
+      # Individual dropdown menu item.
+      # @api private
       class ItemComponent < ViewComponent::Base
-        attr_reader :href, :method, :icon, :destructive
+        # @return [String, nil] Link URL
+        attr_reader :href
 
+        # @return [Symbol, nil] HTTP method
+        attr_reader :method
+
+        # @return [String, nil] Heroicon name
+        attr_reader :icon
+
+        # @return [Boolean] Whether item is destructive (red styling)
+        attr_reader :destructive
+
+        # @param href [String, nil] Link URL
+        # @param method [Symbol, nil] HTTP method
+        # @param icon [String, nil] Heroicon name
+        # @param destructive [Boolean] Destructive action (default: false)
         def initialize(href: nil, method: nil, icon: nil, destructive: false)
           @href = href
           @method = method
@@ -32,6 +68,8 @@ module CommandPost
           @destructive = destructive
         end
 
+        # @api private
+        # @return [String] CSS classes for menu item
         def item_classes
           base = "flex items-center gap-2 w-full px-4 py-2 text-sm text-left transition-colors duration-150"
           if destructive
@@ -41,6 +79,8 @@ module CommandPost
           end
         end
 
+        # Renders the menu item.
+        # @return [String] HTML content
         def call
           if href
             link_to(href, class: item_classes, data: method ? { turbo_method: method } : {}) do

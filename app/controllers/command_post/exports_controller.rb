@@ -1,7 +1,19 @@
+# frozen_string_literal: true
+
 module CommandPost
+  # Controller for exporting resource data to CSV and JSON formats.
+  #
+  # Exports respect field visibility settings and tenant scoping.
+  # Access via /admin/:resource_name/export.csv or .json
+  #
+  # @see CommandPost::Resource#exports
+  # @see CommandPost::Resource#export_fields
   class ExportsController < ApplicationController
     before_action :set_resource_class
 
+    # Exports resource data in the requested format.
+    #
+    # @return [void] Sends CSV file or renders JSON
     def show
       records = base_scope
       fields = export_fields

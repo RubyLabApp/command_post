@@ -1,8 +1,25 @@
+# frozen_string_literal: true
+
 module CommandPost
   module Filters
+    # Renders the search input in the filter bar.
     class SearchComponent < ViewComponent::Base
-      attr_reader :value, :placeholder, :form_url, :hidden_params
+      # @return [String, nil] Current search value
+      attr_reader :value
 
+      # @return [String] Placeholder text
+      attr_reader :placeholder
+
+      # @return [String] Form submission URL
+      attr_reader :form_url
+
+      # @return [Hash] Hidden params to preserve
+      attr_reader :hidden_params
+
+      # @param form_url [String] Form submission URL
+      # @param value [String, nil] Current value
+      # @param placeholder [String] Placeholder text
+      # @param hidden_params [Hash] Hidden params
       def initialize(form_url:, value: nil, placeholder: "Search...", hidden_params: {})
         @value = value
         @placeholder = placeholder
@@ -10,10 +27,14 @@ module CommandPost
         @hidden_params = hidden_params
       end
 
+      # @api private
+      # @return [CommandPost::Configuration::Theme] Theme configuration
       def theme
         CommandPost.configuration.theme
       end
 
+      # @api private
+      # @return [String] CSS classes for search input field
       def input_classes
         "block w-full border py-2 pl-10 pr-4 text-sm shadow-sm outline-none " \
           "transition duration-150 ease-in-out #{theme.border_radius} #{theme.input_border} " \

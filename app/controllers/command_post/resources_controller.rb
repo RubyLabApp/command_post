@@ -1,12 +1,33 @@
+# frozen_string_literal: true
+
 require "ostruct"
 
 module CommandPost
+  # Main controller handling CRUD operations for all admin resources.
+  #
+  # This controller dynamically handles requests for any registered resource,
+  # providing index, show, new, create, edit, update, and destroy actions.
+  # It also handles custom actions, bulk actions, and autocomplete.
+  #
+  # Routes are structured as:
+  # - GET    /admin/:resource_name          -> index
+  # - GET    /admin/:resource_name/new      -> new
+  # - POST   /admin/:resource_name          -> create
+  # - GET    /admin/:resource_name/:id      -> show
+  # - GET    /admin/:resource_name/:id/edit -> edit
+  # - PATCH  /admin/:resource_name/:id      -> update
+  # - DELETE /admin/:resource_name/:id      -> destroy
+  #
+  # @see CommandPost::Resource
   class ResourcesController < ApplicationController
     include Concerns::Searchable
 
     before_action :set_resource_class
     before_action :check_action_allowed, only: %i[show new create edit update destroy]
 
+    # Lists all records for the resource with filtering, sorting, and pagination.
+    #
+    # @return [void]
     def index
       scope = apply_scopes(apply_filters(base_scope))
       scope = apply_search(scope)
@@ -18,21 +39,35 @@ module CommandPost
       @current_scope = current_scope_name
     end
 
+    # Shows a single record.
+    #
+    # @return [void]
+    # @raise [ActiveRecord::RecordNotFound] if record doesn't exist
     def show
       @record = base_scope.find(params[:id])
       @fields = @resource_class.resolved_fields
     end
 
+    # Renders the new record form.
+    #
+    # @return [void]
     def new
       @record = @resource_class.model.new
       @fields = form_fields
     end
 
+    # Renders the edit form for an existing record.
+    #
+    # @return [void]
+    # @raise [ActiveRecord::RecordNotFound] if record doesn't exist
     def edit
       @record = base_scope.find(params[:id])
       @fields = form_fields
     end
 
+    # Creates a new record.
+    #
+    # @return [void]
     def create
       @record = @resource_class.model.new(resource_params)
 
@@ -46,6 +81,10 @@ module CommandPost
       end
     end
 
+    # Updates an existing record.
+    #
+    # @return [void]
+    # @raise [ActiveRecord::RecordNotFound] if record doesn't exist
     def update
       @record = base_scope.find(params[:id])
 
@@ -59,6 +98,10 @@ module CommandPost
       end
     end
 
+    # Deletes a record.
+    #
+    # @return [void]
+    # @raise [ActiveRecord::RecordNotFound] if record doesn't exist
     def destroy
       @record = base_scope.find(params[:id])
       @record.destroy!
@@ -67,6 +110,9 @@ module CommandPost
                   notice: "#{@resource_class.model.model_name.human} deleted."
     end
 
+    # Executes a custom action on a single record.
+    #
+    # @return [void]
     def execute_action
       action = @resource_class.defined_actions.find { |a| a[:name].to_s == params[:action_name] }
       return head(:not_found) unless action
@@ -87,6 +133,12 @@ module CommandPost
       redirect_to resources_path(@resource_class.resource_name), alert: "Action failed: #{e.message}"
     end
 
+    # Executes a bulk action on multiple selected records.
+    #
+    # All records are processed within a database transaction.
+    # If the action block returns false, the transaction is rolled back.
+    #
+    # @return [void]
     def execute_bulk_action
       ids = bulk_action_ids
       return redirect_bulk(:alert, "No records selected") if ids.empty?
@@ -104,6 +156,9 @@ module CommandPost
       redirect_bulk(:alert, "Action failed: #{e.message}")
     end
 
+    # Returns autocomplete results for belongs_to fields.
+    #
+    # @return [void] Renders JSON array of {id, label} objects
     def autocomplete
       query = params[:q].to_s.strip
       return render json: [] if query.blank?

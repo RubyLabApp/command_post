@@ -1,10 +1,21 @@
+# frozen_string_literal: true
+
 module CommandPost
+  # Controller concerns for shared functionality.
   module Concerns
+    # Provides search functionality for resource controllers.
+    #
+    # Supports both general search across all searchable columns
+    # and field-specific search using "field:value" syntax.
     module Searchable
       extend ActiveSupport::Concern
 
       private
 
+      # Applies search query to the scope.
+      #
+      # @param scope [ActiveRecord::Relation] Base scope
+      # @return [ActiveRecord::Relation] Filtered scope
       def apply_search(scope)
         query = params[:q].to_s.strip
         return scope if query.blank?

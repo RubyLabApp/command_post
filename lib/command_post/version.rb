@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
 module CommandPost
-  VERSION = "0.1.0".freeze
+  # The current version of the CommandPost gem.
+  # @return [String]
+  VERSION = "0.1.0"
 end

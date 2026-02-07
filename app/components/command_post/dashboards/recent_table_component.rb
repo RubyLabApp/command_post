@@ -1,15 +1,24 @@
+# frozen_string_literal: true
+
 module CommandPost
   module Dashboards
+    # Renders a table of recent records on the dashboard.
     class RecentTableComponent < ViewComponent::Base
+      # @param resource_name [Symbol, String] Resource name
+      # @param records [ActiveRecord::Relation] Records to display
       def initialize(resource_name:, records:)
         @resource_name = resource_name
         @records = records
       end
 
+      # @api private
+      # @return [String] Humanized and pluralized resource label
       def label
         @resource_name.to_s.humanize.pluralize
       end
 
+      # @api private
+      # @return [Array<CommandPost::Field>] First 4 fields from the resource
       def fields
         resource_class = CommandPost::ResourceRegistry.find(@resource_name.to_s.pluralize)
         return [] unless resource_class
