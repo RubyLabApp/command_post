@@ -1,0 +1,255 @@
+# Troubleshooting
+
+Common issues and their solutions.
+
+## Installation Issues
+
+### "uninitialized constant CommandPost"
+
+**Cause:** The gem is not loaded or the engine is not properly required.
+
+**Solutions:**
+1. Ensure `gem "command-post"` is in your Gemfile
+2. Run `bundle install`
+3. Restart your Rails server
+
+### Routes not working (404 errors)
+
+**Cause:** Engine not mounted or mounted at wrong path.
+
+**Solution:** Check `config/routes.rb` includes:
+```ruby
+mount CommandPost::Engine => "/admin"
+```
+
+### Assets/CSS not loading
+
+**Cause:** Tailwind CSS not configured to scan CommandPost files.
+
+**Solution:** Add to `tailwind.config.js`:
+```javascript
+content: [
+  // ... your paths
+  "./path/to/command_post/app/**/*.{rb,haml}",
+]
+```
+
+Find the gem path with: `bundle show command-post`
+
+## Resource Issues
+
+### Fields not showing in forms/tables
+
+**Cause:** Schema not loaded or field visibility restrictions.
+
+**Solutions:**
+1. Run `rails db:migrate` to ensure schema is current
+2. Check field visibility settings:
+   ```ruby
+   field :secret, visible: false  # Hidden from all views
+   ```
+3. Restart Rails to reload schema
+
+### "undefined method" errors for model attributes
+
+**Cause:** Database column doesn't exist or model not using the expected table.
+
+**Solutions:**
+1. Verify column exists: `rails dbconsole` then `\d table_name`
+2. Check model's table name matches convention
+3. Run pending migrations
+
+### Resource not appearing in sidebar
+
+**Cause:** Resource not registered or menu configuration issue.
+
+**Solutions:**
+1. Ensure resource file exists in `app/command_post/`
+2. Check resource inherits from `CommandPost::Resource`
+3. Verify filename matches class name (`user_resource.rb` → `UserResource`)
+
+### Custom actions not appearing
+
+**Cause:** Action not defined or policy blocking it.
+
+**Solutions:**
+1. Verify action is defined in resource:
+   ```ruby
+   action :my_action do |record|
+     # ...
+   end
+   ```
+2. Check policy allows the action:
+   ```ruby
+   policy do
+     allow :my_action
+   end
+   ```
+
+## Authorization Issues
+
+### "403 Forbidden" on all pages
+
+**Cause:** Authentication block redirecting or returning false.
+
+**Solution:** Check `config/initializers/command_post.rb`:
+```ruby
+config.authenticate do |controller|
+  # Ensure this doesn't redirect for authenticated users
+  controller.redirect_to "/login" unless controller.session[:user_id]
+end
+```
+
+### Fields visible to users who shouldn't see them
+
+**Cause:** Field visibility not configured or using wrong condition.
+
+**Solution:** Use proc-based visibility:
+```ruby
+field :salary, visible: ->(user) { user.admin? }
+```
+
+The proc receives the current user, not the record.
+
+### Policy not taking effect
+
+**Cause:** Policy not configured or wrong action names.
+
+**Solutions:**
+1. Verify policy block exists in resource
+2. Use correct action names: `:read`, `:create`, `:update`, `:delete`
+3. For custom actions, explicitly allow them:
+   ```ruby
+   policy do
+     allow :read
+     allow :my_custom_action  # Custom actions need explicit permission
+   end
+   ```
+
+## Search Issues
+
+### Search not finding expected records
+
+**Cause:** Field not searchable or search syntax incorrect.
+
+**Solutions:**
+1. Check searchable fields:
+   ```ruby
+   searchable :name, :email  # Only these fields are searched
+   ```
+2. For field-specific search, use correct syntax: `email:john@example.com`
+
+### Search showing error
+
+**Cause:** Invalid search syntax or non-existent field.
+
+**Solutions:**
+1. Verify field exists in database
+2. Check for typos in field name
+3. Ensure field is visible to current user
+
+## Export Issues
+
+### Export returning empty file
+
+**Cause:** No records match current filters or tenant scope.
+
+**Solutions:**
+1. Check if records exist in database
+2. Verify tenant scope isn't filtering all records
+3. Clear filters and try again
+
+### Export missing fields
+
+**Cause:** Field visibility or export_fields configuration.
+
+**Solutions:**
+1. Check `export_fields` configuration
+2. Verify field visibility allows current user to see field:
+   ```ruby
+   field :secret, visible: ->(user) { user.admin? }
+   ```
+
+## Performance Issues
+
+### Slow page loads (N+1 queries)
+
+**Cause:** Association preloading not configured.
+
+**Solution:** Add explicit preloading:
+```ruby
+class OrderResource < CommandPost::Resource
+  preload :customer, :line_items, :shipping_address
+end
+```
+
+### Slow belongs_to dropdowns
+
+**Cause:** Too many records being loaded.
+
+**Solution:** Use autocomplete for large associations:
+```ruby
+field :customer_id, type: :belongs_to, autocomplete: true
+```
+
+Or let CommandPost auto-switch (happens at >100 records).
+
+## Multi-Tenant Issues
+
+### Users seeing other tenants' data
+
+**Cause:** Tenant scope not configured or not working.
+
+**Solution:** Verify tenant_scope is set:
+```ruby
+config.tenant_scope do |scope|
+  scope.where(organization_id: Current.organization.id)
+end
+```
+
+Ensure `Current.organization` is set before CommandPost loads.
+
+### Bulk actions affecting wrong records
+
+**Cause:** Tenant scope not applied to bulk actions.
+
+**Solution:** CommandPost validates all selected records are accessible. If you're seeing cross-tenant issues, check your tenant_scope configuration.
+
+## Audit Logging Issues
+
+### Audit logs not appearing
+
+**Cause:** Audit not enabled or database table missing.
+
+**Solutions:**
+1. Enable auditing:
+   ```ruby
+   config.audit_enabled = true
+   ```
+2. For database storage, run migration:
+   ```bash
+   rails generate command_post:install_audit
+   rails db:migrate
+   ```
+
+### Audit viewer showing empty
+
+**Cause:** Using memory storage (default) and server restarted.
+
+**Solution:** Use database storage for persistence:
+```ruby
+config.audit_storage = :database
+```
+
+## Getting Help
+
+If you can't resolve your issue:
+
+1. Check the [FAQ](../FAQ.md)
+2. Search existing [GitHub Issues](https://github.com/rubylab/command-post/issues)
+3. Open a new issue with:
+   - CommandPost version
+   - Rails version
+   - Ruby version
+   - Error message and backtrace
+   - Relevant configuration

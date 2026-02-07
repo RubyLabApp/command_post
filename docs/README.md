@@ -19,6 +19,11 @@ Convention-over-configuration admin panel engine for Ruby on Rails.
 - [Components](guides/components.md) - Override and extend UI components
 - [Export](guides/export.md) - CSV and JSON export
 - [Extending the Engine](guides/extending.md) - Advanced customization
+- [Troubleshooting](guides/troubleshooting.md) - Common issues and solutions
+
+### Help
+
+- [FAQ](FAQ.md) - Frequently asked questions
 
 ### Components Library
 
@@ -47,3 +52,5 @@ Comprehensive documentation for all built-in ViewComponents:
 | Override a component | [Components Guide](guides/components.md) |
 | Add authentication | [Authentication Guide](guides/authentication.md) |
 | Use a UI component | [UI Components](components/ui-components.md) |
+| Fix a problem | [Troubleshooting](guides/troubleshooting.md) |
+| Quick answers | [FAQ](FAQ.md) |
