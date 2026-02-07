@@ -9,7 +9,7 @@ module CommandPost
     # @example Basic pagination
     #   render CommandPost::Ui::PaginationComponent.new(pagy: @pagy)
     class PaginationComponent < ViewComponent::Base
-      include Pagy::Frontend
+      include Pagy::Linkable
 
       # @return [Pagy] The Pagy pagination object
       attr_reader :pagy_obj
