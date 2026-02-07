@@ -267,7 +267,7 @@ module CommandPost
       permitted = form_fields.map do |field|
         field.type == :belongs_to ? field.options[:foreign_key] : field.name
       end
-      params.expect(record: [*permitted])
+      params.require(:record).permit(*permitted)
     end
 
     def apply_filters(scope)

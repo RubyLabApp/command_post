@@ -579,19 +579,9 @@ RSpec.describe "CommandPost::Resources", type: :request do
     end
 
     context "with invalid params" do
-      before do
-        User.class_eval do
-          validates :email, presence: true
-        end
-      end
-
-      after do
-        User.clear_validators!
-      end
-
       it "renders new form with errors" do
         post command_post.resources_path("users"),
-             params: { record: { name: "User", email: "", role: "member" } },
+             params: { record: { name: "", email: "", role: "member" } },
              as: :html
         expect(response).to have_http_status(:unprocessable_content)
       end
@@ -633,19 +623,9 @@ RSpec.describe "CommandPost::Resources", type: :request do
     end
 
     context "with invalid params" do
-      before do
-        User.class_eval do
-          validates :email, presence: true
-        end
-      end
-
-      after do
-        User.clear_validators!
-      end
-
       it "renders edit form with errors" do
         patch command_post.resource_path("users", user),
-              params: { record: { name: "Name", email: "", role: "member" } },
+              params: { record: { name: "", email: "", role: "member" } },
               as: :html
         expect(response).to have_http_status(:unprocessable_content)
       end

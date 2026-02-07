@@ -5,7 +5,6 @@ SimpleCov.start "rails" do
   add_filter "/spec/"
   add_filter "/lib/generators/"
   add_filter "/lib/command_post/version.rb"
-  # Pagination component uses Pagy::Linkable which requires full Rails context for testing
   add_filter "/app/components/command_post/ui/pagination_component.rb"
 
   add_group "Lib", "lib/command_post"
