@@ -87,6 +87,7 @@ module CommandPost
     # @raise [ActiveRecord::RecordNotFound] if record doesn't exist
     def update
       @record = base_scope.find(params[:id])
+      purge_attachments(@record)
 
       if @record.update(resource_params)
         emit_event(:update, @record)
@@ -263,9 +264,21 @@ module CommandPost
       base_fields.select { |f| f.visible?(command_post_current_user) }
     end
 
+    def purge_attachments(record)
+      form_fields.select { |f| f.type == :file }.each do |field|
+        next unless params.dig(:record, :"#{field.name}_purge") == "1" && record.respond_to?(field.name)
+
+        record.public_send(field.name).then { |a| a.purge if a.attached? }
+      end
+    end
+
     def resource_params
-      permitted = form_fields.map do |field|
-        field.type == :belongs_to ? field.options[:foreign_key] : field.name
+      permitted = form_fields.filter_map do |field|
+        case field.type
+        when :belongs_to then field.options[:foreign_key]
+        when :files then { field.name => [] }
+        else field.name
+        end
       end
       params.require(:record).permit(*permitted) # rubocop:disable Rails/StrongParametersExpect
     end

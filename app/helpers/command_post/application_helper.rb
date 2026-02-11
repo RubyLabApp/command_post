@@ -21,6 +21,14 @@ module CommandPost
         display_belongs_to(record, field)
       when :badge
         display_badge(record, field)
+      when :password
+        display_password
+      when :file
+        display_file(record, field)
+      when :files
+        display_files(record, field)
+      when :rich_text
+        display_rich_text(record, field)
       else
         record.public_send(field.name)
       end
@@ -105,6 +113,53 @@ module CommandPost
     def badge_color_classes(color)
       CommandPost::Configuration::BADGE_COLOR_CLASSES[color.to_sym] ||
         CommandPost::Configuration::BADGE_COLOR_CLASSES[:gray]
+    end
+
+    def display_password
+      content_tag(:span, "\u2022" * 8, class: "text-gray-400 tracking-wider")
+    end
+
+    def display_file(record, field)
+      return unless record.respond_to?(field.name)
+
+      attachment = record.public_send(field.name)
+      return unless attachment.attached?
+
+      if attachment.image?
+        image_tag main_app.url_for(attachment), class: "h-16 w-16 object-cover rounded"
+      else
+        content_tag(:span, class: "inline-flex items-center gap-1.5") do
+          heroicon("paper-clip", variant: :mini, options: { class: "h-4 w-4 #{cp_muted_text}" }) +
+            content_tag(:span, attachment.filename.to_s, class: cp_link)
+        end
+      end
+    end
+
+    def display_files(record, field)
+      return unless record.respond_to?(field.name)
+
+      attachments = record.public_send(field.name)
+      return unless attachments.attached?
+
+      content_tag(:div, class: "flex flex-wrap gap-2") do
+        safe_join(
+          attachments.map do |attachment|
+            if attachment.image?
+              image_tag main_app.url_for(attachment), class: "h-12 w-12 object-cover rounded"
+            else
+              content_tag(:span, attachment.filename.to_s,
+                          class: "inline-flex items-center px-2 py-1 text-xs rounded bg-gray-100 text-gray-700")
+            end
+          end
+        )
+      end
+    end
+
+    def display_rich_text(record, field)
+      content = record.public_send(field.name)
+      return if content.blank?
+
+      content_tag(:div, content.to_s.html_safe, class: "prose prose-sm max-w-none") # rubocop:disable Rails/OutputSafety
     end
   end
 end
