@@ -1,11 +1,11 @@
 - error_input_class = "!border-red-400 !focus:border-red-500 !focus:ring-red-500/20"
 
-= form_with model: @record, url: form_url, scope: :record do |f|
+= form_with model: @record, url: form_url, scope: :record, html: { multipart: true } do |f|
   .grid.grid-cols-1.md:grid-cols-2.2xl:grid-cols-3.gap-x-6.gap-y-5
     - @fields.each do |field|
       - next unless field.visible?(command_post_current_user)
       - next if field.readonly?(command_post_current_user)
-      - span_full = field.type == :textarea || field.type == :json
+      - span_full = field.type.in?(%i[textarea json file files rich_text])
       - has_error = @record.errors[field.name].any?
       %div{ class: span_full ? "md:col-span-2 2xl:col-span-3" : nil }
         = f.label field.name, field.name.to_s.humanize,
@@ -29,7 +29,7 @@
           = f.number_field field.name, placeholder: "0",
             class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
         - when :boolean
-          .flex.items-center.gap-2.5.pt-1
+          .flex.items-center.pt-1{ class: "gap-2.5" }
             = f.check_box field.name, class: cp_checkbox_class
             %span.text-sm.text-gray-600 Enable #{field.name.to_s.humanize.downcase}
         - when :datetime, :date
@@ -39,12 +39,47 @@
           = f.select field.name, field.options[:choices]&.map { |c| [c.humanize, c] },
             { include_blank: "Select..." },
             class: [cp_select_class, (error_input_class if has_error)].compact.join(" ")
+        - when :password
+          = f.password_field field.name, placeholder: field.name.to_s.humanize, autocomplete: "new-password",
+            class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
+        - when :file
+          - attachment = @record.public_send(field.name) if @record.respond_to?(field.name)
+          - if attachment&.attached?
+            .flex.items-center.gap-3.mb-2.p-3.rounded-lg.border{ class: "#{t.card_border} #{t.card_bg}" }
+              - if attachment.image?
+                = image_tag main_app.url_for(attachment), class: "h-16 w-16 object-cover rounded"
+              - else
+                .flex.items-center.gap-2
+                  = heroicon "paper-clip", variant: :mini, options: { class: "h-5 w-5 #{cp_muted_text}" }
+                  %span.text-sm{ class: cp_body_text }= attachment.filename
+              .ml-auto
+                = f.label "#{field.name}_purge", class: "flex items-center gap-1.5 text-sm text-red-600 cursor-pointer" do
+                  = check_box_tag "record[#{field.name}_purge]", "1", false, id: "#{field.name}_purge", class: cp_checkbox_class
+                  Remove
+          = f.file_field field.name,
+            class: [cp_file_input_class, (error_input_class if has_error)].compact.join(" ")
+        - when :files
+          - attachments = @record.public_send(field.name) if @record.respond_to?(field.name)
+          - if attachments&.attached?
+            .flex.flex-wrap.gap-3.mb-2
+              - attachments.each do |attachment|
+                .flex.items-center.gap-2.p-2.rounded-lg.border{ class: "#{t.card_border} #{t.card_bg}" }
+                  - if attachment.image?
+                    = image_tag main_app.url_for(attachment), class: "h-12 w-12 object-cover rounded"
+                  - else
+                    .flex.items-center{ class: "gap-1.5" }
+                      = heroicon "paper-clip", variant: :mini, options: { class: "h-4 w-4 #{cp_muted_text}" }
+                      %span.text-xs{ class: cp_body_text }= attachment.filename
+          = f.file_field field.name, multiple: true,
+            class: [cp_file_input_class, (error_input_class if has_error)].compact.join(" ")
+        - when :rich_text
+          = f.rich_text_area field.name, class: "trix-content"
         - else
           = f.text_field field.name, placeholder: field.name.to_s.humanize,
             class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
 
         - if has_error
-          .flex.items-center.gap-1.5.mt-1.5
+          .flex.items-center{ class: "gap-1.5 mt-1.5" }
             = heroicon "exclamation-circle", variant: :mini, options: { class: "h-4 w-4 text-red-500 shrink-0" }
             %p.text-sm.text-red-600= @record.errors[field.name].join(", ")
 

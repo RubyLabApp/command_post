@@ -39,6 +39,89 @@ RSpec.describe CommandPost::ApplicationHelper, type: :helper do
         expect(result).to include("rounded-full")
       end
     end
+
+    context "with password field" do
+      let(:field) { CommandPost::Field.new(:password_hash, type: :password) }
+
+      it "returns masked dots" do
+        result = helper.display_field_value(user, field)
+
+        expect(result).to include("\u2022" * 8)
+        expect(result).not_to include(user.name)
+      end
+
+      it "never reveals the actual value" do
+        document = create(:document, password_hash: "secret123")
+        result = helper.display_field_value(document, field)
+
+        expect(result).not_to include("secret123")
+      end
+    end
+
+    context "with file field" do
+      let(:document) { create(:document) }
+      let(:field) { CommandPost::Field.new(:cover_image, type: :file) }
+
+      it "returns nil when no attachment" do
+        expect(helper.display_field_value(document, field)).to be_nil
+      end
+
+      it "returns filename when file is attached" do
+        document.cover_image.attach(
+          io: StringIO.new("test"),
+          filename: "test.pdf",
+          content_type: "application/pdf"
+        )
+
+        result = helper.display_field_value(document, field)
+
+        expect(result).to include("test.pdf")
+      end
+    end
+
+    context "with files field" do
+      let(:document) { create(:document) }
+      let(:field) { CommandPost::Field.new(:attachments, type: :files) }
+
+      it "returns nil when no attachments" do
+        expect(helper.display_field_value(document, field)).to be_nil
+      end
+
+      it "returns filenames when files are attached" do
+        document.attachments.attach(
+          io: StringIO.new("doc1"),
+          filename: "first.pdf",
+          content_type: "application/pdf"
+        )
+        document.attachments.attach(
+          io: StringIO.new("doc2"),
+          filename: "second.pdf",
+          content_type: "application/pdf"
+        )
+
+        result = helper.display_field_value(document, field)
+
+        expect(result).to include("first.pdf")
+        expect(result).to include("second.pdf")
+      end
+    end
+
+    context "with rich_text field" do
+      let(:document) { create(:document) }
+      let(:field) { CommandPost::Field.new(:content, type: :rich_text) }
+
+      it "returns nil when content is blank" do
+        expect(helper.display_field_value(document, field)).to be_nil
+      end
+
+      it "renders rich text content" do
+        document.update!(content: "Hello <strong>world</strong>")
+
+        result = helper.display_field_value(document, field)
+
+        expect(result).to include("prose")
+      end
+    end
   end
 
   describe "#display_record_label" do

@@ -189,5 +189,12 @@ module CommandPost
     def cp_table_border
       t.table_border
     end
+
+    # @return [String] File input classes
+    def cp_file_input_class
+      "block w-full text-sm #{t.body_text} file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 " \
+        "file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 " \
+        "file:cursor-pointer cursor-pointer"
+    end
   end
 end

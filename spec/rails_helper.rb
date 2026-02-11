@@ -17,6 +17,8 @@ load File.expand_path("dummy/db/schema.rb", __dir__)
 # Load test resources
 require_relative "dummy/app/command_post/user_resource"
 require_relative "dummy/app/command_post/license_resource"
+require_relative "dummy/app/command_post/post_resource"
+require_relative "dummy/app/command_post/document_resource"
 
 RSpec.configure do |config|
   config.use_transactional_fixtures = true

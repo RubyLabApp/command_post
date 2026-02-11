@@ -39,5 +39,44 @@ RSpec.describe CommandPost::FieldInferrer do
         expect(status_field.options[:choices]).to eq(License.statuses.keys)
       end
     end
+
+    context "with ActiveStorage attachments" do
+      subject(:fields) { described_class.call(Document) }
+
+      it "detects has_one_attached as file type" do
+        cover_field = fields.find { |f| f.name == :cover_image }
+        expect(cover_field).to be_present
+        expect(cover_field.type).to eq(:file)
+      end
+
+      it "detects has_many_attached as files type" do
+        docs_field = fields.find { |f| f.name == :attachments }
+        expect(docs_field).to be_present
+        expect(docs_field.type).to eq(:files)
+      end
+    end
+
+    context "with ActionText rich text" do
+      subject(:fields) { described_class.call(Document) }
+
+      it "detects has_rich_text as rich_text type" do
+        content_field = fields.find { |f| f.name == :content }
+        expect(content_field).to be_present
+        expect(content_field.type).to eq(:rich_text)
+      end
+    end
+
+    context "with model without attachments or rich text" do
+      subject(:fields) { described_class.call(User) }
+
+      it "does not include attachment fields" do
+        expect(fields.select { |f| f.type == :file }).to be_empty
+        expect(fields.select { |f| f.type == :files }).to be_empty
+      end
+
+      it "does not include rich text fields" do
+        expect(fields.select { |f| f.type == :rich_text }).to be_empty
+      end
+    end
   end
 end

@@ -60,15 +60,18 @@ module CommandPost
         .to_set { |a| a.name.to_s }
     end
 
-    # Infers fields from the model's columns and associations.
+    # Infers fields from the model's columns, associations, attachments,
+    # and rich text attributes.
     #
     # Foreign key columns (e.g., organization_id) are replaced with their
     # corresponding belongs_to associations (e.g., organization).
     # Columns named after has_many/has_one associations are excluded.
+    # ActiveStorage attachments and ActionText rich text attributes are
+    # automatically detected and added as :file, :files, or :rich_text fields.
     #
     # @return [Array<CommandPost::Field>] Inferred field objects
     def call
-      @model.columns.filter_map do |column|
+      fields = @model.columns.filter_map do |column|
         next if @shadowed_columns.include?(column.name)
 
         assoc = @belongs_to_map[column.name]
@@ -78,6 +81,10 @@ module CommandPost
           build_field(column)
         end
       end
+
+      fields.concat(attachment_fields)
+      fields.concat(rich_text_fields)
+      fields
     end
 
     private
@@ -110,6 +117,29 @@ module CommandPost
     # Checks if a column is backed by an enum.
     def enum_column?(name)
       @model.defined_enums.key?(name.to_s)
+    end
+
+    # @api private
+    # Builds fields for ActiveStorage attachments (has_one_attached / has_many_attached).
+    def attachment_fields
+      return [] unless @model.respond_to?(:attachment_reflections)
+
+      @model.attachment_reflections.map do |name, reflection|
+        type = reflection.macro == :has_one_attached ? :file : :files
+        Field.new(name.to_sym, type: type)
+      end
+    end
+
+    # @api private
+    # Builds fields for ActionText rich text attributes (has_rich_text).
+    def rich_text_fields
+      return [] unless @model.respond_to?(:rich_text_association_names)
+
+      @model.rich_text_association_names.map do |assoc_name|
+        # ActionText associations are named like "rich_text_body" — strip the prefix
+        attr_name = assoc_name.to_s.delete_prefix("rich_text_").to_sym
+        Field.new(attr_name, type: :rich_text)
+      end
     end
   end
 end
