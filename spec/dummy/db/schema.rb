@@ -24,7 +24,31 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_000005) do
   create_table :posts, force: :cascade do |t|
     t.string :title, null: false
     t.boolean :published, default: false
+    t.string :category_tags
+    t.text :body_markdown
     t.timestamps
+  end
+
+  create_table :profiles, force: :cascade do |t|
+    t.references :user, foreign_key: true, null: false, index: { unique: true }
+    t.text :bio
+    t.string :website
+    t.string :avatar_url
+    t.timestamps
+  end
+
+  create_table :tags, force: :cascade do |t|
+    t.string :name, null: false
+    t.timestamps
+
+    t.index :name, unique: true
+  end
+
+  create_table :posts_tags, id: false, force: :cascade do |t|
+    t.references :post, foreign_key: true, null: false
+    t.references :tag, foreign_key: true, null: false
+
+    t.index [:post_id, :tag_id], unique: true
   end
 
   create_table :documents, force: :cascade do |t|
