@@ -543,6 +543,138 @@ RSpec.describe "CommandPost::Resources", type: :request do
       get command_post.resource_path("users", user), as: :html
       expect(response).to have_http_status(:ok)
     end
+
+    context "with has_one association" do
+      before do
+        CommandPost::ResourceRegistry.register(ProfileResource)
+      end
+
+      it "displays has_one associated record" do
+        user = create(:user)
+        create(:profile, user: user, bio: "Ruby developer", website: "https://example.com")
+        get command_post.resource_path("users", user), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Profile")
+        expect(response.body).to include("Ruby developer")
+        expect(response.body).to include("https://example.com")
+      end
+
+      it "does not display has_one section when no associated record exists" do
+        user = create(:user)
+        get command_post.resource_path("users", user), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).not_to include("Profile")
+      end
+    end
+  end
+
+  describe "HABTM associations" do
+    before do
+      CommandPost::ResourceRegistry.register(PostResource)
+      CommandPost::ResourceRegistry.register(TagResource)
+    end
+
+    context "on show page" do
+      it "displays HABTM associated records as badges" do
+        post_record = create(:post, title: "Test Post")
+        tag1 = create(:tag, name: "ruby")
+        tag2 = create(:tag, name: "rails")
+        post_record.tags << [tag1, tag2]
+
+        get command_post.resource_path("posts", post_record), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("ruby")
+        expect(response.body).to include("rails")
+      end
+
+      it "does not display HABTM section card when no associated records" do
+        post_record = create(:post, title: "No Tags Post")
+
+        get command_post.resource_path("posts", post_record), as: :html
+
+        expect(response).to have_http_status(:ok)
+        # The HABTM section with badges should not appear (though "Tags" may appear in sidebar menu)
+        expect(response.body).not_to include("bg-indigo-50")
+      end
+    end
+
+    context "on form page" do
+      it "renders checkboxes for HABTM on new form" do
+        create(:tag, name: "ruby")
+        create(:tag, name: "rails")
+
+        get command_post.new_resource_path("posts"), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("ruby")
+        expect(response.body).to include("rails")
+        expect(response.body).to include("tag_ids")
+      end
+
+      it "pre-selects existing associations on edit form" do
+        post_record = create(:post, title: "Tagged Post")
+        tag = create(:tag, name: "ruby")
+        post_record.tags << tag
+
+        get command_post.edit_resource_path("posts", post_record), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("ruby")
+      end
+    end
+
+    context "on create" do
+      it "creates record with HABTM associations" do
+        tag1 = create(:tag, name: "ruby")
+        tag2 = create(:tag, name: "rails")
+
+        post command_post.resources_path("posts"),
+             params: { record: { title: "New Post", tag_ids: [tag1.id, tag2.id] } },
+             as: :html
+
+        new_post = Post.last
+        expect(new_post.tags).to contain_exactly(tag1, tag2)
+      end
+
+      it "creates record without HABTM associations" do
+        post command_post.resources_path("posts"),
+             params: { record: { title: "New Post" } },
+             as: :html
+
+        new_post = Post.last
+        expect(new_post.tags).to be_empty
+      end
+    end
+
+    context "on update" do
+      it "updates HABTM associations" do
+        post_record = create(:post, title: "Update Post")
+        tag1 = create(:tag, name: "ruby")
+        tag2 = create(:tag, name: "rails")
+        post_record.tags << tag1
+
+        patch command_post.resource_path("posts", post_record),
+              params: { record: { title: "Updated Post", tag_ids: [tag2.id] } },
+              as: :html
+
+        expect(post_record.reload.tags).to contain_exactly(tag2)
+      end
+
+      it "removes all HABTM associations when empty array" do
+        post_record = create(:post, title: "Clear Tags Post")
+        tag = create(:tag, name: "ruby")
+        post_record.tags << tag
+
+        patch command_post.resource_path("posts", post_record),
+              params: { record: { title: "Updated Post", tag_ids: [""] } },
+              as: :html
+
+        expect(post_record.reload.tags).to be_empty
+      end
+    end
   end
 
   describe "GET /:resource_name/new" do

@@ -182,9 +182,7 @@ module CommandPost
 
     def base_scope
       scope = @resource_class.model.all
-
       scope = CommandPost.configuration.tenant_scope_block.call(scope) if CommandPost.configuration.tenant_scope_block
-
       scope
     end
 
@@ -280,6 +278,8 @@ module CommandPost
         else field.name
         end
       end
+
+      @resource_class.habtm_associations.each { |a| permitted << { "#{a[:name].to_s.singularize}_ids": [] } }
       params.require(:record).permit(*permitted) # rubocop:disable Rails/StrongParametersExpect
     end
 
@@ -336,12 +336,8 @@ module CommandPost
       sort_col = params[:sort].to_s
       valid_columns = @resource_class.model.column_names
       sort_col = CommandPost.configuration.default_sort.to_s unless valid_columns.include?(sort_col)
-      sort_dir = if %w[asc
-                       desc].include?(params[:direction].to_s.downcase)
-                   params[:direction]
-                 else
-                   CommandPost.configuration.default_sort_direction
-                 end
+      valid_dir = %w[asc desc].include?(params[:direction].to_s.downcase)
+      sort_dir = valid_dir ? params[:direction] : CommandPost.configuration.default_sort_direction
       scope.order(sort_col => sort_dir)
     end
 

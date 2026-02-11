@@ -178,6 +178,11 @@ RSpec.describe CommandPost::Resource do
       expect(assoc[:kind]).to eq(:has_many)
     end
 
+    it "stores has_one declarations" do
+      assoc = TestUserResource.defined_associations[:profile]
+      expect(assoc[:kind]).to eq(:has_one)
+    end
+
     it "resolves has_many associations with resource and reflection" do
       CommandPost::ResourceRegistry.reset!
       CommandPost::ResourceRegistry.register(TestUserResource)
@@ -187,6 +192,47 @@ RSpec.describe CommandPost::Resource do
       licenses_assoc = associations.find { |a| a[:name] == :licenses }
       expect(licenses_assoc).to be_present
       expect(licenses_assoc[:resource]).to eq(TestLicenseResource)
+    end
+
+    it "resolves has_one associations with resource and reflection" do
+      CommandPost::ResourceRegistry.reset!
+      CommandPost::ResourceRegistry.register(TestUserResource)
+      CommandPost::ResourceRegistry.register(ProfileResource)
+
+      associations = TestUserResource.has_one_associations
+      profile_assoc = associations.find { |a| a[:name] == :profile }
+      expect(profile_assoc).to be_present
+      expect(profile_assoc[:resource]).to eq(ProfileResource)
+    end
+
+    it "returns empty for has_one when no associations defined" do
+      CommandPost::ResourceRegistry.reset!
+      CommandPost::ResourceRegistry.register(TestLicenseResource)
+
+      expect(TestLicenseResource.has_one_associations).to eq([])
+    end
+
+    it "stores has_and_belongs_to_many declarations" do
+      assoc = PostResource.defined_associations[:tags]
+      expect(assoc[:kind]).to eq(:has_and_belongs_to_many)
+    end
+
+    it "resolves habtm associations with reflection" do
+      CommandPost::ResourceRegistry.reset!
+      CommandPost::ResourceRegistry.register(PostResource)
+      CommandPost::ResourceRegistry.register(TagResource)
+
+      associations = PostResource.habtm_associations
+      tags_assoc = associations.find { |a| a[:name] == :tags }
+      expect(tags_assoc).to be_present
+      expect(tags_assoc[:resource]).to eq(TagResource)
+    end
+
+    it "returns empty for habtm when no associations defined" do
+      CommandPost::ResourceRegistry.reset!
+      CommandPost::ResourceRegistry.register(TestUserResource)
+
+      expect(TestUserResource.habtm_associations).to eq([])
     end
 
     it "infers belongs_to fields from model" do

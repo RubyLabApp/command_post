@@ -509,6 +509,23 @@ module CommandPost
         self.defined_associations = defined_associations.merge(name => { kind: :has_one, **options })
       end
 
+      # Declares a has_and_belongs_to_many association for this resource.
+      #
+      # HABTM associations appear as multi-select checkboxes on forms and
+      # as badge lists on show pages.
+      #
+      # @param name [Symbol] The association name
+      # @param options [Hash] Configuration options
+      # @option options [Class] :resource The associated resource class
+      #
+      # @example
+      #   has_and_belongs_to_many :tags
+      #
+      # @return [void]
+      def has_and_belongs_to_many(name, **options) # rubocop:disable Naming/PredicatePrefix
+        self.defined_associations = defined_associations.merge(name => { kind: :has_and_belongs_to_many, **options })
+      end
+
       # Returns Field objects for all fields, with overrides applied.
       #
       # Merges auto-inferred fields from the database schema with
@@ -567,6 +584,39 @@ module CommandPost
 
           resource = ResourceRegistry.find(reflection.klass.model_name.plural)
           next unless resource
+
+          { name: assoc_name, reflection: reflection, resource: resource, **config.except(:kind) }
+        end
+      end
+
+      # Returns has_one association configurations for display on show pages.
+      #
+      # @return [Array<Hash>] Association configs with :name, :reflection, :resource keys
+      def has_one_associations # rubocop:disable Naming/PredicatePrefix
+        defined_associations.filter_map do |assoc_name, config|
+          next unless config[:kind] == :has_one
+
+          reflection = model.reflect_on_association(assoc_name)
+          next unless reflection
+
+          resource = ResourceRegistry.find(reflection.klass.model_name.plural)
+          next unless resource
+
+          { name: assoc_name, reflection: reflection, resource: resource, **config.except(:kind) }
+        end
+      end
+
+      # Returns HABTM association configurations for multi-select on forms and badge display.
+      #
+      # @return [Array<Hash>] Association configs with :name, :reflection, :resource keys
+      def habtm_associations
+        defined_associations.filter_map do |assoc_name, config|
+          next unless config[:kind] == :has_and_belongs_to_many
+
+          reflection = model.reflect_on_association(assoc_name)
+          next unless reflection
+
+          resource = ResourceRegistry.find(reflection.klass.model_name.plural)
 
           { name: assoc_name, reflection: reflection, resource: resource, **config.except(:kind) }
         end

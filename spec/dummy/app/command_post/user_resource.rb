@@ -4,6 +4,7 @@ class UserResource < CommandPost::Resource
   filter :role, type: :select
 
   has_many :licenses
+  has_one :profile
 
   menu priority: 0, icon: "users", group: "Users"
 end

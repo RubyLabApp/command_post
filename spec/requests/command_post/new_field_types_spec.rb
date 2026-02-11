@@ -168,4 +168,176 @@ RSpec.describe "New Field Types", type: :request do
       end.to change(Document, :count).by(-1)
     end
   end
+
+  describe "markdown field type" do
+    before do
+      CommandPost::ResourceRegistry.register(PostResource)
+      CommandPost::ResourceRegistry.register(TagResource)
+    end
+
+    describe "GET /:resource_name/:id (show)" do
+      it "renders markdown as HTML with Redcarpet" do
+        post_record = create(:post, body_markdown: "# Hello\n\nThis is **bold** text.")
+        get command_post.resource_path("posts", post_record), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("prose")
+        expect(response.body).to include("<h1>Hello</h1>")
+        expect(response.body).to include("<strong>bold</strong>")
+      end
+
+      it "handles empty markdown gracefully" do
+        post_record = create(:post, body_markdown: "")
+        get command_post.resource_path("posts", post_record), as: :html
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "handles nil markdown gracefully" do
+        post_record = create(:post, body_markdown: nil)
+        get command_post.resource_path("posts", post_record), as: :html
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "renders fenced code blocks" do
+        post_record = create(:post, body_markdown: "```ruby\nputs 'hello'\n```")
+        get command_post.resource_path("posts", post_record), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("<code")
+      end
+    end
+
+    describe "GET /:resource_name/new" do
+      it "renders form with markdown textarea" do
+        get command_post.new_resource_path("posts"), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Write markdown here...")
+        expect(response.body).to include("font-mono")
+      end
+    end
+
+    describe "GET /:resource_name/:id/edit" do
+      it "renders form with existing markdown content" do
+        post_record = create(:post, body_markdown: "# Existing content")
+        get command_post.edit_resource_path("posts", post_record), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("# Existing content")
+      end
+    end
+
+    describe "POST /:resource_name (create)" do
+      it "creates record with markdown content" do
+        post command_post.resources_path("posts"),
+             params: { record: { title: "MD Post", body_markdown: "# New Post\n\nContent here." } },
+             as: :html
+
+        new_post = Post.last
+        expect(new_post.body_markdown).to eq("# New Post\n\nContent here.")
+      end
+    end
+
+    describe "PATCH /:resource_name/:id (update)" do
+      it "updates markdown content" do
+        post_record = create(:post, body_markdown: "# Old")
+
+        patch command_post.resource_path("posts", post_record),
+              params: { record: { title: post_record.title, body_markdown: "# Updated\n\nNew content." } },
+              as: :html
+
+        expect(post_record.reload.body_markdown).to eq("# Updated\n\nNew content.")
+      end
+    end
+  end
+
+  describe "tags field type" do
+    before do
+      CommandPost::ResourceRegistry.register(PostResource)
+      CommandPost::ResourceRegistry.register(TagResource)
+    end
+
+    describe "GET /:resource_name/:id (show)" do
+      it "displays tags as badges" do
+        post_record = create(:post, category_tags: "ruby,rails,web")
+        get command_post.resource_path("posts", post_record), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("ruby")
+        expect(response.body).to include("rails")
+        expect(response.body).to include("web")
+        expect(response.body).to include("bg-indigo-50")
+      end
+
+      it "handles empty tags gracefully" do
+        post_record = create(:post, category_tags: "")
+        get command_post.resource_path("posts", post_record), as: :html
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "handles nil tags gracefully" do
+        post_record = create(:post, category_tags: nil)
+        get command_post.resource_path("posts", post_record), as: :html
+
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    describe "GET /:resource_name/new" do
+      it "renders form with tags input" do
+        get command_post.new_resource_path("posts"), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("tags-container-category_tags")
+        expect(response.body).to include("Type and press Enter")
+      end
+    end
+
+    describe "GET /:resource_name/:id/edit" do
+      it "renders form with existing tags pre-filled" do
+        post_record = create(:post, category_tags: "ruby,rails")
+        get command_post.edit_resource_path("posts", post_record), as: :html
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("ruby")
+        expect(response.body).to include("rails")
+      end
+    end
+
+    describe "POST /:resource_name (create)" do
+      it "creates record with tags" do
+        post command_post.resources_path("posts"),
+             params: { record: { title: "Tagged Post", category_tags: "ruby,rails" } },
+             as: :html
+
+        new_post = Post.last
+        expect(new_post.category_tags).to eq("ruby,rails")
+      end
+    end
+
+    describe "PATCH /:resource_name/:id (update)" do
+      it "updates tags" do
+        post_record = create(:post, category_tags: "ruby")
+
+        patch command_post.resource_path("posts", post_record),
+              params: { record: { title: post_record.title, category_tags: "ruby,rails,web" } },
+              as: :html
+
+        expect(post_record.reload.category_tags).to eq("ruby,rails,web")
+      end
+
+      it "clears tags" do
+        post_record = create(:post, category_tags: "ruby,rails")
+
+        patch command_post.resource_path("posts", post_record),
+              params: { record: { title: post_record.title, category_tags: "" } },
+              as: :html
+
+        expect(post_record.reload.category_tags).to eq("")
+      end
+    end
+  end
 end
