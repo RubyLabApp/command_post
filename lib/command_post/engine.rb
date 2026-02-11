@@ -26,6 +26,10 @@ module CommandPost
       app.config.assets.precompile += %w[command_post_manifest] if app.config.respond_to?(:assets) && app.config.assets
     end
 
+    initializer "command_post.importmap", before: "importmap" do |app|
+      app.config.importmap.paths << root.join("config/importmap.rb") if defined?(ActionText) && app.config.respond_to?(:importmap)
+    end
+
     config.after_initialize do
       resource_path = Rails.root.join("app/command_post")
       Rails.autoloaders.main.eager_load_dir(resource_path.to_s) if resource_path.exist?

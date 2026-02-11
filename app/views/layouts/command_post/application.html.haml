@@ -7,7 +7,13 @@
     = csrf_meta_tags
     = csp_meta_tag
     = stylesheet_link_tag "tailwind", "data-turbo-track": "reload"
+    - if defined?(ActionText)
+      = stylesheet_link_tag "trix", "data-turbo-track": "reload"
     = javascript_importmap_tags
+    - if defined?(ActionText)
+      %script{ type: "module" }
+        import "trix"
+        import "@rails/actiontext"
   %body.bg-gray-50.text-gray-900.antialiased
     = render CommandPost::Layout::ShellComponent.new(current_user: command_post_current_user) do
       = yield

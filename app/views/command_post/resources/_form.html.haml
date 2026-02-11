@@ -29,7 +29,7 @@
           = f.number_field field.name, placeholder: "0",
             class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
         - when :boolean
-          .flex.items-center.gap-2.5.pt-1
+          .flex.items-center.pt-1{ class: "gap-2.5" }
             = f.check_box field.name, class: cp_checkbox_class
             %span.text-sm.text-gray-600 Enable #{field.name.to_s.humanize.downcase}
         - when :datetime, :date
@@ -67,7 +67,7 @@
                   - if attachment.image?
                     = image_tag main_app.url_for(attachment), class: "h-12 w-12 object-cover rounded"
                   - else
-                    .flex.items-center.gap-1.5
+                    .flex.items-center{ class: "gap-1.5" }
                       = heroicon "paper-clip", variant: :mini, options: { class: "h-4 w-4 #{cp_muted_text}" }
                       %span.text-xs{ class: cp_body_text }= attachment.filename
           = f.file_field field.name, multiple: true,
@@ -79,7 +79,7 @@
             class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
 
         - if has_error
-          .flex.items-center.gap-1.5.mt-1.5
+          .flex.items-center{ class: "gap-1.5 mt-1.5" }
             = heroicon "exclamation-circle", variant: :mini, options: { class: "h-4 w-4 text-red-500 shrink-0" }
             %p.text-sm.text-red-600= @record.errors[field.name].join(", ")
 
