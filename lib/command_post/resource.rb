@@ -640,6 +640,8 @@ module CommandPost
         action :restore, icon: "arrow-path" do |record|
           record.update(column => nil)
         end
+      rescue ActiveRecord::NoDatabaseError, ActiveRecord::StatementInvalid
+        nil
       end
 
       private

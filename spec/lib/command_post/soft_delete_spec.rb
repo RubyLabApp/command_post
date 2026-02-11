@@ -143,6 +143,43 @@ RSpec.describe "CommandPost Soft Delete Support" do
     end
   end
 
+  describe "when database is unavailable" do
+    let(:unavailable_resource) do
+      Class.new(CommandPost::Resource) do
+        self.model_class_override = Article
+
+        def self.name
+          "UnavailableResource"
+        end
+
+        def self.resource_name
+          "unavailable"
+        end
+      end
+    end
+
+    it "does not raise ActiveRecord::NoDatabaseError" do
+      allow(Article).to receive(:column_names).and_raise(ActiveRecord::NoDatabaseError)
+
+      expect { unavailable_resource.register_soft_delete_features }.not_to raise_error
+    end
+
+    it "does not raise ActiveRecord::StatementInvalid" do
+      allow(Article).to receive(:column_names).and_raise(ActiveRecord::StatementInvalid)
+
+      expect { unavailable_resource.register_soft_delete_features }.not_to raise_error
+    end
+
+    it "does not register any scopes or actions" do
+      allow(Article).to receive(:column_names).and_raise(ActiveRecord::NoDatabaseError)
+
+      unavailable_resource.register_soft_delete_features
+
+      expect(unavailable_resource.defined_scopes).to be_empty
+      expect(unavailable_resource.defined_actions).to be_empty
+    end
+  end
+
   describe "non-soft-delete models" do
     before do
       CommandPost::ResourceRegistry.register(regular_resource)
