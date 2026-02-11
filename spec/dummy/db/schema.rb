@@ -34,6 +34,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_000005) do
     t.text :bio
     t.string :website
     t.string :avatar_url
+    t.string :color_hex
+    t.decimal :hourly_rate, precision: 10, scale: 2
     t.timestamps
   end
 

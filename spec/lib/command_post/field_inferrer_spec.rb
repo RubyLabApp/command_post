@@ -8,9 +8,14 @@ RSpec.describe CommandPost::FieldInferrer do
       expect(fields).to all(be_a(CommandPost::Field))
     end
 
-    it "infers string columns as text type" do
+    it "infers plain string columns as text type" do
+      name_field = fields.find { |f| f.name == :name }
+      expect(name_field.type).to eq(:text)
+    end
+
+    it "auto-detects email columns as email type" do
       email_field = fields.find { |f| f.name == :email }
-      expect(email_field.type).to eq(:text)
+      expect(email_field.type).to eq(:email)
     end
 
     it "infers boolean columns as boolean type" do
@@ -63,6 +68,20 @@ RSpec.describe CommandPost::FieldInferrer do
         content_field = fields.find { |f| f.name == :content }
         expect(content_field).to be_present
         expect(content_field.type).to eq(:rich_text)
+      end
+    end
+
+    context "with URL and email column name patterns" do
+      subject(:fields) { described_class.call(Profile) }
+
+      it "auto-detects *_url columns as url type" do
+        avatar_field = fields.find { |f| f.name == :avatar_url }
+        expect(avatar_field.type).to eq(:url)
+      end
+
+      it "auto-detects website column as url type" do
+        website_field = fields.find { |f| f.name == :website }
+        expect(website_field.type).to eq(:url)
       end
     end
 

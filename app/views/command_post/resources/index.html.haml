@@ -97,7 +97,7 @@
             - @fields.each do |field|
               - next unless field.visible?(command_post_current_user)
               %td.px-6.py-4.whitespace-nowrap.text-sm{ class: cp_body_text }
-                = display_field_value(record, field)
+                = display_index_field_value(record, field)
             %td.px-6.py-4.whitespace-nowrap.text-right.text-sm
               = link_to "View", resource_path(@resource_class.resource_name, record),
                 class: cp_link, data: { turbo_frame: "_top" }
