@@ -4,7 +4,16 @@ require "rails_helper"
 
 RSpec.describe "Custom field types", type: :request do
   before do
+    @original_field_overrides = UserResource.field_overrides.dup
+    @original_index_field_names = UserResource.index_field_names&.dup
+    @original_form_field_names = UserResource.form_field_names&.dup
     CommandPost::ResourceRegistry.register(UserResource)
+  end
+
+  after do
+    UserResource.field_overrides = @original_field_overrides
+    UserResource.index_field_names = @original_index_field_names
+    UserResource.form_field_names = @original_form_field_names
   end
 
   describe "display on show page" do
