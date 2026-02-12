@@ -35,6 +35,7 @@ module CommandPost
       boolean: :display_boolean,
       date: :display_date,
       datetime: :display_datetime,
+      polymorphic_belongs_to: :display_polymorphic_belongs_to,
     }.freeze
 
     # Displays a field value with appropriate formatting.

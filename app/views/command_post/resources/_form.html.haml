@@ -95,6 +95,21 @@
             class: [cp_textarea_class, "font-mono text-sm", (error_input_class if has_error)].compact.join(" ")
         - when :rich_text
           = f.rich_text_area field.name, class: "trix-content"
+        - when :polymorphic_belongs_to
+          - types = field.options[:types] || []
+          - type_col = field.options[:type_column]
+          - id_col = field.options[:id_column]
+          - current_type = @record.public_send(type_col)
+          - current_id = @record.public_send(id_col)
+          .space-y-2
+            = f.select type_col,
+              types.map { |klass| [klass.model_name.human, klass.name] },
+              { include_blank: I18n.t("command_post.fields.select_placeholder"), selected: current_type },
+              class: [cp_select_class, (error_input_class if has_error)].compact.join(" ")
+            = f.select id_col,
+              (current_type.present? ? current_type.constantize.all.map { |r| [display_record_label(r), r.id] } : []),
+              { include_blank: I18n.t("command_post.fields.select_placeholder"), selected: current_id },
+              class: [cp_select_class, (error_input_class if has_error)].compact.join(" ")
         - when :tags
           - current_tags = @record.public_send(field.name)
           - tag_values = current_tags.is_a?(Array) ? current_tags : current_tags.to_s.split(",").map(&:strip).reject(&:blank?)

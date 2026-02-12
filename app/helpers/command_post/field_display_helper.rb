@@ -183,5 +183,31 @@ module CommandPost
       fmt = field.options[:format] || "%b %d, %Y at %l:%M %p"
       value.strftime(fmt).squish
     end
+
+    def display_polymorphic_belongs_to(record, field)
+      type_value = record.public_send(field.options[:type_column])
+      id_value = record.public_send(field.options[:id_column])
+      return if type_value.blank? || id_value.blank?
+
+      begin
+        associated = type_value.constantize.find_by(id: id_value)
+        return "#{type_value}##{id_value}" unless associated
+
+        resource = CommandPost::ResourceRegistry.find(associated.class.model_name.plural)
+        label = display_record_label(associated)
+        type_label = type_value.underscore.humanize
+
+        if resource
+          content_tag(:span, class: "inline-flex items-center gap-1.5") do
+            content_tag(:span, type_label, class: "text-xs #{cp_muted_text}") +
+              link_to(label, command_post.resource_path(resource.resource_name, associated), class: cp_link)
+          end
+        else
+          "#{type_label}: #{label}"
+        end
+      rescue NameError
+        "#{type_value}##{id_value}"
+      end
+    end
   end
 end

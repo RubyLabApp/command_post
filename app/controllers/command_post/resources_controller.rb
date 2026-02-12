@@ -275,9 +275,10 @@ module CommandPost
     end
 
     def resource_params
-      permitted = form_fields.filter_map do |field|
+      permitted = form_fields.flat_map do |field|
         case field.type
         when :belongs_to then field.options[:foreign_key]
+        when :polymorphic_belongs_to then [field.options[:type_column], field.options[:id_column]]
         when :files then { field.name => [] }
         else field.name
         end
