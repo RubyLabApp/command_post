@@ -36,6 +36,7 @@ RSpec.configure do |config|
     CommandPost.reset_configuration!
     CommandPost::ResourceRegistry.reset!
     CommandPost::AuditLog.clear!
+    CommandPost::FieldTypeRegistry.reset!
   end
 
   config.before(:each, type: :request) do

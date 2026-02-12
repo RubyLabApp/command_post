@@ -3,6 +3,8 @@
 require "command_post/version"
 require "command_post/configuration"
 require "command_post/field"
+require "command_post/field_type_config"
+require "command_post/field_type_registry"
 require "command_post/field_inferrer"
 require "command_post/resource"
 require "command_post/resource_registry"
@@ -110,6 +112,10 @@ module CommandPost
     def reset_configuration!
       @configuration = Configuration.new
       @dashboard_class = nil
+    end
+
+    def register_field_type(type_name, &)
+      FieldTypeRegistry.register(type_name, &)
     end
   end
 end
