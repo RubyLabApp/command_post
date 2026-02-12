@@ -96,6 +96,193 @@ CommandPost.configure do |config|
 end
 ```
 
+## Custom Field Types API
+
+The `FieldTypeRegistry` allows you to register custom field types that integrate with CommandPost's display and form rendering.
+
+### Registering a Custom Field Type
+
+```ruby
+# config/initializers/command_post.rb
+CommandPost::FieldTypeRegistry.register(:star_rating) do
+  # Required: how to display on show pages
+  display do |record, field|
+    value = record.public_send(field.name)
+    value.to_i.times.map { "&#9733;" }.join.html_safe
+  end
+
+  # Optional: how to display on index pages (falls back to display if omitted)
+  index_display do |record, field|
+    value = record.public_send(field.name)
+    "#{value}/5"
+  end
+
+  # Optional: ViewComponent class for the form input
+  form_component MyApp::StarRatingComponent
+
+  # Or use a partial path instead of a component:
+  # form_partial "shared/star_rating_input"
+end
+```
+
+### Using a Custom Field Type
+
+```ruby
+class ReviewResource < CommandPost::Resource
+  field :rating, type: :star_rating
+end
+```
+
+### API Reference
+
+| Method | Description |
+|--------|-------------|
+| `display { \|record, field\| ... }` | Block that returns HTML for the show page |
+| `index_display { \|record, field\| ... }` | Block that returns HTML for the index table cell |
+| `form_component(klass)` | ViewComponent class to render on forms |
+| `form_partial(path)` | Partial path to render on forms (alternative to `form_component`) |
+
+The `FieldTypeRegistry` raises `ArgumentError` if you attempt to register a type name that is already registered. Use `FieldTypeRegistry.registered?(:type_name)` to check before registering.
+
+## Custom Tools
+
+Custom tools let you add standalone pages to the admin panel with full sidebar integration.
+
+### Creating a Tool
+
+Create a tool class that inherits from `CommandPost::Tool`:
+
+```ruby
+# app/command_post/tools/report_tool.rb
+class ReportTool < CommandPost::Tool
+  menu label: "Reports", icon: "chart-bar", priority: 1, group: "Analytics"
+end
+```
+
+Tools auto-register with `ToolRegistry` via the `inherited` callback, similar to how resources auto-register with `ResourceRegistry`.
+
+### Tool Views
+
+Create a view template for your tool at:
+
+```
+app/views/command_post/tools/<tool_name>/show.html.erb
+```
+
+For example, `ReportTool` (which has `tool_name` of `"report"`) would use:
+
+```
+app/views/command_post/tools/report/show.html.erb
+```
+
+### Tool Routes
+
+Tools are automatically routed at `/admin/tools/:tool_name`:
+
+| Route | Controller Action | Description |
+|-------|-------------------|-------------|
+| `GET /admin/tools/:tool_name` | `tools#show` | Render the tool's show view |
+| `POST /admin/tools/:tool_name/:action_name` | `tools#execute` | Execute a tool action |
+
+### Menu Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `label` | String | Display name in the sidebar |
+| `icon` | String | Heroicon name |
+| `priority` | Integer | Sort order (lower = higher in sidebar) |
+| `group` | String | Sidebar group heading (defaults to "Tools") |
+
+### ToolRegistry API
+
+| Method | Description |
+|--------|-------------|
+| `ToolRegistry.all` | Returns all registered tool classes |
+| `ToolRegistry.find(tool_name)` | Find a tool by its name |
+| `ToolRegistry.grouped` | Tools grouped by their `menu_options[:group]` |
+| `ToolRegistry.sorted` | Tools sorted by `menu_options[:priority]` |
+| `ToolRegistry.reset!` | Clear all registered tools (useful in tests) |
+
+## i18n / Localization
+
+CommandPost ships with full i18n support. All UI strings are externalized using `I18n.t()` calls.
+
+### Default Locale File
+
+CommandPost includes a default English locale file at `config/locales/en.yml` under the `command_post:` namespace. The engine automatically loads this file.
+
+### Key Structure
+
+```yaml
+en:
+  command_post:
+    resources:
+      create:
+        success: "%{model} created."
+      update:
+        success: "%{model} updated."
+      destroy:
+        success: "%{model} deleted."
+      index:
+        new_button: "New %{model}"
+        search_placeholder: "Search..."
+        empty_state: "No records found."
+      # ... more keys
+    fields:
+      select_placeholder: "Select..."
+      url_placeholder: "https://"
+      email_placeholder: "user@example.com"
+      # ... more keys
+    form:
+      cancel_button: "Cancel"
+    navigation:
+      dashboard: "Dashboard"
+    filters:
+      "true": "Yes"
+      "false": "No"
+```
+
+### Adding Translations
+
+To add a new language, create a locale file following the same key structure:
+
+```yaml
+# config/locales/command_post.es.yml
+es:
+  command_post:
+    resources:
+      create:
+        success: "%{model} creado."
+      update:
+        success: "%{model} actualizado."
+      destroy:
+        success: "%{model} eliminado."
+      index:
+        new_button: "Nuevo %{model}"
+        search_placeholder: "Buscar..."
+        empty_state: "No se encontraron registros."
+    fields:
+      select_placeholder: "Seleccionar..."
+    form:
+      cancel_button: "Cancelar"
+    navigation:
+      dashboard: "Panel"
+```
+
+Place the file in your host app's `config/locales/` directory. Rails will automatically pick it up when the corresponding locale is set.
+
+### Setting the Locale
+
+CommandPost uses the standard Rails `I18n.locale`. Set it in your application controller or via a `before_action` in the CommandPost configuration:
+
+```ruby
+CommandPost.configure do |config|
+  config.before_action do
+    I18n.locale = command_post_current_user&.locale || :en
+  end
+end
+```
+
 ## Testing Resources
 
 ```ruby

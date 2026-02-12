@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Phase 1: Critical Field Types**
+  - File field (`:file`) — ActiveStorage `has_one_attached` with upload, preview, and delete
+  - Files field (`:files`) — ActiveStorage `has_many_attached` for multi-file uploads
+  - Rich text field (`:rich_text`) — ActionText Trix editor integration
+  - Password field (`:password`) — Secure password input with masking
+
+- **Phase 2: Associations & Content Fields**
+  - `has_one` association support with show page display and View link
+  - `has_and_belongs_to_many` association support with checkbox UI on forms and badge display
+  - Tags field (`:tags`) — Tag input with add/remove, comma-separated storage
+  - Markdown field (`:markdown`) — Monospace text area for markdown content
+
+- **Phase 3: Field Type Expansion**
+  - URL field (`:url`) — Clickable links on show/index, URL input on forms
+  - Email field (`:email`) — Mailto links on show/index, email input on forms
+  - Color field (`:color`) — Color swatch display, picker + hex input on forms
+  - Currency field (`:currency`) — Formatted display with configurable symbol prefix
+  - Boolean icons — Check/X icon display replacing raw true/false
+  - Date and datetime formatting — Human-readable date display (e.g., "January 15, 2026")
+  - Index text truncation — Long text fields truncated to 50 chars with tooltip
+  - FIELD_DISPLAY_METHODS dispatch hash for faster field rendering
+
+- **Phase 4: Ecosystem & Extensibility**
+  - Custom field type API (`FieldTypeRegistry`) — Register custom fields with display/index_display blocks and optional form components or partials
+  - i18n support — All UI strings externalized to `config/locales/en.yml` under `command_post:` namespace
+  - Polymorphic `belongs_to` associations — Auto-detection in `FieldInferrer`, type + ID selector on forms, linked display on show/index
+  - Custom tools — `Tool` base class with `ToolRegistry`, `ToolsController`, routes, and sidebar integration
+
 ## [0.2.0] - 2026-02-07
 
 First public release.
