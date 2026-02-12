@@ -159,8 +159,14 @@
               });
             })();
         - else
-          = f.text_field field.name, placeholder: field.name.to_s.humanize,
-            class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
+          - custom_config = CommandPost::FieldTypeRegistry.find(field.type) if CommandPost::FieldTypeRegistry.registered?(field.type)
+          - if custom_config&.form_component_class
+            = render custom_config.form_component_class.new(form: f, field: field, record: @record)
+          - elsif custom_config&.form_partial_path
+            = render partial: custom_config.form_partial_path, locals: { f: f, field: field, record: @record }
+          - else
+            = f.text_field field.name, placeholder: field.name.to_s.humanize,
+              class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
 
         - if has_error
           .flex.items-center{ class: "gap-1.5 mt-1.5" }

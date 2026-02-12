@@ -50,4 +50,35 @@ RSpec.describe "Custom field types", type: :request do
       expect(response.body).to include("RawValue")
     end
   end
+
+  describe "form rendering" do
+    it "renders custom form partial when registered" do
+      CommandPost::FieldTypeRegistry.register(:custom_input) do
+        display { |record, field| record.public_send(field.name) }
+        form_partial "command_post/fields/custom_input"
+      end
+
+      UserResource.field :name, type: :custom_input
+      UserResource.form_fields :name
+
+      user = User.create!(name: "Test", email: "form@example.com")
+      get command_post.edit_resource_path("users", user)
+
+      expect(response.body).to include("custom-input-field")
+    end
+
+    it "falls back to text input when no form rendering registered" do
+      CommandPost::FieldTypeRegistry.register(:display_only) do
+        display { |record, field| "custom: #{record.public_send(field.name)}" }
+      end
+
+      UserResource.field :name, type: :display_only
+      UserResource.form_fields :name
+
+      user = User.create!(name: "Test", email: "fallback@example.com")
+      get command_post.edit_resource_path("users", user)
+
+      expect(response.body).to include('type="text"')
+    end
+  end
 end
