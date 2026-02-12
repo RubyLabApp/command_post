@@ -112,7 +112,7 @@ module CommandPost
           model.distinct.pluck(column_name).compact.sort.map { |v| [v.to_s.humanize, v] }
         end
       when :boolean
-        [%w[Yes true], %w[No false]]
+        [[I18n.t("command_post.filters.true"), "true"], [I18n.t("command_post.filters.false"), "false"]]
       else
         []
       end

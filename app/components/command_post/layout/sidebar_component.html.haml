@@ -9,7 +9,7 @@
     = link_to helpers.command_post.root_path,
       class: "flex items-center gap-3 px-3 py-2 rounded-lg #{cp_sidebar_link} mb-1" do
       = helpers.heroicon "home", variant: :outline, options: { class: "h-5 w-5" }
-      Dashboard
+      = I18n.t("command_post.navigation.dashboard")
 
     - grouped_resources.each do |group, resources|
       .mt-6

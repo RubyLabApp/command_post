@@ -17,7 +17,7 @@
           - display_method = field.options[:display]
           = f.select fk,
             options_from_collection_for_select(assoc_class.all, :id, (display_method || :name), @record.public_send(fk)),
-            { include_blank: "Select..." },
+            { include_blank: I18n.t("command_post.fields.select_placeholder") },
             class: [cp_select_class, (error_input_class if has_error)].compact.join(" ")
         - when :text
           = f.text_field field.name, placeholder: field.name.to_s.humanize,
@@ -26,39 +26,39 @@
           = f.text_area field.name, rows: 4, placeholder: field.name.to_s.humanize,
             class: [cp_textarea_class, (error_input_class if has_error)].compact.join(" ")
         - when :number
-          = f.number_field field.name, placeholder: "0",
+          = f.number_field field.name, placeholder: I18n.t("command_post.fields.number_placeholder"),
             class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
         - when :boolean
           .flex.items-center.pt-1{ class: "gap-2.5" }
             = f.check_box field.name, class: cp_checkbox_class
-            %span.text-sm.text-gray-600 Enable #{field.name.to_s.humanize.downcase}
+            %span.text-sm.text-gray-600= I18n.t("command_post.fields.boolean_enable", field: field.name.to_s.humanize.downcase)
         - when :datetime, :date
           = f.datetime_local_field field.name,
             class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
         - when :select
           = f.select field.name, field.options[:choices]&.map { |c| [c.humanize, c] },
-            { include_blank: "Select..." },
+            { include_blank: I18n.t("command_post.fields.select_placeholder") },
             class: [cp_select_class, (error_input_class if has_error)].compact.join(" ")
         - when :password
           = f.password_field field.name, placeholder: field.name.to_s.humanize, autocomplete: "new-password",
             class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
         - when :url
-          = f.url_field field.name, placeholder: "https://",
+          = f.url_field field.name, placeholder: I18n.t("command_post.fields.url_placeholder"),
             class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
         - when :email
-          = f.email_field field.name, placeholder: "user@example.com",
+          = f.email_field field.name, placeholder: I18n.t("command_post.fields.email_placeholder"),
             class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
         - when :color
           .flex.items-center.gap-3
             = f.color_field field.name, class: "h-10 w-14 rounded border border-gray-300 cursor-pointer p-0.5"
-            = f.text_field field.name, placeholder: "#000000",
+            = f.text_field field.name, placeholder: I18n.t("command_post.fields.color_placeholder"),
               class: [cp_input_class, "flex-1 font-mono text-sm", (error_input_class if has_error)].compact.join(" "),
               data: { color_text: true }
         - when :currency
           .relative
             %span.pointer-events-none.absolute.inset-y-0.left-0.flex.items-center.pl-3.text-gray-500.text-sm
               = field.options[:symbol] || "$"
-            = f.number_field field.name, step: "0.01", placeholder: "0.00",
+            = f.number_field field.name, step: "0.01", placeholder: I18n.t("command_post.fields.currency_placeholder"),
               class: [cp_input_class, "pl-7", (error_input_class if has_error)].compact.join(" ")
         - when :file
           - attachment = @record.public_send(field.name) if @record.respond_to?(field.name)
@@ -73,7 +73,7 @@
               .ml-auto
                 = f.label "#{field.name}_purge", class: "flex items-center gap-1.5 text-sm text-red-600 cursor-pointer" do
                   = check_box_tag "record[#{field.name}_purge]", "1", false, id: "#{field.name}_purge", class: cp_checkbox_class
-                  Remove
+                  = I18n.t("command_post.fields.file_remove")
           = f.file_field field.name,
             class: [cp_file_input_class, (error_input_class if has_error)].compact.join(" ")
         - when :files
@@ -91,7 +91,7 @@
           = f.file_field field.name, multiple: true,
             class: [cp_file_input_class, (error_input_class if has_error)].compact.join(" ")
         - when :markdown
-          = f.text_area field.name, rows: 8, placeholder: "Write markdown here...",
+          = f.text_area field.name, rows: 8, placeholder: I18n.t("command_post.fields.markdown_placeholder"),
             class: [cp_textarea_class, "font-mono text-sm", (error_input_class if has_error)].compact.join(" ")
         - when :rich_text
           = f.rich_text_area field.name, class: "trix-content"
@@ -107,7 +107,7 @@
                   = tag_value
                   %button.ml-1.text-indigo-400.hover:text-indigo-600{ type: "button", data: { remove_tag: true } } &times;
             .flex.items-center.gap-2
-              %input.flex-1{ type: "text", placeholder: "Type and press Enter to add...", data: { tag_input: true },
+              %input.flex-1{ type: "text", placeholder: I18n.t("command_post.fields.tags_placeholder"), data: { tag_input: true },
                 class: [cp_input_class, (error_input_class if has_error)].compact.join(" ") }
           :javascript
             (function() {
@@ -186,5 +186,5 @@
 
   .flex.items-center.gap-3.mt-8.pt-6.border-t{ class: t.card_border }
     = f.submit class: cp_btn_primary_lg
-    = link_to "Cancel", resources_path(@resource_class.resource_name),
+    = link_to I18n.t("command_post.form.cancel_button"), resources_path(@resource_class.resource_name),
       class: cp_btn_secondary
