@@ -60,6 +60,14 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_000005) do
     t.timestamps
   end
 
+  create_table :notes, force: :cascade do |t|
+    t.string :title, null: false
+    t.text :body
+    t.string :notable_type
+    t.integer :notable_id
+    t.timestamps
+  end
+
   # ActiveStorage tables
   create_table :active_storage_blobs, force: :cascade do |t|
     t.string :key, null: false

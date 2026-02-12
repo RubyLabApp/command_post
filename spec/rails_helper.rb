@@ -21,6 +21,7 @@ require_relative "dummy/app/command_post/post_resource"
 require_relative "dummy/app/command_post/document_resource"
 require_relative "dummy/app/command_post/profile_resource"
 require_relative "dummy/app/command_post/tag_resource"
+require_relative "dummy/app/command_post/note_resource"
 
 RSpec.configure do |config|
   config.use_transactional_fixtures = true
@@ -43,12 +44,14 @@ RSpec.configure do |config|
     # Re-register resources for request specs
     CommandPost::ResourceRegistry.register(UserResource)
     CommandPost::ResourceRegistry.register(LicenseResource)
+    CommandPost::ResourceRegistry.register(NoteResource)
   end
 
   config.before(:each, type: :component) do
     # Re-register resources for component specs
     CommandPost::ResourceRegistry.register(UserResource)
     CommandPost::ResourceRegistry.register(LicenseResource)
+    CommandPost::ResourceRegistry.register(NoteResource)
 
     # Set up route helpers for component tests
     vc_test_controller.view_context.class.define_method(:command_post) do
