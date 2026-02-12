@@ -20,6 +20,14 @@ module CommandPost
   # @see CommandPost::Field
   # @see CommandPost::Resource.resolved_fields
   class FieldInferrer
+    # Column name patterns that indicate a URL field.
+    # @return [Regexp]
+    URL_PATTERN = /\A(website|homepage|.*_url|.*_link)\z/
+
+    # Column name patterns that indicate an email field.
+    # @return [Regexp]
+    EMAIL_PATTERN = /\A(email|.*_email)\z/
+
     # Maps database column types to field types.
     # @return [Hash{Symbol => Symbol}]
     TYPE_MAP = {
@@ -97,7 +105,24 @@ module CommandPost
       if enum_column?(name)
         Field.new(name, type: :select, choices: @model.defined_enums[name.to_s].keys)
       else
-        Field.new(name, type: TYPE_MAP.fetch(column.type, :text))
+        type = infer_type(column)
+        Field.new(name, type: type)
+      end
+    end
+
+    # @api private
+    # Infers a more specific type for string columns based on naming conventions.
+    def infer_type(column)
+      base_type = TYPE_MAP.fetch(column.type, :text)
+      return base_type unless base_type == :text
+
+      name = column.name
+      if name.match?(URL_PATTERN)
+        :url
+      elsif name.match?(EMAIL_PATTERN)
+        :email
+      else
+        :text
       end
     end
 

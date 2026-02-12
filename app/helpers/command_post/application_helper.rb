@@ -11,31 +11,64 @@ module CommandPost
     # @return [Array<Symbol>]
     DISPLAY_METHODS = %i[name title email label slug].freeze
 
+    # Default max characters for text truncation on index pages.
+    INDEX_TRUNCATION_LENGTH = 50
+
+    # Field types that should be truncated on index pages.
+    TRUNCATABLE_TYPES = %i[text textarea].freeze
+
+    # Maps field types to their display method names.
+    # @return [Hash{Symbol => Symbol}]
+    FIELD_DISPLAY_METHODS = {
+      belongs_to: :display_belongs_to,
+      badge: :display_badge,
+      password: :display_password,
+      file: :display_file,
+      files: :display_files,
+      rich_text: :display_rich_text,
+      tags: :display_tags,
+      markdown: :display_markdown,
+      url: :display_url,
+      email: :display_email,
+      color: :display_color,
+      currency: :display_currency,
+      boolean: :display_boolean,
+      date: :display_date,
+      datetime: :display_datetime,
+    }.freeze
+
     # Displays a field value with appropriate formatting.
     #
     # @param record [ActiveRecord::Base] The record
     # @param field [CommandPost::Field] Field configuration
     # @return [String, nil] Formatted value
     def display_field_value(record, field)
-      case field.type
-      when :belongs_to
-        display_belongs_to(record, field)
-      when :badge
-        display_badge(record, field)
-      when :password
-        display_password
-      when :file
-        display_file(record, field)
-      when :files
-        display_files(record, field)
-      when :rich_text
-        display_rich_text(record, field)
-      when :tags
-        display_tags(record, field)
-      when :markdown
-        display_markdown(record, field)
+      method_name = FIELD_DISPLAY_METHODS[field.type]
+      if method_name
+        method_name == :display_password ? display_password : send(method_name, record, field)
       else
         record.public_send(field.name)
+      end
+    end
+
+    # Displays a field value for index pages with text truncation.
+    #
+    # @param record [ActiveRecord::Base] The record
+    # @param field [CommandPost::Field] Field configuration
+    # @return [String, nil] Formatted value (truncated for text fields)
+    def display_index_field_value(record, field)
+      if TRUNCATABLE_TYPES.include?(field.type)
+        value = record.public_send(field.name)
+        return if value.blank?
+
+        truncated = truncate(value.to_s, length: INDEX_TRUNCATION_LENGTH)
+        if value.to_s.length > INDEX_TRUNCATION_LENGTH
+          content_tag(:span, truncated, title: value.to_s)
+        else
+          truncated
+        end
+      else
+        display_field_value(record, field)
       end
     end
 

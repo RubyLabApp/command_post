@@ -1,4 +1,6 @@
 class UserResource < CommandPost::Resource
+  field :email, type: :email
+
   searchable :name, :email
 
   filter :role, type: :select

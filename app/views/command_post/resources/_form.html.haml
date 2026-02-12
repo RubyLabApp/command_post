@@ -42,6 +42,24 @@
         - when :password
           = f.password_field field.name, placeholder: field.name.to_s.humanize, autocomplete: "new-password",
             class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
+        - when :url
+          = f.url_field field.name, placeholder: "https://",
+            class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
+        - when :email
+          = f.email_field field.name, placeholder: "user@example.com",
+            class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
+        - when :color
+          .flex.items-center.gap-3
+            = f.color_field field.name, class: "h-10 w-14 rounded border border-gray-300 cursor-pointer p-0.5"
+            = f.text_field field.name, placeholder: "#000000",
+              class: [cp_input_class, "flex-1 font-mono text-sm", (error_input_class if has_error)].compact.join(" "),
+              data: { color_text: true }
+        - when :currency
+          .relative
+            %span.pointer-events-none.absolute.inset-y-0.left-0.flex.items-center.pl-3.text-gray-500.text-sm
+              = field.options[:symbol] || "$"
+            = f.number_field field.name, step: "0.01", placeholder: "0.00",
+              class: [cp_input_class, "pl-7", (error_input_class if has_error)].compact.join(" ")
         - when :file
           - attachment = @record.public_send(field.name) if @record.respond_to?(field.name)
           - if attachment&.attached?

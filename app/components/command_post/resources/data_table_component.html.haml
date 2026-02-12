@@ -26,7 +26,7 @@
         %tr{ class: theme.table_row_hover }
           - visible_fields.each do |field|
             %td.px-6.py-4.whitespace-nowrap.text-sm{ class: theme.body_text }
-              = helpers.display_field_value(record, field)
+              = helpers.display_index_field_value(record, field)
           %td.px-6.py-4.whitespace-nowrap.text-right.text-sm
             = link_to "View", helpers.command_post.resource_path(resource_class.resource_name, record),
               class: theme.link, data: { turbo_frame: "_top" }

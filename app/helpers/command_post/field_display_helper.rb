@@ -3,7 +3,7 @@
 module CommandPost
   # Private helper methods for rendering specific field types.
   # Extracted from ApplicationHelper for organization.
-  module FieldDisplayHelper
+  module FieldDisplayHelper # rubocop:disable Metrics/ModuleLength
     private
 
     def display_belongs_to(record, field)
@@ -118,6 +118,70 @@ module CommandPost
           end
         )
       end
+    end
+
+    def display_url(record, field)
+      value = record.public_send(field.name)
+      return if value.blank?
+
+      content_tag(:span, class: "inline-flex items-center gap-1") do
+        link_to(value, value, target: "_blank", rel: "noopener noreferrer", class: cp_link) +
+          heroicon("arrow-top-right-on-square", variant: :mini, options: { class: "h-3.5 w-3.5 #{cp_muted_text}" })
+      end
+    end
+
+    def display_email(record, field)
+      value = record.public_send(field.name)
+      return if value.blank?
+
+      link_to(value, "mailto:#{value}", class: cp_link)
+    end
+
+    def display_color(record, field)
+      value = record.public_send(field.name)
+      return if value.blank?
+
+      content_tag(:span, class: "inline-flex items-center gap-2") do
+        content_tag(:span, "", class: "inline-block h-5 w-5 rounded border border-gray-300",
+                               style: "background-color: #{ERB::Util.html_escape(value)}") +
+          content_tag(:code, value, class: "text-xs #{cp_muted_text}")
+      end
+    end
+
+    def display_currency(record, field)
+      value = record.public_send(field.name)
+      return if value.nil?
+
+      symbol = field.options[:symbol] || "$"
+      precision = field.options[:precision] || 2
+      formatted = number_with_delimiter(format("%.#{precision}f", value.to_f))
+      content_tag(:span, "#{symbol}#{formatted}", class: "tabular-nums")
+    end
+
+    def display_boolean(record, field)
+      value = record.public_send(field.name)
+
+      if value
+        heroicon("check-circle", variant: :mini, options: { class: "h-5 w-5 text-green-500" })
+      else
+        heroicon("x-circle", variant: :mini, options: { class: "h-5 w-5 text-red-400" })
+      end
+    end
+
+    def display_date(record, field)
+      value = record.public_send(field.name)
+      return if value.nil?
+
+      fmt = field.options[:format] || "%b %d, %Y"
+      value.strftime(fmt)
+    end
+
+    def display_datetime(record, field)
+      value = record.public_send(field.name)
+      return if value.nil?
+
+      fmt = field.options[:format] || "%b %d, %Y at %l:%M %p"
+      value.strftime(fmt).squish
     end
   end
 end
