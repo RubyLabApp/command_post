@@ -74,7 +74,7 @@ module CommandPost
       if @record.save
         emit_event(:create, @record)
         redirect_to resource_path(@resource_class.resource_name, @record),
-                    notice: "#{@resource_class.model.model_name.human} created."
+                    notice: I18n.t("command_post.resources.create.success", model: @resource_class.model.model_name.human)
       else
         @fields = form_fields
         render :new, status: :unprocessable_content
@@ -92,7 +92,7 @@ module CommandPost
       if @record.update(resource_params)
         emit_event(:update, @record)
         redirect_to resource_path(@resource_class.resource_name, @record),
-                    notice: "#{@resource_class.model.model_name.human} updated."
+                    notice: I18n.t("command_post.resources.update.success", model: @resource_class.model.model_name.human)
       else
         @fields = form_fields
         render :edit, status: :unprocessable_content
@@ -108,7 +108,7 @@ module CommandPost
       @record.destroy!
       emit_event(:destroy, @record)
       redirect_to resources_path(@resource_class.resource_name),
-                  notice: "#{@resource_class.model.model_name.human} deleted."
+                  notice: I18n.t("command_post.resources.destroy.success", model: @resource_class.model.model_name.human)
     end
 
     # Executes a custom action on a single record.
@@ -127,11 +127,13 @@ module CommandPost
         raise ActiveRecord::Rollback if result == false
       end
 
-      redirect_to resource_path(@resource_class.resource_name, @record), notice: "Action completed"
+      redirect_to resource_path(@resource_class.resource_name, @record),
+                  notice: I18n.t("command_post.resources.action.success")
     rescue ActiveRecord::RecordNotFound
       head(:not_found)
     rescue StandardError => e
-      redirect_to resources_path(@resource_class.resource_name), alert: "Action failed: #{e.message}"
+      redirect_to resources_path(@resource_class.resource_name),
+                  alert: I18n.t("command_post.resources.action.failure", error: e.message)
     end
 
     # Executes a bulk action on multiple selected records.
@@ -142,19 +144,21 @@ module CommandPost
     # @return [void]
     def execute_bulk_action
       ids = bulk_action_ids
-      return redirect_bulk(:alert, "No records selected") if ids.empty?
+      return redirect_bulk(:alert, I18n.t("command_post.resources.bulk_action.no_records")) if ids.empty?
 
       records = base_scope.where(id: ids)
       action = find_bulk_action
 
       return head(:not_found) unless action
       return head(:forbidden) unless action_authorized?(action[:name])
-      return redirect_bulk(:alert, "Some records are not accessible") unless all_records_accessible?(records, ids)
+      unless all_records_accessible?(records, ids)
+        return redirect_bulk(:alert, I18n.t("command_post.resources.bulk_action.inaccessible"))
+      end
 
       run_bulk_action_in_transaction(action, records)
-      redirect_bulk(:notice, "Bulk action completed")
+      redirect_bulk(:notice, I18n.t("command_post.resources.bulk_action.success"))
     rescue StandardError => e
-      redirect_bulk(:alert, "Action failed: #{e.message}")
+      redirect_bulk(:alert, I18n.t("command_post.resources.bulk_action.failure", error: e.message))
     end
 
     # Returns autocomplete results for belongs_to fields.
@@ -364,13 +368,9 @@ module CommandPost
     end
 
     def find_record_for_action
-      # Use unscoped for soft delete models to allow finding deleted records
-      # This is needed for the restore action to work on soft-deleted records
-      if @resource_class.soft_delete?
-        @resource_class.model.unscoped.find(params[:id])
-      else
-        @resource_class.model.find(params[:id])
-      end
+      # Use unscoped for soft delete models to allow restore action on deleted records
+      scope = @resource_class.soft_delete? ? @resource_class.model.unscoped : @resource_class.model
+      scope.find(params[:id])
     end
   end
 end
