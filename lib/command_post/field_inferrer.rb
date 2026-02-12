@@ -60,6 +60,11 @@ module CommandPost
     # @param model [Class] An ActiveRecord model class
     def initialize(model)
       @model = model
+      @polymorphic_map = model.reflect_on_all_associations(:belongs_to)
+        .select(&:polymorphic?)
+        .index_by { |a| a.name.to_s }
+      @polymorphic_columns = @polymorphic_map.values
+        .flat_map { |a| [a.foreign_type, a.foreign_key.to_s] }.to_set
       @belongs_to_map = model.reflect_on_all_associations(:belongs_to)
         .reject(&:polymorphic?)
         .index_by { |a| a.foreign_key.to_s }
@@ -81,6 +86,7 @@ module CommandPost
     def call
       fields = @model.columns.filter_map do |column|
         next if @shadowed_columns.include?(column.name)
+        next if @polymorphic_columns.include?(column.name)
 
         assoc = @belongs_to_map[column.name]
         if assoc
@@ -90,6 +96,7 @@ module CommandPost
         end
       end
 
+      fields.concat(polymorphic_fields)
       fields.concat(attachment_fields)
       fields.concat(rich_text_fields)
       fields
@@ -123,6 +130,20 @@ module CommandPost
         :email
       else
         :text
+      end
+    end
+
+    # @api private
+    # Builds fields for polymorphic belongs_to associations.
+    def polymorphic_fields
+      @polymorphic_map.map do |name, assoc|
+        Field.new(
+          name.to_sym,
+          type: :polymorphic_belongs_to,
+          association_name: name.to_sym,
+          type_column: assoc.foreign_type.to_sym,
+          id_column: assoc.foreign_key.to_sym
+        )
       end
     end
 
