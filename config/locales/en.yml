@@ -1,0 +1,53 @@
+en:
+  command_post:
+    resources:
+      create:
+        success: "%{model} created."
+      update:
+        success: "%{model} updated."
+      destroy:
+        success: "%{model} deleted."
+      action:
+        success: "Action completed"
+        failure: "Action failed: %{error}"
+      bulk_action:
+        no_records: "No records selected"
+        success: "Bulk action completed"
+        failure: "Action failed: %{error}"
+        inaccessible: "Some records are not accessible"
+      index:
+        new_button: "New %{model}"
+        search_placeholder: "Search..."
+        filters_label: "Filters"
+        apply_button: "Apply"
+        clear_button: "Clear"
+        empty_state: "No records found."
+        view_link: "View"
+        all_option: "All"
+      show:
+        edit_button: "Edit"
+        delete_button: "Delete"
+        delete_confirm: "Are you sure?"
+        view_link: "View"
+        view_all: "View all"
+        actions_label: "Actions"
+    fields:
+      select_placeholder: "Select..."
+      boolean_enable: "Enable %{field}"
+      url_placeholder: "https://"
+      email_placeholder: "user@example.com"
+      file_remove: "Remove"
+      markdown_placeholder: "Write markdown here..."
+      tags_placeholder: "Type and press Enter to add..."
+      color_placeholder: "#000000"
+      number_placeholder: "0"
+      currency_placeholder: "0.00"
+    form:
+      cancel_button: "Cancel"
+    navigation:
+      dashboard: "Dashboard"
+    filters:
+      "true": "Yes"
+      "false": "No"
+      from: "From"
+      to: "To"
