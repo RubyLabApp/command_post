@@ -80,7 +80,7 @@
       .flex.gap-2
         - @resource_class.defined_actions.each do |action|
           = button_to resource_action_path(@resource_class.resource_name, @record, action[:name]),
-            data: action[:confirm] ? { turbo_confirm: "Are you sure?" } : {},
+            data: action[:confirm] ? { turbo_confirm: I18n.t("command_post.resources.show.delete_confirm") } : {},
             class: cp_btn_ghost do
             - if action[:icon]
               = heroicon action[:icon], variant: :outline, options: { class: "h-5 w-5" }

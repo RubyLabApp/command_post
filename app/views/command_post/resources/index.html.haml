@@ -67,10 +67,10 @@
                     .space-y-2
                       = date_field_tag "filters[#{filter[:name]}_from]", params.dig(:filters, "#{filter[:name]}_from"),
                         class: cp_filter_input_class,
-                        placeholder: "From"
+                        placeholder: I18n.t("command_post.filters.from")
                       = date_field_tag "filters[#{filter[:name]}_to]", params.dig(:filters, "#{filter[:name]}_to"),
                         class: cp_filter_input_class,
-                        placeholder: "To"
+                        placeholder: I18n.t("command_post.filters.to")
             .flex.items-center.gap-3.mt-4.pt-3.border-t.border-gray-100
               %button{ type: "submit", class: cp_btn_filter_apply }= I18n.t("command_post.resources.index.apply_button")
               = link_to I18n.t("command_post.resources.index.clear_button"), resources_path(@resource_class.resource_name, scope: @current_scope, q: params[:q]),

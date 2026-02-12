@@ -24,6 +24,10 @@ en:
         empty_state: "No records found."
         view_link: "View"
         all_option: "All"
+      edit:
+        title: "Edit %{model}"
+      new:
+        title: "New %{model}"
       show:
         edit_button: "Edit"
         delete_button: "Delete"
