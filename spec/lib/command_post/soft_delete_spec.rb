@@ -132,7 +132,7 @@ RSpec.describe "CommandPost Soft Delete Support" do
       end
 
       CommandPost::ResourceRegistry.register(resource_with_scopes)
-      scope_names = resource_with_scopes.all_scopes.map { |s| s[:name] }
+      scope_names = resource_with_scopes.all_scopes.pluck(:name)
 
       expect(scope_names).to eq(%i[recent featured with_deleted only_deleted])
     end
