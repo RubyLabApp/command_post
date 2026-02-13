@@ -35,6 +35,7 @@ module CommandPost
       boolean: :display_boolean,
       date: :display_date,
       datetime: :display_datetime,
+      polymorphic_belongs_to: :display_polymorphic_belongs_to,
     }.freeze
 
     # Displays a field value with appropriate formatting.
@@ -46,6 +47,8 @@ module CommandPost
       method_name = FIELD_DISPLAY_METHODS[field.type]
       if method_name
         method_name == :display_password ? display_password : send(method_name, record, field)
+      elsif (custom = CommandPost::FieldTypeRegistry.find(field.type))
+        custom.render_display(record, field)
       else
         record.public_send(field.name)
       end
@@ -67,6 +70,8 @@ module CommandPost
         else
           truncated
         end
+      elsif (custom = CommandPost::FieldTypeRegistry.find(field.type))
+        custom.render_index_display(record, field)
       else
         display_field_value(record, field)
       end
@@ -108,7 +113,7 @@ module CommandPost
           model.distinct.pluck(column_name).compact.sort.map { |v| [v.to_s.humanize, v] }
         end
       when :boolean
-        [%w[Yes true], %w[No false]]
+        [[I18n.t("command_post.filters.true"), "true"], [I18n.t("command_post.filters.false"), "false"]]
       else
         []
       end

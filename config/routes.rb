@@ -6,6 +6,9 @@ CommandPost::Engine.routes.draw do
   get "autocomplete/:resource_name", to: "resources#autocomplete", as: :autocomplete
   get ":resource_name/export", to: "exports#show", as: :export
 
+  get "tools/:tool_name", to: "tools#show", as: :tool
+  post "tools/:tool_name/:action_name", to: "tools#execute", as: :tool_action
+
   get ":resource_name", to: "resources#index", as: :resources
   get ":resource_name/new", to: "resources#new", as: :new_resource
   get ":resource_name/:id", to: "resources#show", as: :resource

@@ -30,6 +30,10 @@ module CommandPost
       app.config.importmap.paths << root.join("config/importmap.rb") if defined?(ActionText) && app.config.respond_to?(:importmap)
     end
 
+    initializer "command_post.i18n" do
+      config.i18n.load_path += Dir[root.join("config", "locales", "**", "*.yml")]
+    end
+
     config.after_initialize do
       resource_path = Rails.root.join("app/command_post")
       Rails.autoloaders.main.eager_load_dir(resource_path.to_s) if resource_path.exist?

@@ -12,6 +12,12 @@ module CommandPost
         CommandPost::ResourceRegistry.grouped
       end
 
+      # Returns tools grouped by menu group.
+      # @return [Hash{String => Array<Class>}]
+      def grouped_tools
+        CommandPost::ToolRegistry.grouped
+      end
+
       # @api private
       # @return [String] Configured admin panel title
       def title

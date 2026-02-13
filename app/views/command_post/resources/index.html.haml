@@ -2,7 +2,7 @@
   .flex.items-center.justify-between.mb-6
     %h1.text-2xl{ class: cp_heading }= @resource_class.label
     - if @resource_class.action_allowed?(:create)
-      = link_to "New #{@resource_class.model.model_name.human}",
+      = link_to I18n.t("command_post.resources.index.new_button", model: @resource_class.model.model_name.human),
         new_resource_path(@resource_class.resource_name),
         class: cp_btn_primary
 
@@ -27,7 +27,7 @@
             .pointer-events-none.absolute.inset-y-0.left-0.flex.items-center{ class: "pl-3.5" }
               = heroicon "magnifying-glass", variant: :mini, options: { class: "h-4 w-4 #{cp_muted_text}" }
             = text_field_tag :q, params[:q],
-              placeholder: "Search...",
+              placeholder: I18n.t("command_post.resources.index.search_placeholder"),
               class: cp_search_class
 
   - if @resource_class.defined_filters.any?
@@ -37,7 +37,7 @@
       %details.relative.group{ open: has_active_filters || nil }
         %summary.inline-flex.items-center.gap-2.px-4.cursor-pointer.select-none.text-sm.font-medium.rounded-lg.border.shadow-sm.transition.duration-150{ class: "#{cp_label_text} #{t.card_border} #{t.card_bg} py-2.5 hover:bg-gray-50 [&::-webkit-details-marker]:hidden", style: "list-style: none;" }
           = heroicon "funnel", variant: :mini, options: { class: "h-4 w-4 #{cp_muted_text}" }
-          %span Filters
+          %span= I18n.t("command_post.resources.index.filters_label")
           - if has_active_filters
             - active_count = @resource_class.defined_filters.count { |f| params.dig(:filters, f[:name]).present? || params.dig(:filters, "#{f[:name]}_from").present? || params.dig(:filters, "#{f[:name]}_to").present? }
             %span{ class: cp_badge_count }
@@ -55,25 +55,25 @@
                   - case filter[:type]
                   - when :select
                     %select.block.w-full.appearance-none.border.px-3.py-2.text-sm.shadow-sm.outline-none.transition.duration-150.ease-in-out{ name: "filters[#{filter[:name]}]", class: "#{t.border_radius} #{t.input_border} #{t.card_bg} #{cp_body_text} #{cp_focus}", style: select_chevron_style }
-                      %option{ value: "" } All
+                      %option{ value: "" }= I18n.t("command_post.resources.index.all_option")
                       - filter_options_for(@resource_class, filter).each do |label, value|
                         %option{ value: value, selected: params.dig(:filters, filter[:name]) == value.to_s }= label
                   - when :boolean
                     %select.block.w-full.appearance-none.border.px-3.py-2.text-sm.shadow-sm.outline-none.transition.duration-150.ease-in-out{ name: "filters[#{filter[:name]}]", class: "#{t.border_radius} #{t.input_border} #{t.card_bg} #{cp_body_text} #{cp_focus}", style: select_chevron_style }
-                      %option{ value: "" } All
+                      %option{ value: "" }= I18n.t("command_post.resources.index.all_option")
                       - filter_options_for(@resource_class, filter).each do |label, value|
                         %option{ value: value, selected: params.dig(:filters, filter[:name]) == value.to_s }= label
                   - when :date_range
                     .space-y-2
                       = date_field_tag "filters[#{filter[:name]}_from]", params.dig(:filters, "#{filter[:name]}_from"),
                         class: cp_filter_input_class,
-                        placeholder: "From"
+                        placeholder: I18n.t("command_post.filters.from")
                       = date_field_tag "filters[#{filter[:name]}_to]", params.dig(:filters, "#{filter[:name]}_to"),
                         class: cp_filter_input_class,
-                        placeholder: "To"
+                        placeholder: I18n.t("command_post.filters.to")
             .flex.items-center.gap-3.mt-4.pt-3.border-t.border-gray-100
-              %button{ type: "submit", class: cp_btn_filter_apply } Apply
-              = link_to "Clear", resources_path(@resource_class.resource_name, scope: @current_scope, q: params[:q]),
+              %button{ type: "submit", class: cp_btn_filter_apply }= I18n.t("command_post.resources.index.apply_button")
+              = link_to I18n.t("command_post.resources.index.clear_button"), resources_path(@resource_class.resource_name, scope: @current_scope, q: params[:q]),
                 class: "text-sm #{cp_link_muted}"
 
   = turbo_frame_tag "records" do
@@ -91,7 +91,7 @@
         - if @records.empty?
           %tr
             %td.px-6.py-8.text-center.text-sm{ colspan: @fields.count { |f| f.visible?(command_post_current_user) } + 1, class: cp_muted_text }
-              No records found.
+              = I18n.t("command_post.resources.index.empty_state")
         - @records.each do |record|
           %tr{ class: cp_table_row_hover }
             - @fields.each do |field|
@@ -99,7 +99,7 @@
               %td.px-6.py-4.whitespace-nowrap.text-sm{ class: cp_body_text }
                 = display_index_field_value(record, field)
             %td.px-6.py-4.whitespace-nowrap.text-right.text-sm
-              = link_to "View", resource_path(@resource_class.resource_name, record),
+              = link_to I18n.t("command_post.resources.index.view_link"), resource_path(@resource_class.resource_name, record),
                 class: cp_link, data: { turbo_frame: "_top" }
 
     .mt-4

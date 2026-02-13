@@ -221,6 +221,30 @@ class UserResource < CommandPost::Resource
 end
 ```
 
+### Polymorphic Associations
+
+CommandPost auto-detects polymorphic `belongs_to` associations. You can also declare them explicitly with the `types` option to specify which models are allowed:
+
+```ruby
+class CommentResource < CommandPost::Resource
+  belongs_to :commentable, polymorphic: true, types: [Article, Photo, Video]
+end
+```
+
+On forms, a type selector dropdown and an ID selector are rendered. On show and index pages, the associated record is displayed as a linked reference (e.g., "Article #42").
+
+The `FieldInferrer` automatically detects polymorphic associations when a model has `*_type` and `*_id` column pairs and creates a `:polymorphic_belongs_to` field type.
+
+### HABTM Associations
+
+`has_and_belongs_to_many` associations are supported with a checkbox UI on forms and badge display on show pages:
+
+```ruby
+class ArticleResource < CommandPost::Resource
+  has_and_belongs_to_many :tags
+end
+```
+
 ### Association Preloading
 
 CommandPost automatically preloads associations to prevent N+1 queries:

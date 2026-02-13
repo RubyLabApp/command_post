@@ -5,11 +5,11 @@
       %span.text-gray-400= "##{@record.id}"
     .flex.gap-2
       - if @resource_class.action_allowed?(:update)
-        = link_to "Edit", edit_resource_path(@resource_class.resource_name, @record),
+        = link_to I18n.t("command_post.resources.show.edit_button"), edit_resource_path(@resource_class.resource_name, @record),
           class: cp_btn_primary
       - if @resource_class.action_allowed?(:destroy)
-        = button_to "Delete", resource_path(@resource_class.resource_name, @record),
-          method: :delete, data: { turbo_confirm: "Are you sure?" },
+        = button_to I18n.t("command_post.resources.show.delete_button"), resource_path(@resource_class.resource_name, @record),
+          method: :delete, data: { turbo_confirm: I18n.t("command_post.resources.show.delete_confirm") },
           class: cp_btn_danger
 
   .overflow-hidden{ class: cp_card }
@@ -26,7 +26,7 @@
     .mt-6.overflow-hidden{ class: cp_card }
       .px-6.py-4.border-b.flex.items-center.justify-between{ class: t.card_border }
         %h2.text-lg.font-semibold= assoc[:name].to_s.humanize
-        = link_to "View",
+        = link_to I18n.t("command_post.resources.show.view_link"),
           resource_path(assoc[:resource].resource_name, related_record),
           class: "text-sm #{cp_link}"
       %dl{ class: "#{cp_table_border} divide-y" }
@@ -61,7 +61,7 @@
     .mt-6.overflow-hidden{ class: cp_card }
       .px-6.py-4.border-b.flex.items-center.justify-between{ class: t.card_border }
         %h2.text-lg.font-semibold= assoc[:name].to_s.humanize
-        = link_to "View all",
+        = link_to I18n.t("command_post.resources.show.view_all"),
           resources_path(assoc[:resource].resource_name),
           class: "text-sm #{cp_link}"
       %table.min-w-full{ class: "#{cp_table_border} divide-y" }
@@ -76,11 +76,11 @@
 
   - if @resource_class.defined_actions.any?
     .mt-6.p-6{ class: cp_card }
-      %h2.text-lg.font-semibold.mb-4 Actions
+      %h2.text-lg.font-semibold.mb-4= I18n.t("command_post.resources.show.actions_label")
       .flex.gap-2
         - @resource_class.defined_actions.each do |action|
           = button_to resource_action_path(@resource_class.resource_name, @record, action[:name]),
-            data: action[:confirm] ? { turbo_confirm: "Are you sure?" } : {},
+            data: action[:confirm] ? { turbo_confirm: I18n.t("command_post.resources.show.delete_confirm") } : {},
             class: cp_btn_ghost do
             - if action[:icon]
               = heroicon action[:icon], variant: :outline, options: { class: "h-5 w-5" }

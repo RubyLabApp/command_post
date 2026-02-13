@@ -30,4 +30,27 @@ RSpec.describe CommandPost::Layout::SidebarComponent, type: :component do
 
     expect(result.text).to include("Licensing")
   end
+
+  context "with registered tools" do
+    before do
+      tool_class = Class.new(CommandPost::Tool) do
+        def self.name = "SidebarTestTool"
+      end
+      tool_class.menu icon: "wrench", label: "My Tool", priority: 1, group: "Utilities"
+      CommandPost::ToolRegistry.register(tool_class)
+    end
+
+    it "renders tool links" do
+      result = render_inline(described_class.new)
+      link_texts = result.css("a").map { |a| a.text.strip }
+
+      expect(link_texts).to include("My Tool")
+    end
+
+    it "groups tools by menu group" do
+      result = render_inline(described_class.new)
+
+      expect(result.text).to include("Utilities")
+    end
+  end
 end
