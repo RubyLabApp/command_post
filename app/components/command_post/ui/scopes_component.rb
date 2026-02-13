@@ -6,7 +6,7 @@ module CommandPost
     #
     # @example Scopes from resource
     #   render CommandPost::Ui::ScopesComponent.new(
-    #     scopes: @resource_class.defined_scopes,
+    #     scopes: @resource_class.all_scopes,
     #     current_scope: @current_scope,
     #     base_path: resources_path(@resource_class.resource_name)
     #   )

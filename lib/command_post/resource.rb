@@ -57,6 +57,7 @@ module CommandPost
     class_attribute :denied_crud_actions, default: []
     class_attribute :defined_associations, default: {}
     class_attribute :model_class_override, default: nil
+    class_attribute :_soft_delete_scopes, default: []
 
     class << self
       # @api private
@@ -225,6 +226,13 @@ module CommandPost
       # @return [Array<Hash>] All filter configurations
       def all_filters
         auto_inferred_filters + defined_filters
+      end
+
+      # Returns all scopes with user-defined scopes first, soft delete scopes last.
+      #
+      # @return [Array<Hash>] Combined scope definitions
+      def all_scopes
+        defined_scopes + _soft_delete_scopes
       end
 
       # Defines a named scope for filtering records on the index page.
@@ -680,11 +688,11 @@ module CommandPost
         column = soft_delete_column
         column_sym = column.to_sym
 
-        # Register with_deleted scope
-        scope :with_deleted, -> { unscope(where: column_sym) }
-
-        # Register only_deleted scope
-        scope :only_deleted, -> { unscope(where: column_sym).where.not(column => nil) }
+        # Store soft delete scopes separately so they always appear after user-defined scopes
+        self._soft_delete_scopes = [
+          { name: :with_deleted, scope: -> { unscope(where: column_sym) }, default: false },
+          { name: :only_deleted, scope: -> { unscope(where: column_sym).where.not(column => nil) }, default: false },
+        ]
 
         # Register restore action (only visible on soft-deleted records)
         action :restore, icon: "arrow-path", condition: ->(record) { record.public_send(column).present? } do |record|

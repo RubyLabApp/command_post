@@ -6,11 +6,11 @@
         new_resource_path(@resource_class.resource_name),
         class: cp_btn_primary
 
-  - if @resource_class.defined_scopes.any? || @resource_class.searchable_columns.any?
+  - if @resource_class.all_scopes.any? || @resource_class.searchable_columns.any?
     .flex.items-center.justify-between.mb-4
-      - if @resource_class.defined_scopes.any?
+      - if @resource_class.all_scopes.any?
         .flex.gap-1.border-b{ class: t.card_border }
-          - @resource_class.defined_scopes.each do |scope|
+          - @resource_class.all_scopes.each do |scope|
             - active = @current_scope == scope[:name].to_s
             = link_to scope[:name].to_s.humanize,
               resources_path(@resource_class.resource_name, scope: scope[:name], q: params[:q]),

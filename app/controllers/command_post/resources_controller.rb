@@ -329,14 +329,14 @@ module CommandPost
 
     def current_scope_name
       scope_name = params[:scope]
-      defined_scope = @resource_class.defined_scopes.find { |s| s[:name].to_s == scope_name }
-      defined_scope ||= @resource_class.defined_scopes.find { |s| s[:default] }
+      defined_scope = @resource_class.all_scopes.find { |s| s[:name].to_s == scope_name }
+      defined_scope ||= @resource_class.all_scopes.find { |s| s[:default] }
       defined_scope&.dig(:name)&.to_s
     end
 
     def apply_scopes(scope)
-      defined_scope = @resource_class.defined_scopes.find { |s| s[:name].to_s == params[:scope] }
-      defined_scope ||= @resource_class.defined_scopes.find { |s| s[:default] }
+      defined_scope = @resource_class.all_scopes.find { |s| s[:name].to_s == params[:scope] }
+      defined_scope ||= @resource_class.all_scopes.find { |s| s[:default] }
 
       return scope unless defined_scope
 
