@@ -17,7 +17,7 @@
               class: "px-4 py-2 text-sm font-medium border-b-2 -mb-px #{active ? cp_scope_active : cp_scope_inactive}"
 
       - if @resource_class.searchable_columns.any?
-        = form_tag resources_path(@resource_class.resource_name), method: :get, class: "flex" do
+        = form_tag resources_path(@resource_class.resource_name), method: :get, class: "flex ml-auto" do
           = hidden_field_tag :scope, @current_scope
           - @resource_class.defined_filters.each do |filter|
             - value = params.dig(:filters, filter[:name])
