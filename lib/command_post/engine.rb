@@ -27,7 +27,7 @@ module CommandPost
     end
 
     initializer "command_post.importmap", before: "importmap" do |app|
-      app.config.importmap.paths << root.join("config/importmap.rb") if defined?(ActionText) && app.config.respond_to?(:importmap)
+      app.config.importmap.paths << root.join("config/importmap.rb") if app.config.respond_to?(:importmap)
     end
 
     initializer "command_post.i18n" do
