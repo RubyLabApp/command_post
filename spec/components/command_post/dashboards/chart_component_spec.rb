@@ -63,41 +63,7 @@ RSpec.describe CommandPost::Dashboards::ChartComponent, type: :component do
       expect(config["data"]["datasets"]).to be_present
       expect(config["data"]["datasets"].first["data"]).to eq([100, 200])
     end
-  end
 
-  describe "#chart_colors" do
-    it "returns theme colors by default" do
-      component = described_class.new(title: "Revenue")
-      expect(component.chart_colors).to eq(CommandPost.configuration.theme.chart_colors)
-    end
-
-    context "with per-chart colors" do
-      it "returns per-chart colors over theme" do
-        custom = ["#ff0000", "#00ff00"]
-        component = described_class.new(title: "Revenue", colors: custom)
-        expect(component.chart_colors).to eq(custom)
-      end
-    end
-
-    context "with custom theme colors" do
-      before do
-        CommandPost.configuration.theme.chart_colors = ["#aaa", "#bbb"]
-      end
-
-      it "uses theme colors when no per-chart colors" do
-        component = described_class.new(title: "Revenue")
-        expect(component.chart_colors).to eq(["#aaa", "#bbb"])
-      end
-
-      it "prefers per-chart colors over theme" do
-        custom = ["#111", "#222"]
-        component = described_class.new(title: "Revenue", colors: custom)
-        expect(component.chart_colors).to eq(custom)
-      end
-    end
-  end
-
-  describe "#chart_config" do
     context "with per-chart colors on bar chart" do
       it "uses per-chart colors as backgroundColor" do
         custom = ["#10b981", "#3b82f6"]
@@ -128,6 +94,38 @@ RSpec.describe CommandPost::Dashboards::ChartComponent, type: :component do
         config = JSON.parse(component.chart_config)
         expect(config["data"]["datasets"].first["borderColor"]).to eq("rgb(34, 197, 94)")
         expect(config["data"]["datasets"].first["backgroundColor"]).to eq("rgba(34, 197, 94, 0.1)")
+      end
+    end
+  end
+
+  describe "#chart_colors" do
+    it "returns theme colors by default" do
+      component = described_class.new(title: "Revenue")
+      expect(component.chart_colors).to eq(CommandPost.configuration.theme.chart_colors)
+    end
+
+    context "with per-chart colors" do
+      it "returns per-chart colors over theme" do
+        custom = ["#ff0000", "#00ff00"]
+        component = described_class.new(title: "Revenue", colors: custom)
+        expect(component.chart_colors).to eq(custom)
+      end
+    end
+
+    context "with custom theme colors" do
+      before do
+        CommandPost.configuration.theme.chart_colors = ["#aaa", "#bbb"]
+      end
+
+      it "uses theme colors when no per-chart colors" do
+        component = described_class.new(title: "Revenue")
+        expect(component.chart_colors).to eq(["#aaa", "#bbb"])
+      end
+
+      it "prefers per-chart colors over theme" do
+        custom = ["#111", "#222"]
+        component = described_class.new(title: "Revenue", colors: custom)
+        expect(component.chart_colors).to eq(custom)
       end
     end
   end
