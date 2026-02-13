@@ -35,6 +35,9 @@ module CommandPost
       def display_value(record, field)
         display_index_field_value(record, field)
       end
+
+      # Delegate route helpers to the view context so included helpers work
+      delegate :command_post, :main_app, to: :helpers
     end
   end
 end
