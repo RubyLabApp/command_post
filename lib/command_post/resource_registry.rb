@@ -27,7 +27,12 @@ module CommandPost
       # @param resource_class [Class] The resource class to register
       # @return [Class] The registered resource class
       def register(resource_class)
+        # Store user-defined scopes before registering soft delete features
+        user_scopes = resource_class.defined_scopes.dup
         resource_class.register_soft_delete_features
+        # Reorder so user-defined scopes come first, soft delete scopes last
+        soft_delete_scopes = resource_class.defined_scopes - user_scopes
+        resource_class.defined_scopes = user_scopes + soft_delete_scopes
         resources[resource_class.resource_name] = resource_class
       end
 
