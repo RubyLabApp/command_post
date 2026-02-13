@@ -44,7 +44,7 @@ module CommandPost
     # @return [void]
     # @raise [ActiveRecord::RecordNotFound] if record doesn't exist
     def show
-      @record = base_scope.find(params[:id])
+      @record = record_scope.find(params[:id])
       @fields = @resource_class.resolved_fields
     end
 
@@ -61,7 +61,7 @@ module CommandPost
     # @return [void]
     # @raise [ActiveRecord::RecordNotFound] if record doesn't exist
     def edit
-      @record = base_scope.find(params[:id])
+      @record = record_scope.find(params[:id])
       @fields = form_fields
     end
 
@@ -86,7 +86,7 @@ module CommandPost
     # @return [void]
     # @raise [ActiveRecord::RecordNotFound] if record doesn't exist
     def update
-      @record = base_scope.find(params[:id])
+      @record = record_scope.find(params[:id])
       purge_attachments(@record)
 
       if @record.update(resource_params)
@@ -104,7 +104,7 @@ module CommandPost
     # @return [void]
     # @raise [ActiveRecord::RecordNotFound] if record doesn't exist
     def destroy
-      @record = base_scope.find(params[:id])
+      @record = record_scope.find(params[:id])
       @record.destroy!
       emit_event(:destroy, @record)
       redirect_to resources_path(@resource_class.resource_name),
@@ -119,7 +119,7 @@ module CommandPost
       return head(:not_found) unless action
       return head(:forbidden) unless action_authorized?(action[:name])
 
-      @record = find_record_for_action
+      @record = record_scope.find(params[:id])
 
       ActiveRecord::Base.transaction do
         result = action[:block].call(@record)
@@ -187,6 +187,12 @@ module CommandPost
     def base_scope
       scope = @resource_class.model.all
       scope = CommandPost.configuration.tenant_scope_block.call(scope) if CommandPost.configuration.tenant_scope_block
+      scope
+    end
+
+    def record_scope
+      scope = base_scope
+      scope = scope.unscope(where: @resource_class.soft_delete_column.to_sym) if @resource_class.soft_delete?
       scope
     end
 
@@ -366,12 +372,6 @@ module CommandPost
 
       # Call on_action callback if configured
       CommandPost.configuration.on_action_block&.call(event)
-    end
-
-    def find_record_for_action
-      # Use unscoped for soft delete models to allow restore action on deleted records
-      scope = @resource_class.soft_delete? ? @resource_class.model.unscoped : @resource_class.model
-      scope.find(params[:id])
     end
   end
 end
