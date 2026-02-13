@@ -10,6 +10,8 @@
     - if defined?(ActionText)
       = stylesheet_link_tag "trix", "data-turbo-track": "reload"
     = javascript_importmap_tags
+    %script{ type: "module" }
+      import "command_post"
     - if defined?(ActionText)
       %script{ type: "module" }
         import "trix"

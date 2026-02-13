@@ -1,18 +1,6 @@
-%div{ class: "#{theme.card_bg} border #{theme.card_border} #{theme.border_radius} #{theme.card_shadow} p-6" }
+%div{ class: "#{theme.card_bg} border #{theme.card_border} #{theme.border_radius} #{theme.card_shadow} p-6",
+     data: { controller: "cp-chart", cp_chart_config_value: chart_config } }
   %h3.text-lg.font-semibold.mb-4{ class: theme.body_text }
     = title
   %div{ style: "height: #{height}px; position: relative;" }
-    %canvas{ id: chart_id }
-  :javascript
-    (function() {
-      function initChart() {
-        var ctx = document.getElementById("#{chart_id}");
-        if (!ctx) return;
-        new Chart(ctx, #{chart_config});
-      }
-      if (typeof Chart !== "undefined") {
-        initChart();
-      } else {
-        document.addEventListener("chartjs:loaded", initChart);
-      }
-    })();
+    %canvas{ data: { cp_chart_target: "canvas" } }

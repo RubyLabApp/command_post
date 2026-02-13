@@ -78,11 +78,11 @@
 
   - has_bulk_actions = @resource_class.defined_bulk_actions.any?
   = turbo_frame_tag "records" do
-    = form_tag "#", method: :post, id: "bulk-actions-form" do
+    = form_tag "#", method: :post, id: "bulk-actions-form", data: (has_bulk_actions ? { controller: "cp-bulk-select" } : {}) do
       - if has_bulk_actions
-        .hidden.items-center.gap-3.mb-4.px-4.py-3.border{ id: "bulk-actions-bar", class: "#{t.border_radius} #{t.card_border} #{t.card_bg} #{t.card_shadow}" }
+        .hidden.items-center.gap-3.mb-4.px-4.py-3.border{ data: { cp_bulk_select_target: "bar" }, class: "#{t.border_radius} #{t.card_border} #{t.card_bg} #{t.card_shadow}" }
           %span.text-sm.font-medium{ class: cp_muted_text }
-            %span{ id: "bulk-actions-count" } 0
+            %span{ data: { cp_bulk_select_target: "count" } } 0
             = I18n.t("command_post.resources.index.selected_label", default: "selected")
           .flex.items-center.gap-2
             - @resource_class.defined_bulk_actions.each do |action|
@@ -102,7 +102,7 @@
               - if has_bulk_actions
                 %th.px-6.py-3.w-4
                   %input{ type: "checkbox", class: "rounded border-gray-300",
-                    onchange: "CommandPost.toggleBulkAll(this)" }
+                    data: { cp_bulk_select_target: "selectAll", action: "change->cp-bulk-select#toggleAll" } }
               - @fields.each do |field|
                 - next unless field.visible?(command_post_current_user)
                 - sorted = params[:sort] == field.name.to_s
@@ -126,7 +126,7 @@
                 - if has_bulk_actions
                   %td.px-6.py-4.w-4
                     %input{ type: "checkbox", name: "ids[]", value: record.id, class: "rounded border-gray-300",
-                      onchange: "CommandPost.updateBulkBar()" }
+                      data: { cp_bulk_select_target: "checkbox", action: "change->cp-bulk-select#toggle" } }
                 - @fields.each do |field|
                   - next unless field.visible?(command_post_current_user)
                   %td.px-6.py-4.whitespace-nowrap.text-sm{ class: cp_body_text }
@@ -138,22 +138,3 @@
     .mt-4
       = render "command_post/shared/pagination", pagy: @pagy
 
-    - if has_bulk_actions
-      :javascript
-        window.CommandPost = window.CommandPost || {};
-        CommandPost.updateBulkBar = function() {
-          var checked = document.querySelectorAll('input[name="ids[]"]:checked').length;
-          var bar = document.getElementById('bulk-actions-bar');
-          var count = document.getElementById('bulk-actions-count');
-          if (bar) {
-            bar.style.display = checked > 0 ? 'flex' : 'none';
-          }
-          if (count) { count.textContent = checked; }
-          var selectAll = document.querySelector('thead input[type="checkbox"]');
-          var total = document.querySelectorAll('input[name="ids[]"]').length;
-          if (selectAll) { selectAll.checked = checked === total && total > 0; }
-        };
-        CommandPost.toggleBulkAll = function(el) {
-          document.querySelectorAll('input[name="ids[]"]').forEach(function(c) { c.checked = el.checked; });
-          CommandPost.updateBulkBar();
-        };

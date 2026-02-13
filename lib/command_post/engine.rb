@@ -26,6 +26,7 @@ module CommandPost
       if app.config.respond_to?(:assets) && app.config.assets
         app.config.assets.precompile += %w[command_post_manifest]
         app.config.assets.paths << root.join("vendor/assets/javascripts")
+        app.config.assets.paths << root.join("app/javascript")
       end
     end
 
