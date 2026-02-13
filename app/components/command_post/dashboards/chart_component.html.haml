@@ -13,14 +13,6 @@
       if (typeof Chart !== "undefined") {
         initChart();
       } else {
-        var script = document.querySelector("script[src*='chart.js']") || document.querySelector("script[src*='chart.umd']");
-        if (!script) {
-          script = document.createElement("script");
-          script.src = "https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js";
-          script.onload = initChart;
-          document.head.appendChild(script);
-        } else {
-          script.addEventListener("load", initChart);
-        }
+        document.addEventListener("chartjs:loaded", initChart);
       }
     })();

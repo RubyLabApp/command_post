@@ -8,6 +8,7 @@
           = render CommandPost::Dashboards::MetricCardComponent.new(name: metric[:name], value: metric[:block].call, format: metric[:format])
 
     - if @dashboard.defined_charts.any?
+      = javascript_include_tag "chart.min", defer: true, onload: "document.dispatchEvent(new Event('chartjs:loaded'))"
       .grid.grid-cols-1.lg:grid-cols-2.gap-6.mb-8
         - @dashboard.defined_charts.each do |chart|
           - chart_data = chart[:block].call
