@@ -79,6 +79,7 @@
       %h2.text-lg.font-semibold.mb-4= I18n.t("command_post.resources.show.actions_label")
       .flex.gap-2
         - @resource_class.defined_actions.each do |action|
+          - next if action[:condition] && !action[:condition].call(@record)
           = button_to resource_action_path(@resource_class.resource_name, @record, action[:name]),
             data: action[:confirm] ? { turbo_confirm: I18n.t("command_post.resources.show.delete_confirm") } : {},
             class: cp_btn_ghost do

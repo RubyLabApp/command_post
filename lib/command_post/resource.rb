@@ -686,8 +686,8 @@ module CommandPost
         # Register only_deleted scope
         scope :only_deleted, -> { unscope(where: column_sym).where.not(column => nil) }
 
-        # Register restore action
-        action :restore, icon: "arrow-path" do |record|
+        # Register restore action (only visible on soft-deleted records)
+        action :restore, icon: "arrow-path", condition: ->(record) { record.public_send(column).present? } do |record|
           record.update(column => nil)
         end
       rescue ActiveRecord::NoDatabaseError, ActiveRecord::StatementInvalid
