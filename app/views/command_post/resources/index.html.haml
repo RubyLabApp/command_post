@@ -91,6 +91,10 @@
                 - if action[:icon]
                   = heroicon action[:icon], variant: :mini, options: { class: "h-4 w-4" }
                 = action[:name].to_s.humanize
+      - sticky = CommandPost.configuration.sticky_actions_column
+      - sticky_th = sticky ? "sticky right-0 z-10 #{t.table_header_bg}" : ""
+      - sticky_td = sticky ? "sticky right-0 z-10 #{t.card_bg}" : ""
+      - sticky_shadow = sticky ? "shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)]" : ""
       .overflow-x-auto
         %table.min-w-full{ class: "#{cp_table_border} divide-y #{t.card_bg} #{t.border_radius} #{t.card_shadow}" }
           %thead{ class: cp_table_header_bg }
@@ -111,6 +115,7 @@
                       = heroicon(params[:direction] == "asc" ? "chevron-up" : "chevron-down", variant: :mini, options: { class: "h-3.5 w-3.5" })
                     - else
                       = heroicon "chevron-up-down", variant: :mini, options: { class: "h-3.5 w-3.5 opacity-0 group-hover:opacity-50 transition-opacity" }
+              %th{ class: "px-6 py-3 #{sticky_th} #{sticky_shadow}" }
           %tbody{ class: "#{cp_table_border} divide-y" }
             - if @records.empty?
               %tr
@@ -126,7 +131,7 @@
                   - next unless field.visible?(command_post_current_user)
                   %td.px-6.py-4.whitespace-nowrap.text-sm{ class: cp_body_text }
                     = display_index_field_value(record, field)
-                %td.px-6.py-4.whitespace-nowrap.text-right.text-sm
+                %td.whitespace-nowrap.text-right.text-sm{ class: "px-6 py-4 #{sticky_td} #{sticky_shadow}" }
                   = link_to I18n.t("command_post.resources.index.view_link"), resource_path(@resource_class.resource_name, record),
                     class: cp_link, data: { turbo_frame: "_top" }
 

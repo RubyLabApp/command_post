@@ -59,6 +59,10 @@ RSpec.describe CommandPost::Configuration do
     it "sets tenant_scope_block to nil" do
       expect(config.tenant_scope_block).to be_nil
     end
+
+    it "sets sticky_actions_column to true" do
+      expect(config.sticky_actions_column).to be true
+    end
   end
 
   describe "#badge_colors" do
@@ -222,6 +226,12 @@ RSpec.describe CommandPost::Configuration do
       config.audit_enabled = true
 
       expect(config.audit_enabled).to be true
+    end
+
+    it "allows setting sticky_actions_column" do
+      config.sticky_actions_column = false
+
+      expect(config.sticky_actions_column).to be false
     end
   end
 end
