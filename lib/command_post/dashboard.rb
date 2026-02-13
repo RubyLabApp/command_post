@@ -99,7 +99,9 @@ module CommandPost
       #   - :line - Line chart for trends over time
       #   - :bar - Bar chart for comparisons
       #   - :pie - Pie chart for proportions
-      #   - :area - Area chart for cumulative values
+      #   - :doughnut - Doughnut chart for proportions
+      # @param colors [Array<String>, nil] Optional per-chart color palette (CSS color values).
+      #   Overrides the global theme chart_colors for this chart.
       # @yield Block that computes and returns the chart data
       # @yieldreturn [Hash, Array] Data for the chart (format depends on type)
       #
@@ -108,8 +110,8 @@ module CommandPost
       #     User.group_by_month(:created_at).count
       #   end
       #
-      # @example Bar chart of orders by status
-      #   chart :orders_by_status, type: :bar do
+      # @example Bar chart with custom colors
+      #   chart :orders_by_status, type: :bar, colors: ["#10b981", "#3b82f6", "#ef4444"] do
       #     Order.group(:status).count
       #   end
       #
@@ -118,12 +120,9 @@ module CommandPost
       #     User.group(:role).count
       #   end
       #
-      # @note Uses the Chartkick gem for rendering. Requires groupdate gem
-      #   for time-based grouping methods like group_by_month.
-      #
       # @return [void]
-      def chart(name, type: :line, &block)
-        self.defined_charts = defined_charts + [{ name: name, type: type, block: block }]
+      def chart(name, type: :line, colors: nil, &block)
+        self.defined_charts = defined_charts + [{ name: name, type: type, colors: colors, block: block }]
       end
 
       # Displays a list of recent records from a resource.

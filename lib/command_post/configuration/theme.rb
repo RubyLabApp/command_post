@@ -163,6 +163,16 @@ module CommandPost
 
       # @!endgroup
 
+      # @!group Chart Styles
+
+      # @return [Array<String>] Default chart color palette (CSS color values: hex, rgb, rgba)
+      attr_accessor :chart_colors
+
+      # @return [String] Default chart border/line color (CSS color value)
+      attr_accessor :chart_border_color
+
+      # @!endgroup
+
       # Creates a new Theme with default values.
       def initialize
         # --- Buttons ---
@@ -225,6 +235,17 @@ module CommandPost
         # --- Layout ---
         @main_bg = "bg-gray-50"
         @border_radius = "rounded-lg"
+
+        # --- Charts ---
+        @chart_colors = %w[
+          rgba(99,102,241,0.8)
+          rgba(59,130,246,0.8)
+          rgba(16,185,129,0.8)
+          rgba(245,158,11,0.8)
+          rgba(239,68,68,0.8)
+          rgba(139,92,246,0.8)
+        ]
+        @chart_border_color = "rgb(99, 102, 241)"
       end
     end
   end

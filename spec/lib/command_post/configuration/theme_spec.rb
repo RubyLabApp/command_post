@@ -154,8 +154,24 @@ RSpec.describe CommandPost::Configuration::Theme do
       expect(theme.border_radius).to eq("rounded-lg")
     end
 
+    it "sets main_bg" do
+      expect(theme.main_bg).to eq("bg-gray-50")
+    end
+
     it "sets badge_count" do
       expect(theme.badge_count).to include("bg-indigo-600")
+    end
+  end
+
+  describe "chart defaults" do
+    it "sets chart_colors as array of CSS color values" do
+      expect(theme.chart_colors).to be_an(Array)
+      expect(theme.chart_colors.length).to eq(6)
+      expect(theme.chart_colors.first).to include("rgba")
+    end
+
+    it "sets chart_border_color" do
+      expect(theme.chart_border_color).to eq("rgb(99, 102, 241)")
     end
   end
 
