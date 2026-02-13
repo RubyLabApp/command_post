@@ -77,30 +77,31 @@
                 class: "text-sm #{cp_link_muted}"
 
   = turbo_frame_tag "records" do
-    %table.min-w-full{ class: "#{cp_table_border} divide-y #{t.card_bg} #{t.border_radius} #{t.card_shadow}" }
-      %thead{ class: cp_table_header_bg }
-        %tr
-          - @fields.each do |field|
-            - next unless field.visible?(command_post_current_user)
-            %th.px-6.py-3.text-left.text-xs.font-medium.uppercase.tracking-wider{ class: cp_muted_text }
-              = link_to field.name.to_s.humanize,
-                resources_path(@resource_class.resource_name, sort: field.name,
-                  direction: params[:sort] == field.name.to_s && params[:direction] == "asc" ? "desc" : "asc",
-                  scope: @current_scope, q: params[:q])
-      %tbody{ class: "#{cp_table_border} divide-y" }
-        - if @records.empty?
+    .overflow-x-auto
+      %table.min-w-full{ class: "#{cp_table_border} divide-y #{t.card_bg} #{t.border_radius} #{t.card_shadow}" }
+        %thead{ class: cp_table_header_bg }
           %tr
-            %td.px-6.py-8.text-center.text-sm{ colspan: @fields.count { |f| f.visible?(command_post_current_user) } + 1, class: cp_muted_text }
-              = I18n.t("command_post.resources.index.empty_state")
-        - @records.each do |record|
-          %tr{ class: cp_table_row_hover }
             - @fields.each do |field|
               - next unless field.visible?(command_post_current_user)
-              %td.px-6.py-4.whitespace-nowrap.text-sm{ class: cp_body_text }
-                = display_index_field_value(record, field)
-            %td.px-6.py-4.whitespace-nowrap.text-right.text-sm
-              = link_to I18n.t("command_post.resources.index.view_link"), resource_path(@resource_class.resource_name, record),
-                class: cp_link, data: { turbo_frame: "_top" }
+              %th.px-6.py-3.text-left.text-xs.font-medium.uppercase.tracking-wider{ class: cp_muted_text }
+                = link_to field.name.to_s.humanize,
+                  resources_path(@resource_class.resource_name, sort: field.name,
+                    direction: params[:sort] == field.name.to_s && params[:direction] == "asc" ? "desc" : "asc",
+                    scope: @current_scope, q: params[:q])
+        %tbody{ class: "#{cp_table_border} divide-y" }
+          - if @records.empty?
+            %tr
+              %td.px-6.py-8.text-center.text-sm{ colspan: @fields.count { |f| f.visible?(command_post_current_user) } + 1, class: cp_muted_text }
+                = I18n.t("command_post.resources.index.empty_state")
+          - @records.each do |record|
+            %tr{ class: cp_table_row_hover }
+              - @fields.each do |field|
+                - next unless field.visible?(command_post_current_user)
+                %td.px-6.py-4.whitespace-nowrap.text-sm{ class: cp_body_text }
+                  = display_index_field_value(record, field)
+              %td.px-6.py-4.whitespace-nowrap.text-right.text-sm
+                = link_to I18n.t("command_post.resources.index.view_link"), resource_path(@resource_class.resource_name, record),
+                  class: cp_link, data: { turbo_frame: "_top" }
 
     .mt-4
       = render "command_post/shared/pagination", pagy: @pagy
