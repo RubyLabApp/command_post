@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-02-12
+
 ### Added
 
 - **New Field Types**
@@ -31,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Date and datetime formatting — Human-readable date display (e.g., "January 15, 2026")
   - Index text truncation — Long text fields truncated to 50 chars with tooltip
   - FIELD_DISPLAY_METHODS dispatch hash for faster field rendering
+  - Sort direction chevron indicators on table column headers
+  - Sticky actions column on horizontal scroll
 
 - **Extensibility**
   - Custom field type API (`FieldTypeRegistry`) — Register custom fields with display/index_display blocks and optional form components or partials
@@ -38,6 +42,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **i18n Support**
   - All UI strings externalized to `config/locales/en.yml` under `command_post:` namespace
+
+- **Chart Improvements**
+  - Per-chart and theme-level color customization
+  - Chart.js vendored and loaded from gem assets
+  - `main_bg` theme property for background color
+
+### Changed
+
+- Migrated inline JavaScript to Stimulus controllers (`cp-bulk-select`, `cp-chart`) shipped as ES modules via importmap
+- Bulk actions moved to floating toolbar
+- 1154 tests with 95%+ coverage
+
+### Fixed
+
+- Render badge fields as select dropdown in forms
+- User-defined scopes now appear before soft delete scopes
+- Pagination params preserved across bulk actions
+- Dashboard chart rendering and initialization
+- Dashboard recent tables display association names correctly
+- Route helper delegation in RecentTableComponent
+- Restore button only shown on soft-deleted records
+- Soft-deleted records accessible in show/edit/destroy views
+- Search bar position consistent in index view
+- Index table horizontal overflow handling
 
 ## [0.2.0] - 2026-02-07
 
@@ -122,5 +150,6 @@ First public release.
 - Policy instances now cached at Resource class level
 - Field visibility filtering applied consistently in index, show, forms, exports, and search
 
-[Unreleased]: https://github.com/RubyLabApp/command_post/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/RubyLabApp/command_post/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/RubyLabApp/command_post/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/RubyLabApp/command_post/releases/tag/v0.2.0
