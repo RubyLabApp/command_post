@@ -155,6 +155,9 @@ module CommandPost
 
       # @!group Layout
 
+      # @return [String] Main content area background classes
+      attr_accessor :main_bg
+
       # @return [String] Border radius classes
       attr_accessor :border_radius
 
@@ -220,6 +223,7 @@ module CommandPost
         @label_text = "text-gray-700"
 
         # --- Layout ---
+        @main_bg = "bg-gray-50"
         @border_radius = "rounded-lg"
       end
     end

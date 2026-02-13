@@ -14,6 +14,6 @@
       %script{ type: "module" }
         import "trix"
         import "@rails/actiontext"
-  %body.bg-gray-50.text-gray-900.antialiased
+  %body.text-gray-900.antialiased{ class: CommandPost.configuration.theme.main_bg }
     = render CommandPost::Layout::ShellComponent.new(current_user: command_post_current_user) do
       = yield
