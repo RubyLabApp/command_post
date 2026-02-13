@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    command-post (0.2.0)
+    command-post (0.3.0)
       haml-rails (>= 2.0)
       heroicon (>= 1.0)
       pagy (>= 6.0)
