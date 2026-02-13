@@ -101,11 +101,16 @@
                     onchange: "CommandPost.toggleBulkAll(this)" }
               - @fields.each do |field|
                 - next unless field.visible?(command_post_current_user)
+                - sorted = params[:sort] == field.name.to_s
+                - next_dir = sorted && params[:direction] == "asc" ? "desc" : "asc"
                 %th.px-6.py-3.text-left.text-xs.font-medium.uppercase.tracking-wider{ class: cp_muted_text }
-                  = link_to field.name.to_s.humanize,
-                    resources_path(@resource_class.resource_name, sort: field.name,
-                      direction: params[:sort] == field.name.to_s && params[:direction] == "asc" ? "desc" : "asc",
-                      scope: @current_scope, q: params[:q])
+                  = link_to resources_path(@resource_class.resource_name, sort: field.name, direction: next_dir, scope: @current_scope, q: params[:q]),
+                    class: "inline-flex items-center gap-1 group" do
+                    = field.name.to_s.humanize
+                    - if sorted
+                      = heroicon(params[:direction] == "asc" ? "chevron-up" : "chevron-down", variant: :mini, options: { class: "h-3.5 w-3.5" })
+                    - else
+                      = heroicon "chevron-up-down", variant: :mini, options: { class: "h-3.5 w-3.5 opacity-0 group-hover:opacity-50 transition-opacity" }
           %tbody{ class: "#{cp_table_border} divide-y" }
             - if @records.empty?
               %tr
