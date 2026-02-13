@@ -28,12 +28,14 @@ module CommandPost
       # @param type [Symbol] Chart type (default: :line)
       # @param data [Array] Chart data
       # @param labels [Array] Chart labels
+      # @param colors [Array<String>, nil] Per-chart color palette (overrides theme)
       # @param height [Integer] Height (default: 300)
-      def initialize(title:, type: :line, data: [], labels: [], height: 300)
+      def initialize(title:, type: :line, data: [], labels: [], colors: nil, height: 300)
         @title = title
         @type = type.to_sym
         @data = data
         @labels = labels
+        @colors = colors
         @height = height
       end
 
@@ -52,14 +54,16 @@ module CommandPost
       # @api private
       # @return [String] Chart.js configuration JSON
       def chart_config
+        colors = resolved_colors
+        border = resolved_border_color
         {
           type: type,
           data: {
             labels: labels,
             datasets: [{
               data: data,
-              borderColor: "rgb(99, 102, 241)",
-              backgroundColor: type == :line ? "rgba(99, 102, 241, 0.1)" : chart_colors,
+              borderColor: border,
+              backgroundColor: type == :line ? line_fill_color(border) : colors,
               fill: type == :line,
               tension: 0.3,
             }],
@@ -74,17 +78,39 @@ module CommandPost
         }.to_json
       end
 
+      # Resolves chart colors with priority: per-chart > theme > default.
       # @api private
-      # @return [Array<String>] Default chart color palette
+      # @return [Array<String>] Resolved chart color palette
       def chart_colors
-        %w[
-          rgba(99,102,241,0.8)
-          rgba(59,130,246,0.8)
-          rgba(16,185,129,0.8)
-          rgba(245,158,11,0.8)
-          rgba(239,68,68,0.8)
-          rgba(139,92,246,0.8)
-        ]
+        resolved_colors
+      end
+
+      private
+
+      # @return [Array<String>] Color palette resolved from per-chart, theme, or default
+      def resolved_colors
+        @colors || theme.chart_colors
+      end
+
+      # @return [String] Border color resolved from per-chart first color or theme
+      def resolved_border_color
+        @colors&.first || theme.chart_border_color
+      end
+
+      # Converts a CSS color to a semi-transparent version for line chart fill.
+      # Supports hex (#rrggbb), rgb(), and rgba() formats.
+      # @param color [String] CSS color value
+      # @return [String] Color with 0.1 opacity
+      def line_fill_color(color)
+        if color.start_with?("#")
+          "#{color}1A"
+        elsif color.start_with?("rgba")
+          color.sub(/[\d.]+\)$/, "0.1)")
+        elsif color.start_with?("rgb")
+          color.sub("rgb(", "rgba(").sub(")", ", 0.1)")
+        else
+          color
+        end
       end
     end
   end

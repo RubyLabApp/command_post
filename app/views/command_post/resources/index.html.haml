@@ -6,18 +6,18 @@
         new_resource_path(@resource_class.resource_name),
         class: cp_btn_primary
 
-  - if @resource_class.defined_scopes.any? || @resource_class.searchable_columns.any?
+  - if @resource_class.all_scopes.any? || @resource_class.searchable_columns.any?
     .flex.items-center.justify-between.mb-4
-      - if @resource_class.defined_scopes.any?
+      - if @resource_class.all_scopes.any?
         .flex.gap-1.border-b{ class: t.card_border }
-          - @resource_class.defined_scopes.each do |scope|
+          - @resource_class.all_scopes.each do |scope|
             - active = @current_scope == scope[:name].to_s
             = link_to scope[:name].to_s.humanize,
               resources_path(@resource_class.resource_name, scope: scope[:name], q: params[:q]),
               class: "px-4 py-2 text-sm font-medium border-b-2 -mb-px #{active ? cp_scope_active : cp_scope_inactive}"
 
       - if @resource_class.searchable_columns.any?
-        = form_tag resources_path(@resource_class.resource_name), method: :get, class: "flex" do
+        = form_tag resources_path(@resource_class.resource_name), method: :get, class: "flex ml-auto" do
           = hidden_field_tag :scope, @current_scope
           - @resource_class.defined_filters.each do |filter|
             - value = params.dig(:filters, filter[:name])
@@ -76,31 +76,65 @@
               = link_to I18n.t("command_post.resources.index.clear_button"), resources_path(@resource_class.resource_name, scope: @current_scope, q: params[:q]),
                 class: "text-sm #{cp_link_muted}"
 
+  - has_bulk_actions = @resource_class.defined_bulk_actions.any?
   = turbo_frame_tag "records" do
-    %table.min-w-full{ class: "#{cp_table_border} divide-y #{t.card_bg} #{t.border_radius} #{t.card_shadow}" }
-      %thead{ class: cp_table_header_bg }
-        %tr
-          - @fields.each do |field|
-            - next unless field.visible?(command_post_current_user)
-            %th.px-6.py-3.text-left.text-xs.font-medium.uppercase.tracking-wider{ class: cp_muted_text }
-              = link_to field.name.to_s.humanize,
-                resources_path(@resource_class.resource_name, sort: field.name,
-                  direction: params[:sort] == field.name.to_s && params[:direction] == "asc" ? "desc" : "asc",
-                  scope: @current_scope, q: params[:q])
-      %tbody{ class: "#{cp_table_border} divide-y" }
-        - if @records.empty?
-          %tr
-            %td.px-6.py-8.text-center.text-sm{ colspan: @fields.count { |f| f.visible?(command_post_current_user) } + 1, class: cp_muted_text }
-              = I18n.t("command_post.resources.index.empty_state")
-        - @records.each do |record|
-          %tr{ class: cp_table_row_hover }
-            - @fields.each do |field|
-              - next unless field.visible?(command_post_current_user)
-              %td.px-6.py-4.whitespace-nowrap.text-sm{ class: cp_body_text }
-                = display_index_field_value(record, field)
-            %td.px-6.py-4.whitespace-nowrap.text-right.text-sm
-              = link_to I18n.t("command_post.resources.index.view_link"), resource_path(@resource_class.resource_name, record),
-                class: cp_link, data: { turbo_frame: "_top" }
+    = form_tag "#", method: :post, id: "bulk-actions-form", data: (has_bulk_actions ? { controller: "cp-bulk-select" } : {}) do
+      - if has_bulk_actions
+        .hidden.items-center.gap-3.mb-4.px-4.py-3.border{ data: { cp_bulk_select_target: "bar" }, class: "#{t.border_radius} #{t.card_border} #{t.card_bg} #{t.card_shadow}" }
+          %span.text-sm.font-medium{ class: cp_muted_text }
+            %span{ data: { cp_bulk_select_target: "count" } } 0
+            = I18n.t("command_post.resources.index.selected_label", default: "selected")
+          .flex.items-center.gap-2
+            - @resource_class.defined_bulk_actions.each do |action|
+              %button{ type: "submit", class: "#{t.btn_secondary} px-3 py-1.5 text-sm font-medium rounded-lg inline-flex items-center gap-1",
+                formaction: resource_bulk_action_path(@resource_class.resource_name, action[:name]) }
+                - if action[:icon]
+                  = heroicon action[:icon], variant: :mini, options: { class: "h-4 w-4" }
+                = action[:name].to_s.humanize
+      - sticky = CommandPost.configuration.sticky_actions_column
+      - sticky_th = sticky ? "sticky right-0 z-10 #{t.table_header_bg}" : ""
+      - sticky_td = sticky ? "sticky right-0 z-10 #{t.card_bg}" : ""
+      - sticky_shadow = sticky ? "shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)]" : ""
+      .overflow-x-auto
+        %table.min-w-full{ class: "#{cp_table_border} divide-y #{t.card_bg} #{t.border_radius} #{t.card_shadow}" }
+          %thead{ class: cp_table_header_bg }
+            %tr
+              - if has_bulk_actions
+                %th.px-6.py-3.w-4
+                  %input{ type: "checkbox", class: "rounded border-gray-300",
+                    data: { cp_bulk_select_target: "selectAll", action: "change->cp-bulk-select#toggleAll" } }
+              - @fields.each do |field|
+                - next unless field.visible?(command_post_current_user)
+                - sorted = params[:sort] == field.name.to_s
+                - next_dir = sorted && params[:direction] == "asc" ? "desc" : "asc"
+                %th.px-6.py-3.text-left.text-xs.font-medium.uppercase.tracking-wider{ class: cp_muted_text }
+                  = link_to resources_path(@resource_class.resource_name, sort: field.name, direction: next_dir, scope: @current_scope, q: params[:q]),
+                    class: "inline-flex items-center gap-1 group" do
+                    = field.name.to_s.humanize
+                    - if sorted
+                      = heroicon(params[:direction] == "asc" ? "chevron-up" : "chevron-down", variant: :mini, options: { class: "h-3.5 w-3.5" })
+                    - else
+                      = heroicon "chevron-up-down", variant: :mini, options: { class: "h-3.5 w-3.5 opacity-0 group-hover:opacity-50 transition-opacity" }
+              %th{ class: "px-6 py-3 #{sticky_th} #{sticky_shadow}" }
+          %tbody{ class: "#{cp_table_border} divide-y" }
+            - if @records.empty?
+              %tr
+                %td.px-6.py-8.text-center.text-sm{ colspan: (@fields.count { |f| f.visible?(command_post_current_user) }) + (has_bulk_actions ? 2 : 1), class: cp_muted_text }
+                  = I18n.t("command_post.resources.index.empty_state")
+            - @records.each do |record|
+              %tr{ class: cp_table_row_hover }
+                - if has_bulk_actions
+                  %td.px-6.py-4.w-4
+                    %input{ type: "checkbox", name: "ids[]", value: record.id, class: "rounded border-gray-300",
+                      data: { cp_bulk_select_target: "checkbox", action: "change->cp-bulk-select#toggle" } }
+                - @fields.each do |field|
+                  - next unless field.visible?(command_post_current_user)
+                  %td.px-6.py-4.whitespace-nowrap.text-sm{ class: cp_body_text }
+                    = display_index_field_value(record, field)
+                %td.whitespace-nowrap.text-right.text-sm{ class: "px-6 py-4 #{sticky_td} #{sticky_shadow}" }
+                  = link_to I18n.t("command_post.resources.index.view_link"), resource_path(@resource_class.resource_name, record),
+                    class: cp_link, data: { turbo_frame: "_top" }
 
     .mt-4
       = render "command_post/shared/pagination", pagy: @pagy
+

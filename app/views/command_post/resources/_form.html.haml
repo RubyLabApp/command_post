@@ -35,6 +35,13 @@
         - when :datetime, :date
           = f.datetime_local_field field.name,
             class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
+        - when :badge
+          - badge_choices = field.options[:colors]&.keys&.map(&:to_s)
+          - badge_choices ||= @record.class.defined_enums[field.name.to_s]&.keys if @record.class.respond_to?(:defined_enums)
+          - badge_choices ||= []
+          = f.select field.name, badge_choices.map { |c| [c.humanize, c] },
+            { include_blank: I18n.t("command_post.fields.select_placeholder") },
+            class: [cp_select_class, (error_input_class if has_error)].compact.join(" ")
         - when :select
           = f.select field.name, field.options[:choices]&.map { |c| [c.humanize, c] },
             { include_blank: I18n.t("command_post.fields.select_placeholder") },

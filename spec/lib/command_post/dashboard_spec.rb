@@ -13,6 +13,10 @@ class TestDashboard < CommandPost::Dashboard
     { "Jan" => 10, "Feb" => 20 }
   end
 
+  chart :orders_by_status, type: :bar, colors: ["#10b981", "#3b82f6"] do
+    { "Pending" => 5, "Completed" => 15 }
+  end
+
   recent :users, limit: 5, scope: -> { order(created_at: :desc) }
 end
 
@@ -35,8 +39,16 @@ RSpec.describe CommandPost::Dashboard do
 
   describe "charts" do
     it "stores chart definitions" do
-      expect(TestDashboard.defined_charts.length).to eq(1)
+      expect(TestDashboard.defined_charts.length).to eq(2)
       expect(TestDashboard.defined_charts.first[:type]).to eq(:line)
+    end
+
+    it "stores colors as nil when not specified" do
+      expect(TestDashboard.defined_charts.first[:colors]).to be_nil
+    end
+
+    it "stores per-chart colors when specified" do
+      expect(TestDashboard.defined_charts.last[:colors]).to eq(["#10b981", "#3b82f6"])
     end
   end
 

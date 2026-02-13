@@ -23,11 +23,15 @@ module CommandPost
     isolate_namespace CommandPost
 
     initializer "command_post.assets" do |app|
-      app.config.assets.precompile += %w[command_post_manifest] if app.config.respond_to?(:assets) && app.config.assets
+      if app.config.respond_to?(:assets) && app.config.assets
+        app.config.assets.precompile += %w[command_post_manifest]
+        app.config.assets.paths << root.join("vendor/assets/javascripts")
+        app.config.assets.paths << root.join("app/javascript")
+      end
     end
 
     initializer "command_post.importmap", before: "importmap" do |app|
-      app.config.importmap.paths << root.join("config/importmap.rb") if defined?(ActionText) && app.config.respond_to?(:importmap)
+      app.config.importmap.paths << root.join("config/importmap.rb") if app.config.respond_to?(:importmap)
     end
 
     initializer "command_post.i18n" do

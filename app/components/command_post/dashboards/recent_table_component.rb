@@ -4,6 +4,10 @@ module CommandPost
   module Dashboards
     # Renders a table of recent records on the dashboard.
     class RecentTableComponent < ViewComponent::Base
+      include CommandPost::ApplicationHelper
+      include CommandPost::FieldDisplayHelper
+      include CommandPost::ThemeHelper
+
       # @param resource_name [Symbol, String] Resource name
       # @param records [ActiveRecord::Relation] Records to display
       def initialize(resource_name:, records:)
@@ -25,6 +29,15 @@ module CommandPost
 
         resource_class.resolved_fields.first(4)
       end
+
+      # @api private
+      # @return [String, nil] Formatted field value for display
+      def display_value(record, field)
+        display_index_field_value(record, field)
+      end
+
+      # Delegate route helpers to the view context so included helpers work
+      delegate :command_post, :main_app, to: :helpers
     end
   end
 end

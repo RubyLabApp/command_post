@@ -155,8 +155,21 @@ module CommandPost
 
       # @!group Layout
 
+      # @return [String] Main content area background classes
+      attr_accessor :main_bg
+
       # @return [String] Border radius classes
       attr_accessor :border_radius
+
+      # @!endgroup
+
+      # @!group Chart Styles
+
+      # @return [Array<String>] Default chart color palette (CSS color values: hex, rgb, rgba)
+      attr_accessor :chart_colors
+
+      # @return [String] Default chart border/line color (CSS color value)
+      attr_accessor :chart_border_color
 
       # @!endgroup
 
@@ -189,12 +202,7 @@ module CommandPost
         # --- Badge counter ---
         @badge_count = "bg-indigo-600 text-white"
 
-        # --- Sidebar ---
-        @sidebar_bg = "bg-gray-900"
-        @sidebar_title = "text-white"
-        @sidebar_link = "text-gray-300"
-        @sidebar_link_hover = "hover:bg-gray-800 hover:text-white"
-        @sidebar_group_label = "text-gray-400"
+        init_sidebar_defaults
 
         # --- Navbar ---
         @navbar_bg = "bg-white"
@@ -220,7 +228,28 @@ module CommandPost
         @label_text = "text-gray-700"
 
         # --- Layout ---
+        @main_bg = "bg-gray-50"
         @border_radius = "rounded-lg"
+
+        init_chart_defaults
+      end
+
+      private
+
+      def init_sidebar_defaults
+        @sidebar_bg = "bg-gray-900"
+        @sidebar_title = "text-white"
+        @sidebar_link = "text-gray-300"
+        @sidebar_link_hover = "hover:bg-gray-800 hover:text-white"
+        @sidebar_group_label = "text-gray-400"
+      end
+
+      def init_chart_defaults
+        @chart_colors = %w[
+          rgba(99,102,241,0.8) rgba(59,130,246,0.8) rgba(16,185,129,0.8)
+          rgba(245,158,11,0.8) rgba(239,68,68,0.8) rgba(139,92,246,0.8)
+        ]
+        @chart_border_color = "rgb(99, 102, 241)"
       end
     end
   end

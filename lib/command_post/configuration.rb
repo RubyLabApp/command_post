@@ -78,6 +78,9 @@ module CommandPost
     # @return [Symbol] Audit storage backend, :memory or :database (default: :memory)
     attr_accessor :audit_storage
 
+    # @return [Boolean] Whether the actions column stays fixed on horizontal scroll (default: true)
+    attr_accessor :sticky_actions_column
+
     # @return [Proc, nil] Authentication block
     # @see #authenticate
     attr_reader :authenticate_block
@@ -167,6 +170,7 @@ module CommandPost
       @components = Components.new
       @audit_enabled = false
       @audit_storage = :memory
+      @sticky_actions_column = true
     end
 
     # Defines the authentication check for admin access.

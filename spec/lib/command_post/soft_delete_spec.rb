@@ -75,7 +75,7 @@ RSpec.describe "CommandPost Soft Delete Support" do
 
     describe "with_deleted scope" do
       it "is automatically registered for soft delete models" do
-        scopes = article_resource.defined_scopes
+        scopes = article_resource.all_scopes
         with_deleted_scope = scopes.find { |s| s[:name] == :with_deleted }
         expect(with_deleted_scope).to be_present
       end
@@ -85,7 +85,7 @@ RSpec.describe "CommandPost Soft Delete Support" do
         active_article = Article.create!(title: "Active", content: "Content")
         deleted_article = Article.unscoped.create!(title: "Deleted", content: "Content", deleted_at: Time.current)
 
-        with_deleted_scope = article_resource.defined_scopes.find { |s| s[:name] == :with_deleted }
+        with_deleted_scope = article_resource.all_scopes.find { |s| s[:name] == :with_deleted }
         scope_result = Article.merge(with_deleted_scope[:scope])
 
         expect(scope_result).to include(active_article)
@@ -95,7 +95,7 @@ RSpec.describe "CommandPost Soft Delete Support" do
 
     describe "only_deleted scope" do
       it "is automatically registered for soft delete models" do
-        scopes = article_resource.defined_scopes
+        scopes = article_resource.all_scopes
         only_deleted_scope = scopes.find { |s| s[:name] == :only_deleted }
         expect(only_deleted_scope).to be_present
       end
@@ -105,12 +105,36 @@ RSpec.describe "CommandPost Soft Delete Support" do
         active_article = Article.create!(title: "Active", content: "Content")
         deleted_article = Article.unscoped.create!(title: "Deleted", content: "Content", deleted_at: Time.current)
 
-        only_deleted_scope = article_resource.defined_scopes.find { |s| s[:name] == :only_deleted }
+        only_deleted_scope = article_resource.all_scopes.find { |s| s[:name] == :only_deleted }
         scope_result = Article.unscoped.merge(only_deleted_scope[:scope])
 
         expect(scope_result).not_to include(active_article)
         expect(scope_result).to include(deleted_article)
       end
+    end
+  end
+
+  describe "scope ordering" do
+    it "places user-defined scopes before soft delete scopes" do
+      resource_with_scopes = Class.new(CommandPost::Resource) do
+        self.model_class_override = Article
+
+        def self.name
+          "ScopedArticleResource"
+        end
+
+        def self.resource_name
+          "scoped_articles"
+        end
+
+        scope :recent, -> { where("created_at > ?", 1.week.ago) }
+        scope :featured, -> { where(title: "Featured") }
+      end
+
+      CommandPost::ResourceRegistry.register(resource_with_scopes)
+      scope_names = resource_with_scopes.all_scopes.pluck(:name)
+
+      expect(scope_names).to eq(%i[recent featured with_deleted only_deleted])
     end
   end
 
@@ -175,7 +199,7 @@ RSpec.describe "CommandPost Soft Delete Support" do
 
       unavailable_resource.register_soft_delete_features
 
-      expect(unavailable_resource.defined_scopes).to be_empty
+      expect(unavailable_resource.all_scopes).to be_empty
       expect(unavailable_resource.defined_actions).to be_empty
     end
   end
