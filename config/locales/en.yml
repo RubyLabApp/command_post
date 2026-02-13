@@ -24,6 +24,7 @@ en:
         empty_state: "No records found."
         view_link: "View"
         all_option: "All"
+        bulk_actions_label: "Bulk actions:"
       edit:
         title: "Edit %{model}"
       new:
