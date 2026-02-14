@@ -45,8 +45,6 @@ jobs:
 
       - name: Configure trusted publisher credentials
         uses: rubygems/configure-rubygems-credentials@main
-        with:
-          audience: https://rubygems.org
 
       - name: Publish to RubyGems
         run: gem push *.gem
