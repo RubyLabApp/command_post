@@ -28,7 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - uses: actions/checkout@v4
@@ -42,8 +41,7 @@ jobs:
       - name: Build gem
         run: gem build iron_admin.gemspec
 
-      - name: Publish to GitHub Packages
+      - name: Publish to RubyGems
         env:
-          GEM_HOST_API_KEY: Bearer ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gem push --host https://rubygems.pkg.github.com/RubyLabApp *.gem
+          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
+        run: gem push *.gem
