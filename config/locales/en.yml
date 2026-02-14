@@ -1,5 +1,5 @@
 en:
-  command_post:
+  iron_admin:
     resources:
       create:
         success: "%{model} created."

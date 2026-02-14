@@ -7,7 +7,7 @@ Input components for building forms.
 Standard text input field.
 
 ```ruby
-CommandPost::Form::TextInputComponent.new(
+IronAdmin::Form::TextInputComponent.new(
   name: :email,              # Required: field name
   value: nil,                # Optional: current value
   type: :text,               # Optional: :text, :email, :password, :tel, :url
@@ -21,7 +21,7 @@ CommandPost::Form::TextInputComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Form::TextInputComponent.new(
+= render IronAdmin::Form::TextInputComponent.new(
   name: :email,
   value: @user.email,
   type: :email,
@@ -36,7 +36,7 @@ CommandPost::Form::TextInputComponent.new(
 Dropdown select field.
 
 ```ruby
-CommandPost::Form::SelectComponent.new(
+IronAdmin::Form::SelectComponent.new(
   name: :role,               # Required: field name
   options: options,          # Required: array of [label, value] pairs
   selected: nil,             # Optional: currently selected value
@@ -49,7 +49,7 @@ CommandPost::Form::SelectComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Form::SelectComponent.new(
+= render IronAdmin::Form::SelectComponent.new(
   name: :role,
   options: [["Admin", "admin"], ["User", "user"], ["Guest", "guest"]],
   selected: @user.role,
@@ -64,7 +64,7 @@ CommandPost::Form::SelectComponent.new(
 Boolean checkbox input.
 
 ```ruby
-CommandPost::Form::CheckboxComponent.new(
+IronAdmin::Form::CheckboxComponent.new(
   name: :active,             # Required: field name
   label: "Active",           # Optional: checkbox label
   checked: false,            # Optional: checked state
@@ -76,7 +76,7 @@ CommandPost::Form::CheckboxComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Form::CheckboxComponent.new(
+= render IronAdmin::Form::CheckboxComponent.new(
   name: :email_notifications,
   label: "Receive email notifications",
   checked: @user.email_notifications
@@ -90,7 +90,7 @@ CommandPost::Form::CheckboxComponent.new(
 Multi-line text input.
 
 ```ruby
-CommandPost::Form::TextareaComponent.new(
+IronAdmin::Form::TextareaComponent.new(
   name: :bio,                # Required: field name
   value: nil,                # Optional: current value
   rows: 4,                   # Optional: visible rows
@@ -104,7 +104,7 @@ CommandPost::Form::TextareaComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Form::TextareaComponent.new(
+= render IronAdmin::Form::TextareaComponent.new(
   name: :description,
   value: @product.description,
   rows: 6,
@@ -119,7 +119,7 @@ CommandPost::Form::TextareaComponent.new(
 Date and datetime input.
 
 ```ruby
-CommandPost::Form::DatePickerComponent.new(
+IronAdmin::Form::DatePickerComponent.new(
   name: :published_at,       # Required: field name
   value: nil,                # Optional: current value (Date/DateTime/String)
   type: :datetime_local,     # Optional: :date, :datetime, :datetime_local, :time
@@ -133,7 +133,7 @@ CommandPost::Form::DatePickerComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Form::DatePickerComponent.new(
+= render IronAdmin::Form::DatePickerComponent.new(
   name: :start_date,
   value: @event.start_date,
   type: :datetime_local,
@@ -148,7 +148,7 @@ CommandPost::Form::DatePickerComponent.new(
 Association select for belongs_to relationships.
 
 ```ruby
-CommandPost::Form::BelongsToComponent.new(
+IronAdmin::Form::BelongsToComponent.new(
   name: :user_id,                  # Required: foreign key field name
   association_class: User,         # Required: associated model class
   selected: nil,                   # Optional: currently selected ID
@@ -162,7 +162,7 @@ CommandPost::Form::BelongsToComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Form::BelongsToComponent.new(
+= render IronAdmin::Form::BelongsToComponent.new(
   name: :category_id,
   association_class: Category,
   selected: @product.category_id,
@@ -177,7 +177,7 @@ CommandPost::Form::BelongsToComponent.new(
 Wrapper with label, hint, and error display.
 
 ```ruby
-CommandPost::Form::FieldWrapperComponent.new(
+IronAdmin::Form::FieldWrapperComponent.new(
   name: :email,              # Required: field name
   label: nil,                # Optional: label text (auto-generated from name)
   errors: [],                # Optional: array of error messages
@@ -190,14 +190,14 @@ CommandPost::Form::FieldWrapperComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Form::FieldWrapperComponent.new(
+= render IronAdmin::Form::FieldWrapperComponent.new(
   name: :email,
   label: "Email Address",
   errors: @user.errors[:email],
   required: true,
   hint: "We'll never share your email."
 ) do
-  = render CommandPost::Form::TextInputComponent.new(
+  = render IronAdmin::Form::TextInputComponent.new(
     name: :email,
     value: @user.email,
     has_error: @user.errors[:email].any?

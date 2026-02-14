@@ -4,12 +4,12 @@ Common issues and their solutions.
 
 ## Installation Issues
 
-### "uninitialized constant CommandPost"
+### "uninitialized constant IronAdmin"
 
 **Cause:** The gem is not loaded or the engine is not properly required.
 
 **Solutions:**
-1. Ensure `gem "command-post"` is in your Gemfile
+1. Ensure `gem "iron_admin"` is in your Gemfile
 2. Run `bundle install`
 3. Restart your Rails server
 
@@ -19,22 +19,22 @@ Common issues and their solutions.
 
 **Solution:** Check `config/routes.rb` includes:
 ```ruby
-mount CommandPost::Engine => "/admin"
+mount IronAdmin::Engine => "/admin"
 ```
 
 ### Assets/CSS not loading
 
-**Cause:** Tailwind CSS not configured to scan CommandPost files.
+**Cause:** Tailwind CSS not configured to scan IronAdmin files.
 
 **Solution:** Add to `tailwind.config.js`:
 ```javascript
 content: [
   // ... your paths
-  "./path/to/command_post/app/**/*.{rb,haml}",
+  "./path/to/iron_admin/app/**/*.{rb,haml}",
 ]
 ```
 
-Find the gem path with: `bundle show command-post`
+Find the gem path with: `bundle show iron_admin`
 
 ## Resource Issues
 
@@ -64,8 +64,8 @@ Find the gem path with: `bundle show command-post`
 **Cause:** Resource not registered or menu configuration issue.
 
 **Solutions:**
-1. Ensure resource file exists in `app/command_post/`
-2. Check resource inherits from `CommandPost::Resource`
+1. Ensure resource file exists in `app/iron_admin/`
+2. Check resource inherits from `IronAdmin::Resource`
 3. Verify filename matches class name (`user_resource.rb` → `UserResource`)
 
 ### Custom actions not appearing
@@ -92,7 +92,7 @@ Find the gem path with: `bundle show command-post`
 
 **Cause:** Authentication block redirecting or returning false.
 
-**Solution:** Check `config/initializers/command_post.rb`:
+**Solution:** Check `config/initializers/iron_admin.rb`:
 ```ruby
 config.authenticate do |controller|
   # Ensure this doesn't redirect for authenticated users
@@ -178,7 +178,7 @@ The proc receives the current user, not the record.
 
 **Solution:** Add explicit preloading:
 ```ruby
-class OrderResource < CommandPost::Resource
+class OrderResource < IronAdmin::Resource
   preload :customer, :line_items, :shipping_address
 end
 ```
@@ -192,7 +192,7 @@ end
 field :customer_id, type: :belongs_to, autocomplete: true
 ```
 
-Or let CommandPost auto-switch (happens at >100 records).
+Or let IronAdmin auto-switch (happens at >100 records).
 
 ## Multi-Tenant Issues
 
@@ -207,13 +207,13 @@ config.tenant_scope do |scope|
 end
 ```
 
-Ensure `Current.organization` is set before CommandPost loads.
+Ensure `Current.organization` is set before IronAdmin loads.
 
 ### Bulk actions affecting wrong records
 
 **Cause:** Tenant scope not applied to bulk actions.
 
-**Solution:** CommandPost validates all selected records are accessible. If you're seeing cross-tenant issues, check your tenant_scope configuration.
+**Solution:** IronAdmin validates all selected records are accessible. If you're seeing cross-tenant issues, check your tenant_scope configuration.
 
 ## Audit Logging Issues
 
@@ -228,7 +228,7 @@ Ensure `Current.organization` is set before CommandPost loads.
    ```
 2. For database storage, run migration:
    ```bash
-   rails generate command_post:install_audit
+   rails generate iron_admin:install_audit
    rails db:migrate
    ```
 
@@ -246,9 +246,9 @@ config.audit_storage = :database
 If you can't resolve your issue:
 
 1. Check the [FAQ](../FAQ.md)
-2. Search existing [GitHub Issues](https://github.com/rubylab/command-post/issues)
+2. Search existing [GitHub Issues](https://github.com/RubyLabApp/iron_admin/issues)
 3. Open a new issue with:
-   - CommandPost version
+   - IronAdmin version
    - Rails version
    - Ruby version
    - Error message and backtrace

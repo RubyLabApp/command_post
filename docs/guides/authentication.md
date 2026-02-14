@@ -1,13 +1,13 @@
 # Authentication & Authorization
 
-CommandPost uses block-based authentication, compatible with any auth system.
+IronAdmin uses block-based authentication, compatible with any auth system.
 
 ## Authentication
 
 ### Basic Session Auth
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.authenticate do |controller|
     unless controller.session[:user_id]
       controller.redirect_to "/login"
@@ -63,14 +63,14 @@ end
 
 ## The `current_user` Helper
 
-The user returned by `config.current_user` is available as `command_post_current_user` in all CommandPost controllers and views.
+The user returned by `config.current_user` is available as `iron_admin_current_user` in all IronAdmin controllers and views.
 
 ## Policies
 
 Per-resource access control:
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   policy do
     allow :read, :create, :update
     deny :delete, if: ->(record) { record.admin? }
@@ -114,7 +114,7 @@ end
 Custom actions and bulk actions require explicit policy permission:
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   action :lock do |record|
     record.update!(locked_at: Time.current)
   end
@@ -136,7 +136,7 @@ end
 For simple cases:
 
 ```ruby
-class AuditLogResource < CommandPost::Resource
+class AuditLogResource < IronAdmin::Resource
   deny_actions :create, :update, :delete
 end
 ```
@@ -146,7 +146,7 @@ end
 Control field visibility and editability per user:
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   field :salary, visible: ->(user) { user.admin? || user.hr? }
   field :role, readonly: ->(user) { !user.admin? }
   field :ssn, visible: ->(user) { user.admin? }
@@ -162,14 +162,14 @@ Field visibility is enforced across:
 
 ## Audit Logging
 
-CommandPost provides two approaches for audit logging.
+IronAdmin provides two approaches for audit logging.
 
 ### Built-in Audit Logging (Recommended)
 
 Zero-configuration audit logging with optional database persistence:
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.audit_enabled = true
   config.audit_storage = :memory  # Default: in-memory storage
 end
@@ -184,7 +184,7 @@ config.audit_storage = :database
 Then run the migration:
 
 ```bash
-rails generate command_post:audit_migration
+rails generate iron_admin:audit_migration
 rails db:migrate
 ```
 
@@ -229,7 +229,7 @@ end
 Automatically scope all queries to the current tenant:
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.tenant_scope do |scope|
     scope.where(organization_id: Current.organization.id)
   end

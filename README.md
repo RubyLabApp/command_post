@@ -1,7 +1,7 @@
-# CommandPost
+# IronAdmin
 
-[![Gem Version](https://badge.fury.io/rb/command-post.svg)](https://badge.fury.io/rb/command-post)
-[![CI](https://github.com/rubylab/command-post/actions/workflows/ci.yml/badge.svg)](https://github.com/rubylab/command-post/actions/workflows/ci.yml)
+[![Gem Version](https://badge.fury.io/rb/iron_admin.svg)](https://badge.fury.io/rb/iron_admin)
+[![CI](https://github.com/RubyLabApp/iron_admin/actions/workflows/ci.yml/badge.svg)](https://github.com/RubyLabApp/iron_admin/actions/workflows/ci.yml)
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop)
 
 Convention-over-configuration admin panel engine for Ruby on Rails. Build beautiful admin interfaces with minimal code.
@@ -26,21 +26,21 @@ Convention-over-configuration admin panel engine for Ruby on Rails. Build beauti
 Add to your Gemfile:
 
 ```ruby
-gem "command-post"
+gem "iron_admin"
 ```
 
 Then run:
 
 ```bash
 bundle install
-rails generate command_post:install
+rails generate iron_admin:install
 ```
 
 Mount the engine in your `config/routes.rb`:
 
 ```ruby
 Rails.application.routes.draw do
-  mount CommandPost::Engine, at: "/admin"
+  mount IronAdmin::Engine, at: "/admin"
 end
 ```
 
@@ -49,8 +49,8 @@ end
 ### 1. Configure Authentication
 
 ```ruby
-# config/initializers/command_post.rb
-CommandPost.configure do |config|
+# config/initializers/iron_admin.rb
+IronAdmin.configure do |config|
   config.title = "My App Admin"
 
   config.authenticate do |controller|
@@ -67,16 +67,16 @@ end
 ### 2. Generate Resources
 
 ```bash
-rails generate command_post:resource User
-rails generate command_post:resource Product
-rails generate command_post:resource Order
+rails generate iron_admin:resource User
+rails generate iron_admin:resource Product
+rails generate iron_admin:resource Order
 ```
 
 ### 3. Customize Resources
 
 ```ruby
-# app/command_post/user_resource.rb
-class UserResource < CommandPost::Resource
+# app/iron_admin/user_resource.rb
+class UserResource < IronAdmin::Resource
   field :role, type: :badge, colors: { admin: :purple, user: :blue }
   field :email, type: :text
 
@@ -102,8 +102,8 @@ end
 ### 4. Create a Dashboard
 
 ```ruby
-# app/command_post/admin_dashboard.rb
-class AdminDashboard < CommandPost::Dashboard
+# app/iron_admin/admin_dashboard.rb
+class AdminDashboard < IronAdmin::Dashboard
   metric :total_users, format: :number do
     User.count
   end

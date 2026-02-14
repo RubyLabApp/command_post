@@ -1,6 +1,6 @@
 # Extending the Engine
 
-CommandPost is designed to be extended at every level.
+IronAdmin is designed to be extended at every level.
 
 ## Extension Points
 
@@ -15,7 +15,7 @@ CommandPost is designed to be extended at every level.
 ## Custom Resources with Business Logic
 
 ```ruby
-class SubscriptionResource < CommandPost::Resource
+class SubscriptionResource < IronAdmin::Resource
   action :cancel, icon: "x-circle", confirm: true do |record|
     Billing::CancelSubscriptionService.call(subscription: record)
   end
@@ -29,15 +29,15 @@ end
 ## Subclassing the Base Controller
 
 ```ruby
-# config/initializers/command_post.rb
+# config/initializers/iron_admin.rb
 Rails.application.config.to_prepare do
-  CommandPost::ApplicationController.class_eval do
+  IronAdmin::ApplicationController.class_eval do
     before_action :set_timezone
 
     private
 
     def set_timezone
-      Time.zone = command_post_current_user&.timezone || "UTC"
+      Time.zone = iron_admin_current_user&.timezone || "UTC"
     end
   end
 end
@@ -46,7 +46,7 @@ end
 ## Adding Custom Routes
 
 ```ruby
-mount CommandPost::Engine => "/admin"
+mount IronAdmin::Engine => "/admin"
 
 namespace :admin do
   get "reports/revenue", to: "reports#revenue"
@@ -58,7 +58,7 @@ end
 Place overrides following the engine's view path:
 
 ```
-app/views/command_post/
+app/views/iron_admin/
   resources/
     index.html.haml
   dashboard/
@@ -72,7 +72,7 @@ Rails uses your app's views over the engine's views automatically.
 ## Extending the Resource Class
 
 ```ruby
-class ApplicationResource < CommandPost::Resource
+class ApplicationResource < IronAdmin::Resource
   exports :csv, :json
 
   def self.inherited(subclass)
@@ -89,7 +89,7 @@ end
 ## Per-Environment Configuration
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.title = "My App Admin"
   config.title += " [STAGING]" if Rails.env.staging?
   config.per_page = Rails.env.development? ? 10 : 25
@@ -98,13 +98,13 @@ end
 
 ## Custom Field Types API
 
-The `FieldTypeRegistry` allows you to register custom field types that integrate with CommandPost's display and form rendering.
+The `FieldTypeRegistry` allows you to register custom field types that integrate with IronAdmin's display and form rendering.
 
 ### Registering a Custom Field Type
 
 ```ruby
-# config/initializers/command_post.rb
-CommandPost::FieldTypeRegistry.register(:star_rating) do
+# config/initializers/iron_admin.rb
+IronAdmin::FieldTypeRegistry.register(:star_rating) do
   # Required: how to display on show pages
   display do |record, field|
     value = record.public_send(field.name)
@@ -128,7 +128,7 @@ end
 ### Using a Custom Field Type
 
 ```ruby
-class ReviewResource < CommandPost::Resource
+class ReviewResource < IronAdmin::Resource
   field :rating, type: :star_rating
 end
 ```
@@ -150,11 +150,11 @@ Custom tools let you add standalone pages to the admin panel with full sidebar i
 
 ### Creating a Tool
 
-Create a tool class that inherits from `CommandPost::Tool`:
+Create a tool class that inherits from `IronAdmin::Tool`:
 
 ```ruby
-# app/command_post/tools/report_tool.rb
-class ReportTool < CommandPost::Tool
+# app/iron_admin/tools/report_tool.rb
+class ReportTool < IronAdmin::Tool
   menu label: "Reports", icon: "chart-bar", priority: 1, group: "Analytics"
 end
 ```
@@ -166,13 +166,13 @@ Tools auto-register with `ToolRegistry` via the `inherited` callback, similar to
 Create a view template for your tool at:
 
 ```
-app/views/command_post/tools/<tool_name>/show.html.erb
+app/views/iron_admin/tools/<tool_name>/show.html.erb
 ```
 
 For example, `ReportTool` (which has `tool_name` of `"report"`) would use:
 
 ```
-app/views/command_post/tools/report/show.html.erb
+app/views/iron_admin/tools/report/show.html.erb
 ```
 
 ### Tool Routes
@@ -205,17 +205,17 @@ Tools are automatically routed at `/admin/tools/:tool_name`:
 
 ## i18n / Localization
 
-CommandPost ships with full i18n support. All UI strings are externalized using `I18n.t()` calls.
+IronAdmin ships with full i18n support. All UI strings are externalized using `I18n.t()` calls.
 
 ### Default Locale File
 
-CommandPost includes a default English locale file at `config/locales/en.yml` under the `command_post:` namespace. The engine automatically loads this file.
+IronAdmin includes a default English locale file at `config/locales/en.yml` under the `iron_admin:` namespace. The engine automatically loads this file.
 
 ### Key Structure
 
 ```yaml
 en:
-  command_post:
+  iron_admin:
     resources:
       create:
         success: "%{model} created."
@@ -247,9 +247,9 @@ en:
 To add a new language, create a locale file following the same key structure:
 
 ```yaml
-# config/locales/command_post.es.yml
+# config/locales/iron_admin.es.yml
 es:
-  command_post:
+  iron_admin:
     resources:
       create:
         success: "%{model} creado."
@@ -273,12 +273,12 @@ Place the file in your host app's `config/locales/` directory. Rails will automa
 
 ### Setting the Locale
 
-CommandPost uses the standard Rails `I18n.locale`. Set it in your application controller or via a `before_action` in the CommandPost configuration:
+IronAdmin uses the standard Rails `I18n.locale`. Set it in your application controller or via a `before_action` in the IronAdmin configuration:
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.before_action do
-    I18n.locale = command_post_current_user&.locale || :en
+    I18n.locale = iron_admin_current_user&.locale || :en
   end
 end
 ```

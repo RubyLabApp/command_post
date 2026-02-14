@@ -4,8 +4,8 @@ TestLicenseResource = LicenseResource
 
 module TestResourceHelpers
   def register_test_resources
-    CommandPost::ResourceRegistry.register(UserResource)
-    CommandPost::ResourceRegistry.register(LicenseResource)
+    IronAdmin::ResourceRegistry.register(UserResource)
+    IronAdmin::ResourceRegistry.register(LicenseResource)
   end
 end
 

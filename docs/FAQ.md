@@ -2,9 +2,9 @@
 
 ## General
 
-### What is CommandPost?
+### What is IronAdmin?
 
-CommandPost is a convention-over-configuration admin panel engine for Ruby on Rails. It automatically generates admin interfaces from your database schema with minimal configuration.
+IronAdmin is a convention-over-configuration admin panel engine for Ruby on Rails. It automatically generates admin interfaces from your database schema with minimal configuration.
 
 ### What are the requirements?
 
@@ -12,55 +12,55 @@ CommandPost is a convention-over-configuration admin panel engine for Ruby on Ra
 - Rails >= 7.1
 - Tailwind CSS (for default styling)
 
-### Is CommandPost production-ready?
+### Is IronAdmin production-ready?
 
-Yes. CommandPost is designed for production use with comprehensive test coverage (95%+), security features (field visibility, tenant scoping, authorization), and performance optimizations (association preloading, caching).
+Yes. IronAdmin is designed for production use with comprehensive test coverage (95%+), security features (field visibility, tenant scoping, authorization), and performance optimizations (association preloading, caching).
 
 ## Installation
 
-### How do I install CommandPost?
+### How do I install IronAdmin?
 
 ```bash
-bundle add command-post
-rails generate command_post:install
+bundle add iron_admin
+rails generate iron_admin:install
 ```
 
 ### Why aren't my Tailwind styles working?
 
-CommandPost uses Tailwind CSS classes. Ensure your `tailwind.config.js` includes the engine's paths:
+IronAdmin uses Tailwind CSS classes. Ensure your `tailwind.config.js` includes the engine's paths:
 
 ```javascript
 module.exports = {
   content: [
     // Your app paths...
-    "./path/to/command_post/app/**/*.{rb,haml}",
+    "./path/to/iron_admin/app/**/*.{rb,haml}",
   ],
 }
 ```
 
-Use `bundle show command-post` to find the gem path.
+Use `bundle show iron_admin` to find the gem path.
 
 ### How do I change the admin path from /admin?
 
 In `config/routes.rb`:
 
 ```ruby
-mount CommandPost::Engine => "/dashboard"  # or any path
+mount IronAdmin::Engine => "/dashboard"  # or any path
 ```
 
 ## Resources
 
 ### Why aren't my model fields showing?
 
-CommandPost infers fields from your database schema. Ensure:
+IronAdmin infers fields from your database schema. Ensure:
 1. The model's table exists in the database
 2. You've run migrations
-3. The resource is registered (check `app/command_post/`)
+3. The resource is registered (check `app/iron_admin/`)
 
 ### How do I hide a field?
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   field :password_digest, visible: false
   field :secret, visible: ->(user) { user.admin? }
 end
@@ -69,7 +69,7 @@ end
 ### How do I make a field read-only?
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   field :email, readonly: true
   field :role, readonly: ->(user) { !user.admin? }
 end
@@ -78,7 +78,7 @@ end
 ### How do I customize field display in the index table?
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   index_fields :id, :name, :email, :role, :created_at
 end
 ```
@@ -86,7 +86,7 @@ end
 ### How do I create a custom action?
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   action :lock, icon: "lock-closed", confirm: true do |record|
     record.update!(locked_at: Time.current)
   end
@@ -100,7 +100,7 @@ end
 Configure authentication in the initializer:
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.authenticate do |controller|
     unless controller.current_user&.admin?
       controller.redirect_to "/login"
@@ -114,7 +114,7 @@ end
 Use policies:
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   policy do
     allow :read
     allow :update, if: ->(user) { user.admin? }
@@ -126,7 +126,7 @@ end
 Or use `deny_actions` for simple cases:
 
 ```ruby
-class AuditLogResource < CommandPost::Resource
+class AuditLogResource < IronAdmin::Resource
   deny_actions :create, :update, :delete
 end
 ```
@@ -142,7 +142,7 @@ field :salary, visible: ->(user) { user.admin? || user.hr? }
 ### How do I scope data to the current tenant?
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.tenant_scope do |scope|
     scope.where(organization_id: Current.organization.id)
   end
@@ -164,7 +164,7 @@ created_at:2025-01-01..2025-12-31
 ### How do I customize which fields are searchable?
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   searchable :name, :email
 end
 ```
@@ -180,7 +180,7 @@ CSV and JSON exports are enabled by default. Access via:
 ### How do I customize export fields?
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   export_fields :id, :name, :email, :created_at
 end
 ```
@@ -188,7 +188,7 @@ end
 ### How do I disable export?
 
 ```ruby
-class SecretResource < CommandPost::Resource
+class SecretResource < IronAdmin::Resource
   exports  # Empty to disable
 end
 ```
@@ -198,7 +198,7 @@ end
 ### How do I create a custom dashboard?
 
 ```ruby
-class AdminDashboard < CommandPost::Dashboard
+class AdminDashboard < IronAdmin::Dashboard
   metric :total_users, format: :number do
     User.count
   end
@@ -210,7 +210,7 @@ end
 ### How do I add charts?
 
 ```ruby
-class AdminDashboard < CommandPost::Dashboard
+class AdminDashboard < IronAdmin::Dashboard
   chart :signups_by_month, type: :bar do
     User.group_by_month(:created_at).count
   end
@@ -221,17 +221,17 @@ end
 
 ### How do I prevent N+1 queries?
 
-CommandPost automatically preloads `belongs_to` associations. For custom preloading:
+IronAdmin automatically preloads `belongs_to` associations. For custom preloading:
 
 ```ruby
-class OrderResource < CommandPost::Resource
+class OrderResource < IronAdmin::Resource
   preload :customer, :line_items
 end
 ```
 
 ### Why is my belongs_to dropdown slow?
 
-For associations with many records (>100), CommandPost automatically switches to an autocomplete component. You can force autocomplete:
+For associations with many records (>100), IronAdmin automatically switches to an autocomplete component. You can force autocomplete:
 
 ```ruby
 field :customer_id, type: :belongs_to, autocomplete: true
@@ -242,7 +242,7 @@ field :customer_id, type: :belongs_to, autocomplete: true
 ### How do I enable audit logging?
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.audit_enabled = true
 end
 ```
@@ -256,7 +256,7 @@ config.audit_storage = :database
 Then run:
 
 ```bash
-rails generate command_post:install_audit
+rails generate iron_admin:install_audit
 rails db:migrate
 ```
 

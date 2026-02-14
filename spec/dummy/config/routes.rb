@@ -1,3 +1,3 @@
 Rails.application.routes.draw do
-  mount CommandPost::Engine => "/admin"
+  mount IronAdmin::Engine => "/admin"
 end

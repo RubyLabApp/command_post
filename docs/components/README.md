@@ -1,6 +1,6 @@
 # Components Library
 
-CommandPost includes a comprehensive library of ViewComponents for building admin interfaces. All components use Tailwind CSS classes and are designed to work with the theming system.
+IronAdmin includes a comprehensive library of ViewComponents for building admin interfaces. All components use Tailwind CSS classes and are designed to work with the theming system.
 
 ## Component Categories
 
@@ -14,29 +14,29 @@ CommandPost includes a comprehensive library of ViewComponents for building admi
 
 ## Using Components
 
-All components live under the `CommandPost` namespace and are organized by category:
+All components live under the `IronAdmin` namespace and are organized by category:
 
 ```ruby
 # UI Components
-CommandPost::UI::BadgeComponent
-CommandPost::UI::ButtonComponent
-CommandPost::UI::CardComponent
+IronAdmin::UI::BadgeComponent
+IronAdmin::UI::ButtonComponent
+IronAdmin::UI::CardComponent
 
 # Form Components
-CommandPost::Form::TextInputComponent
-CommandPost::Form::SelectComponent
+IronAdmin::Form::TextInputComponent
+IronAdmin::Form::SelectComponent
 
 # Filter Components
-CommandPost::Filters::SearchComponent
-CommandPost::Filters::SelectFilterComponent
+IronAdmin::Filters::SearchComponent
+IronAdmin::Filters::SelectFilterComponent
 
 # Resource Components
-CommandPost::Resources::DataTableComponent
-CommandPost::Resources::BreadcrumbComponent
+IronAdmin::Resources::DataTableComponent
+IronAdmin::Resources::BreadcrumbComponent
 
 # Dashboard Components
-CommandPost::Dashboards::ChartComponent
-CommandPost::Dashboards::StatsGridComponent
+IronAdmin::Dashboards::ChartComponent
+IronAdmin::Dashboards::StatsGridComponent
 ```
 
 ## Rendering Components
@@ -44,9 +44,9 @@ CommandPost::Dashboards::StatsGridComponent
 Components can be rendered in views using ViewComponent's `render` helper:
 
 ```haml
-= render CommandPost::UI::BadgeComponent.new(text: "Active", color: :green)
+= render IronAdmin::UI::BadgeComponent.new(text: "Active", color: :green)
 
-= render CommandPost::UI::ButtonComponent.new(text: "Save", variant: :primary)
+= render IronAdmin::UI::ButtonComponent.new(text: "Save", variant: :primary)
 ```
 
 ## Theme Integration

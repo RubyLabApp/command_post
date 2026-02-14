@@ -10,7 +10,7 @@ require "action_text/engine"
 require "action_view/railtie"
 
 Bundler.require(*Rails.groups)
-require "command_post"
+require "iron_admin"
 
 module Dummy
   class Application < Rails::Application

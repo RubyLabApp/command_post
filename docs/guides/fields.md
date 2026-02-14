@@ -1,6 +1,6 @@
 # Fields
 
-CommandPost automatically infers field types from your ActiveRecord model's database schema.
+IronAdmin automatically infers field types from your ActiveRecord model's database schema.
 
 ## Automatic Inference
 
@@ -20,7 +20,7 @@ CommandPost automatically infers field types from your ActiveRecord model's data
 ## Overriding Fields
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   field :status, type: :badge, colors: {
     active: :green,
     suspended: :red,
@@ -43,7 +43,7 @@ Overrides merge with inferred fields. You only need to specify the fields you wa
 ## Dynamic Visibility and Readonly
 
 ```ruby
-class SalaryResource < CommandPost::Resource
+class SalaryResource < IronAdmin::Resource
   field :amount, visible: ->(user) { user.admin? || user.hr? }
   field :department, readonly: ->(user) { !user.admin? }
 end
@@ -63,14 +63,14 @@ Available keys: `:green`, `:red`, `:yellow`, `:blue`, `:indigo`, `:purple`, `:pi
 Add custom colors:
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.badge_colors[:cyan] = "bg-cyan-100 text-cyan-800"
 end
 ```
 
 ### Default Badge Colors for Common Status Values
 
-CommandPost automatically assigns colors to common status values without configuration:
+IronAdmin automatically assigns colors to common status values without configuration:
 
 | Status Value | Color |
 |--------------|-------|
@@ -86,7 +86,7 @@ CommandPost automatically assigns colors to common status values without configu
 Example:
 
 ```ruby
-class OrderResource < CommandPost::Resource
+class OrderResource < IronAdmin::Resource
   # No colors needed - auto-detected from value
   field :status, type: :badge
 end
@@ -106,7 +106,7 @@ field :status, type: :badge, colors: {
 
 ## Name-Convention Fields
 
-CommandPost auto-infers certain field types based on column naming patterns:
+IronAdmin auto-infers certain field types based on column naming patterns:
 
 ### URL Fields
 
@@ -149,7 +149,7 @@ class User < ApplicationRecord
   has_one_attached :avatar
 end
 
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   field :avatar, type: :file
 end
 ```
@@ -165,7 +165,7 @@ class Product < ApplicationRecord
   has_many_attached :images
 end
 
-class ProductResource < CommandPost::Resource
+class ProductResource < IronAdmin::Resource
   field :images, type: :files
 end
 ```
@@ -181,7 +181,7 @@ class Article < ApplicationRecord
   has_rich_text :body
 end
 
-class ArticleResource < CommandPost::Resource
+class ArticleResource < IronAdmin::Resource
   field :body, type: :rich_text
 end
 ```
@@ -191,7 +191,7 @@ On forms, a Trix WYSIWYG editor is rendered. On show pages, the rich text conten
 ## Password Field
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   field :password, type: :password
 end
 ```
@@ -201,7 +201,7 @@ Renders a password input with masking on forms. The value is never displayed on 
 ## Tags Field
 
 ```ruby
-class ArticleResource < CommandPost::Resource
+class ArticleResource < IronAdmin::Resource
   field :tags, type: :tags
 end
 ```
@@ -211,7 +211,7 @@ On forms, renders a tag input where users can type and press Enter to add tags, 
 ## Markdown Field
 
 ```ruby
-class PostResource < CommandPost::Resource
+class PostResource < IronAdmin::Resource
   field :body, type: :markdown
 end
 ```
@@ -221,7 +221,7 @@ Renders a monospace text area on forms with a markdown placeholder. On show page
 ## Color Field
 
 ```ruby
-class ThemeResource < CommandPost::Resource
+class ThemeResource < IronAdmin::Resource
   field :primary_color, type: :color
 end
 ```
@@ -231,7 +231,7 @@ On show and index pages, displays a color swatch next to the hex value. On forms
 ## Currency Field
 
 ```ruby
-class ProductResource < CommandPost::Resource
+class ProductResource < IronAdmin::Resource
   field :price, type: :currency
   # Or with a custom symbol:
   field :price, type: :currency, symbol: "EUR"
@@ -243,7 +243,7 @@ On show and index pages, displays the value formatted with a currency symbol pre
 ## Boolean Field
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   field :active, type: :boolean
 end
 ```
@@ -253,7 +253,7 @@ Boolean fields are auto-inferred from boolean database columns. On show and inde
 ## Date and DateTime Fields
 
 ```ruby
-class EventResource < CommandPost::Resource
+class EventResource < IronAdmin::Resource
   field :start_date, type: :date
   field :starts_at, type: :datetime
 end
@@ -267,14 +267,14 @@ On index pages, `:text` and `:textarea` fields that exceed 50 characters are aut
 
 ## Polymorphic Belongs To
 
-CommandPost auto-detects polymorphic `belongs_to` associations via `FieldInferrer`. When a model has `*_type` and `*_id` column pairs, a `:polymorphic_belongs_to` field is generated.
+IronAdmin auto-detects polymorphic `belongs_to` associations via `FieldInferrer`. When a model has `*_type` and `*_id` column pairs, a `:polymorphic_belongs_to` field is generated.
 
 ```ruby
 class Comment < ApplicationRecord
   belongs_to :commentable, polymorphic: true
 end
 
-class CommentResource < CommandPost::Resource
+class CommentResource < IronAdmin::Resource
   belongs_to :commentable, polymorphic: true, types: [Article, Photo, Video]
 end
 ```
@@ -286,7 +286,7 @@ On forms, a type selector dropdown and an ID selector are rendered. On show and 
 You can register custom field types using the `FieldTypeRegistry` API:
 
 ```ruby
-CommandPost::FieldTypeRegistry.register(:star_rating) do
+IronAdmin::FieldTypeRegistry.register(:star_rating) do
   display do |record, field|
     value = record.public_send(field.name)
     value.to_i.times.map { "&#9733;" }.join.html_safe
@@ -308,7 +308,7 @@ end
 Then use it in a resource:
 
 ```ruby
-class ReviewResource < CommandPost::Resource
+class ReviewResource < IronAdmin::Resource
   field :rating, type: :star_rating
 end
 ```

@@ -5,7 +5,7 @@
 pin "trix"
 pin "@rails/actiontext", to: "actiontext.esm.js"
 
-# CommandPost Stimulus controllers
-pin "command_post", to: "command_post/index.js"
-pin "command_post/controllers/cp_bulk_select_controller", to: "command_post/controllers/cp_bulk_select_controller.js"
-pin "command_post/controllers/cp_chart_controller", to: "command_post/controllers/cp_chart_controller.js"
+# IronAdmin Stimulus controllers
+pin "iron_admin", to: "iron_admin/index.js"
+pin "iron_admin/controllers/cp_bulk_select_controller", to: "iron_admin/controllers/cp_bulk_select_controller.js"
+pin "iron_admin/controllers/cp_chart_controller", to: "iron_admin/controllers/cp_chart_controller.js"
