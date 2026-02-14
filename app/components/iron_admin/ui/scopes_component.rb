@@ -58,11 +58,10 @@ module IronAdmin
       # @param scope [Hash] Scope definition
       # @return [String] CSS classes for scope tab
       def scope_classes(scope)
-        base = "px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors duration-150"
         if active?(scope)
-          "#{base} #{theme.scope_active}"
+          "#{theme.scope.base} #{theme.scope_active}"
         else
-          "#{base} #{theme.scope_inactive}"
+          "#{theme.scope.base} #{theme.scope_inactive}"
         end
       end
 

@@ -1,7 +1,7 @@
-.p-8.max-w-7xl.mx-auto{ class: t.font_family }
-  .flex.items-center.justify-between.mb-6
+%div{ class: "#{t.layout.page_wrapper} #{t.font_family}" }
+  %div{ class: t.layout.page_header }
     %h1.text-2xl{ class: cp_heading }= @tool_class.label
-  .overflow-hidden{ class: cp_card }
-    .p-6
+  %div{ class: "#{t.card.overflow} #{cp_card}" }
+    %div{ class: t.card.content_padding }
       %p.text-sm{ class: cp_muted_text }
         = @tool_class.label

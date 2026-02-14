@@ -3,8 +3,9 @@
 module IronAdmin
   # Helper methods for accessing themed CSS classes.
   #
-  # Provides convenience methods for generating Tailwind class strings
-  # based on the current theme configuration.
+  # All methods compose strings exclusively from theme tokens.
+  # No hardcoded framework classes — a different preset will
+  # change every class string returned by these helpers.
   module ThemeHelper
     # Returns the current theme configuration.
     # @return [IronAdmin::Configuration::Theme]
@@ -14,30 +15,27 @@ module IronAdmin
 
     # @return [String] Primary button classes
     def cp_btn_primary
-      "inline-flex items-center px-4 py-2 #{t.border_radius} #{t.btn_primary} " \
-        "transition duration-150 ease-in-out"
+      "#{t.button.base} #{t.button.variants[:primary]} #{t.button.sizes[:md]}"
     end
 
     # @return [String] Large primary button classes
     def cp_btn_primary_lg
-      "inline-flex items-center px-5 text-sm font-medium #{t.border_radius} shadow-sm " \
-        "#{t.btn_primary} transition duration-150 ease-in-out cursor-pointer py-2.5"
+      "#{t.button.base} #{t.button.variants[:primary]} #{t.button.sizes[:lg]}"
     end
 
     # @return [String] Secondary button classes
     def cp_btn_secondary
-      "inline-flex items-center px-5 text-sm font-medium #{t.border_radius} shadow-sm " \
-        "#{t.btn_secondary} transition duration-150 ease-in-out py-2.5"
+      "#{t.button.base} #{t.button.variants[:secondary]} #{t.button.sizes[:lg]}"
     end
 
     # @return [String] Danger button classes
     def cp_btn_danger
-      "px-4 py-2 #{t.border_radius} #{t.btn_danger}"
+      "#{t.button.base} #{t.button.variants[:danger]} #{t.button.sizes[:md]}"
     end
 
     # @return [String] Ghost button classes
     def cp_btn_ghost
-      "inline-flex items-center gap-2 px-4 py-2 #{t.border_radius} #{t.btn_ghost}"
+      "#{t.button.base} #{t.button.variants[:ghost]} #{t.button.sizes[:md]}"
     end
 
     # @return [String] Link classes
@@ -57,56 +55,46 @@ module IronAdmin
 
     # @return [String] Text input classes
     def cp_input_class
-      "block w-full appearance-none #{t.border_radius} border #{t.input_border} #{t.card_bg} px-3.5 py-2.5 text-sm " \
-        "#{t.body_text} shadow-sm outline-none placeholder:text-gray-400 transition duration-150 ease-in-out #{t.input_focus}"
+      "#{t.form.input_base} #{t.layout.border_radius} #{t.form.input_border} " \
+        "#{t.card.bg} #{t.typography.body_text} #{t.form.placeholder} #{t.form.input_focus}"
     end
 
     # @return [String] Select input classes
     def cp_select_class
-      "block w-full appearance-none #{t.border_radius} border #{t.input_border} #{t.card_bg} px-3.5 py-2.5 pr-10 text-sm " \
-        "#{t.body_text} shadow-sm outline-none transition duration-150 ease-in-out #{t.input_focus} " \
-        "bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20" \
-        "viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22" \
-        "M5.23%207.21a.75.75%200%20011.06.02L10%2011.168l3.71-3.938a.75.75%200%20111.08%201.04l-4.25%204.5a.75.75" \
-        "%200%2001-1.08%200l-4.25-4.5a.75.75%200%2001.02-1.06z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] " \
-        "bg-[length:1.25rem_1.25rem] bg-[position:right_0.5rem_center] bg-no-repeat"
+      "#{t.form.input_base} #{t.layout.border_radius} #{t.form.input_border} " \
+        "#{t.card.bg} #{t.typography.body_text} #{t.form.select_extra} " \
+        "#{t.form.input_focus} #{t.form.select_svg}"
     end
 
     # @return [String] Textarea classes
     def cp_textarea_class
-      "block w-full appearance-none #{t.border_radius} border #{t.input_border} #{t.card_bg} px-3.5 py-2.5 text-sm " \
-        "#{t.body_text} shadow-sm outline-none placeholder:text-gray-400 transition duration-150 ease-in-out " \
-        "#{t.input_focus} resize-y"
+      "#{t.form.input_base} #{t.layout.border_radius} #{t.form.input_border} " \
+        "#{t.card.bg} #{t.typography.body_text} #{t.form.placeholder} " \
+        "#{t.form.input_focus} #{t.form.textarea_extra}"
     end
 
     # @return [String] Checkbox classes
     def cp_checkbox_class
-      "h-4.5 w-4.5 appearance-none rounded border #{t.input_border} #{t.card_bg} shadow-sm transition duration-150 " \
-        "ease-in-out #{t.checkbox_checked} " \
-        "checked:bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg" \
-        "%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22white%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22" \
-        "M16.707%205.293a1%201%200%20010%201.414l-8%208a1%201%200%2001-1.414%200l-4-4a1%201%200%20011.414-1.414L8" \
-        "%2012.586l7.293-7.293a1%201%200%20011.414%200z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] " \
-        "bg-[length:100%_100%] bg-center bg-no-repeat focus:ring-offset-1 cursor-pointer"
+      "#{t.form.checkbox_base} #{t.form.checkbox_checked}"
     end
 
     # @return [String] Filter input classes
     def cp_filter_input_class
-      "block w-full appearance-none #{t.border_radius} border #{t.input_border} #{t.card_bg} px-3 py-2 text-sm " \
-        "#{t.body_text} shadow-sm outline-none transition duration-150 ease-in-out #{t.input_focus}"
+      "#{t.form.filter_input} #{t.layout.border_radius} #{t.form.input_border} " \
+        "#{t.card.bg} #{t.typography.body_text} #{t.form.input_focus}"
     end
 
     # @return [String] Search input classes
     def cp_search_class
-      "block w-full appearance-none #{t.border_radius} border #{t.input_border} #{t.card_bg} pl-10 pr-4 py-2 text-sm " \
-        "#{t.body_text} shadow-sm outline-none placeholder:text-gray-400 transition duration-150 ease-in-out #{t.input_focus}"
+      "#{t.form.search_input} #{t.layout.border_radius} #{t.form.input_border} " \
+        "#{t.card.bg} #{t.typography.body_text} #{t.form.placeholder} #{t.form.input_focus}"
     end
 
     # @return [String] Navbar search input classes
     def cp_navbar_search_class
-      "block w-full appearance-none #{t.border_radius} border #{t.input_border} #{t.navbar_search_bg} pl-10 pr-4 py-2 text-sm " \
-        "#{t.body_text} shadow-sm outline-none transition duration-150 ease-in-out placeholder:text-gray-400 " \
-        "#{t.input_focus} #{t.navbar_search_focus_bg}"
+      "#{t.form.search_input} #{t.layout.border_radius} #{t.form.input_border} " \
+        "#{t.navbar.search_bg} #{t.typography.body_text} #{t.form.placeholder} " \
+        "#{t.form.input_focus} #{t.navbar.search_focus_bg}"
     end
 
     # @return [String] Active scope tab classes
@@ -121,13 +109,12 @@ module IronAdmin
 
     # @return [String] Badge count classes
     def cp_badge_count
-      "inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full #{t.badge_count} text-xs font-bold"
+      "#{t.badge.count_base} #{t.badge.count}"
     end
 
     # @return [String] Filter apply button classes
     def cp_btn_filter_apply
-      "inline-flex items-center px-3 #{t.border_radius} #{t.btn_primary} " \
-        "text-sm font-medium transition duration-150 ease-in-out py-1.5"
+      "#{t.button.base} #{t.button.variants[:primary]} #{t.button.sizes[:sm]}"
     end
 
     # @return [String] Sidebar background classes
@@ -142,7 +129,7 @@ module IronAdmin
 
     # @return [String] Sidebar link classes
     def cp_sidebar_link
-      "#{t.sidebar_link} #{t.sidebar_link_hover}"
+      "#{t.sidebar.link} #{t.sidebar.link_hover}"
     end
 
     # @return [String] Sidebar group label classes
@@ -192,9 +179,7 @@ module IronAdmin
 
     # @return [String] File input classes
     def cp_file_input_class
-      "block w-full text-sm #{t.body_text} file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 " \
-        "file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 " \
-        "file:cursor-pointer cursor-pointer"
+      "#{t.form.file_input} #{t.typography.body_text}"
     end
   end
 end

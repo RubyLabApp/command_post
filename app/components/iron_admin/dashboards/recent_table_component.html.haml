@@ -1,13 +1,13 @@
-.bg-white.rounded-lg.shadow
-  .px-6.py-4.border-b.border-gray-200
-    %h3.text-lg.font-semibold= "Recent #{label}"
-  %table.min-w-full.divide-y.divide-gray-200
-    %thead.bg-gray-50
+%div{ class: "#{t.card_bg} #{t.border_radius} #{t.card_shadow}" }
+  .px-6.py-4.border-b{ class: t.card_border }
+    %h3.text-lg.font-semibold{ class: t.body_text }= "Recent #{label}"
+  %table{ class: "#{t.table.wrapper} #{t.table_border}" }
+    %thead{ class: t.table_header_bg }
       %tr
         - fields.each do |field|
-          %th.px-6.py-3.text-left.text-xs.font-medium.text-gray-500.uppercase= field.name.to_s.humanize
-    %tbody.divide-y.divide-gray-200
+          %th{ class: t.table.header_cell }= field.name.to_s.humanize
+    %tbody{ class: "divide-y #{t.table_border}" }
       - @records.each do |record|
-        %tr.hover:bg-gray-50
+        %tr{ class: t.table_row_hover }
           - fields.each do |field|
-            %td.px-6.py-4.text-sm.text-gray-900= display_value(record, field)
+            %td{ class: "#{t.table.body_cell} #{t.body_text}" }= display_value(record, field)

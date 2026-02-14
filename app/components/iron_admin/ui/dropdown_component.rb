@@ -38,8 +38,8 @@ module IronAdmin
       def dropdown_classes
         align_class = align == :right ? "right-0" : "left-0"
         width_class = "w-#{width}"
-        "absolute #{align_class} mt-2 #{width_class} origin-top-#{align} #{theme.border_radius} " \
-          "#{theme.card_bg} border #{theme.card_border} #{theme.card_shadow}-lg z-50"
+        "#{align_class} #{width_class} origin-top-#{align} #{theme.dropdown.panel} " \
+          "#{theme.border_radius} #{theme.card_bg} #{theme.card_border}"
       end
 
       # Individual dropdown menu item.
@@ -71,12 +71,9 @@ module IronAdmin
         # @api private
         # @return [String] CSS classes for menu item
         def item_classes
-          base = "flex items-center gap-2 w-full px-4 py-2 text-sm text-left transition-colors duration-150"
-          if destructive
-            "#{base} text-red-600 hover:bg-red-50"
-          else
-            "#{base} text-gray-700 hover:bg-gray-50"
-          end
+          dropdown_theme = IronAdmin.configuration.theme.dropdown
+          variant = destructive ? dropdown_theme.item_destructive : dropdown_theme.item_default
+          "#{dropdown_theme.item_base} #{variant}"
         end
 
         # Renders the menu item.

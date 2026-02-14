@@ -36,9 +36,9 @@ module IronAdmin
       # @api private
       # @return [String] CSS classes for search input field
       def input_classes
-        "block w-full border py-2 pl-10 pr-4 text-sm shadow-sm outline-none " \
-          "transition duration-150 ease-in-out #{theme.border_radius} #{theme.input_border} " \
-          "#{theme.navbar_search_bg} #{theme.body_text} #{theme.input_focus} #{theme.navbar_search_focus_bg}"
+        "#{theme.form.search_input} #{theme.border_radius} #{theme.input_border} " \
+          "#{theme.navbar_search_bg} #{theme.body_text} #{theme.input_focus} " \
+          "#{theme.navbar_search_focus_bg}"
       end
     end
   end

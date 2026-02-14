@@ -24,6 +24,12 @@ module IronAdmin
       end
 
       # @api private
+      # @return [IronAdmin::Configuration::Theme] Theme configuration
+      def theme
+        IronAdmin.configuration.theme
+      end
+
+      # @api private
       # @return [String] Humanized metric label
       def label
         @name.to_s.humanize

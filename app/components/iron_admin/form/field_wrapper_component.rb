@@ -57,19 +57,19 @@ module IronAdmin
       # @api private
       # @return [String] CSS classes for wrapper element
       def wrapper_classes
-        span_full ? "md:col-span-2 2xl:col-span-3" : ""
+        span_full ? theme.form.wrapper_span_full : ""
       end
 
       # @api private
       # @return [String] CSS classes for label element
       def label_classes
-        "block text-sm font-medium #{theme.label_text} mb-1.5"
+        "#{theme.form.label} #{theme.label_text} #{theme.form.label_margin}"
       end
 
       # @api private
       # @return [String] CSS classes for error container
       def error_classes
-        "flex items-center gap-1.5 mt-1.5"
+        theme.form.error_container
       end
     end
   end

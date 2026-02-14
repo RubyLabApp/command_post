@@ -71,24 +71,36 @@ module IronAdmin
       # @api private
       # @return [String] CSS classes for text input field
       def input_classes
-        base = "block w-full border px-3 py-2 text-sm shadow-sm outline-none transition duration-150 ease-in-out " \
-               "#{theme.border_radius} #{theme.input_border} #{theme.card_bg} #{theme.body_text} #{theme.input_focus}"
-        base += " !border-red-400 !focus:border-red-500 !focus:ring-red-500/20" if has_error
-        base += " bg-gray-50 cursor-not-allowed" if effectively_disabled?
+        base = "#{theme.form.input_base} #{theme.border_radius} #{theme.input_border} " \
+               "#{theme.card_bg} #{theme.body_text} #{theme.input_focus}"
+        base += " #{theme.form.error_border}" if has_error
+        base += " #{theme.form.disabled}" if effectively_disabled?
         base
       end
 
       # @api private
       # @return [String] CSS classes for autocomplete dropdown panel
       def dropdown_classes
-        "absolute z-50 mt-1 w-full max-h-60 overflow-auto #{theme.border_radius} " \
-          "#{theme.card_bg} border #{theme.input_border} shadow-lg"
+        "#{theme.form.autocomplete_panel} #{theme.border_radius} " \
+          "#{theme.card_bg} border #{theme.input_border}"
       end
 
       # @api private
       # @return [String] CSS classes for dropdown list items
       def dropdown_item_classes
-        "px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 #{theme.body_text}"
+        "#{theme.form.autocomplete_item} #{theme.body_text}"
+      end
+
+      # @api private
+      # @return [String] CSS classes for "no results" message
+      def no_results_classes
+        "#{theme.form.autocomplete_no_results} #{theme.muted_text}"
+      end
+
+      # @api private
+      # @return [String] CSS class for keyboard-highlighted item
+      def highlight_class
+        theme.form.autocomplete_highlight
       end
 
       # @api private

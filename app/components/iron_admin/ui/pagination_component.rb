@@ -35,11 +35,11 @@ module IronAdmin
       # @param active [Boolean] Whether this is the current page
       # @return [String] CSS classes for page number links
       def page_link_classes(active: false)
-        base = "px-3 py-2 text-sm font-medium border transition-colors duration-150"
+        pg = theme.pagination
         if active
-          "#{base} bg-indigo-50 border-indigo-500 text-indigo-600 z-10"
+          "#{pg.page_base} #{pg.page_active}"
         else
-          "#{base} #{theme.card_bg} #{theme.card_border} #{theme.body_text} hover:bg-gray-50"
+          "#{pg.page_base} #{theme.card_bg} #{theme.card_border} #{theme.body_text} #{pg.page_inactive_hover}"
         end
       end
 
@@ -47,11 +47,11 @@ module IronAdmin
       # @param disabled [Boolean] Whether nav link is disabled
       # @return [String] CSS classes for prev/next navigation links
       def nav_link_classes(disabled: false)
-        base = "relative inline-flex items-center px-3 py-2 text-sm font-medium border transition-colors duration-150"
+        pg = theme.pagination
         if disabled
-          "#{base} #{theme.card_bg} #{theme.card_border} text-gray-300 cursor-not-allowed"
+          "#{pg.nav_base} #{theme.card_bg} #{theme.card_border} #{pg.nav_disabled}"
         else
-          "#{base} #{theme.card_bg} #{theme.card_border} #{theme.body_text} hover:bg-gray-50"
+          "#{pg.nav_base} #{theme.card_bg} #{theme.card_border} #{theme.body_text} #{pg.nav_enabled_hover}"
         end
       end
     end

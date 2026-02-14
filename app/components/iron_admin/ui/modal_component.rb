@@ -20,16 +20,6 @@ module IronAdmin
       # @return [Boolean] Whether modal can be dismissed
       attr_reader :dismissible
 
-      # Size class mappings.
-      # @return [Hash{Symbol => String}]
-      SIZES = {
-        sm: "max-w-md",
-        md: "max-w-lg",
-        lg: "max-w-2xl",
-        xl: "max-w-4xl",
-        full: "max-w-full mx-4",
-      }.freeze
-
       # @param size [Symbol] Modal size (default: :md)
       # @param dismissible [Boolean] Can be dismissed (default: true)
       def initialize(size: :md, dismissible: true)
@@ -46,7 +36,8 @@ module IronAdmin
       # @api private
       # @return [String] CSS classes for modal size
       def size_classes
-        SIZES[@size] || SIZES[:md]
+        sizes = theme.modal.sizes
+        sizes[@size] || sizes[:md]
       end
 
       # @api private

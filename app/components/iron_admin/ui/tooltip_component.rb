@@ -15,14 +15,11 @@ module IronAdmin
       # @return [Symbol] Position (:top, :bottom, :left, :right)
       attr_reader :position
 
-      # Position class mappings.
-      # @return [Hash{Symbol => String}]
-      POSITIONS = {
-        top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
-        bottom: "top-full left-1/2 -translate-x-1/2 mt-2",
-        left: "right-full top-1/2 -translate-y-1/2 mr-2",
-        right: "left-full top-1/2 -translate-y-1/2 ml-2",
-      }.freeze
+      # @api private
+      # @return [IronAdmin::Configuration::Theme] Theme configuration
+      def self.theme
+        IronAdmin.configuration.theme
+      end
 
       # @param text [String] Tooltip text
       # @param position [Symbol] Position (default: :top)
@@ -34,15 +31,14 @@ module IronAdmin
       # @api private
       # @return [String] CSS classes for tooltip position
       def position_classes
-        POSITIONS[@position] || POSITIONS[:top]
+        positions = self.class.theme.tooltip.positions
+        positions[@position] || positions[:top]
       end
 
       # @api private
       # @return [String] CSS classes for tooltip container
       def tooltip_classes
-        "absolute #{position_classes} px-2 py-1 text-xs font-medium text-white bg-gray-900 " \
-          "rounded whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible " \
-          "transition-all duration-150 z-50"
+        "#{self.class.theme.tooltip.base} #{position_classes}"
       end
     end
   end

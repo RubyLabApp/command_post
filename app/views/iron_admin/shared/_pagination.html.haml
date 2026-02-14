@@ -1,8 +1,9 @@
 -# locals: (pagy:)
 - if pagy.pages > 1
-  %nav.flex.items-center.justify-between.border-t.border-gray-200.bg-white.px-4.py-3{ class: "sm:px-6", "aria-label": "Pagination" }
+  - pg = IronAdmin.configuration.theme.pagination
+  %nav{ class: "#{pg.view_wrapper} #{t.card_border} #{t.card_bg}", "aria-label": "Pagination" }
     .hidden{ class: "sm:block" }
-      %p.text-sm.text-gray-700
+      %p{ class: pg.info }
         Showing
         %span.font-medium= pagy.from
         to
@@ -13,15 +14,17 @@
 
     .flex.flex-1.justify-between{ class: "sm:justify-end" }
       - if pagy.previous
-        = link_to url_for(request.query_parameters.merge(page: pagy.previous)), class: "relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline-offset-0" do
+        = link_to url_for(request.query_parameters.merge(page: pagy.previous)),
+          class: "#{pg.view_button} #{t.card_bg} #{cp_body_text}" do
           Previous
       - else
-        %span.relative.inline-flex.items-center.rounded-md.bg-white.px-3.py-2.text-sm.font-semibold.text-gray-300.ring-1.ring-inset.ring-gray-300.cursor-not-allowed
+        %span{ class: "#{pg.view_disabled} #{t.card_bg}" }
           Previous
 
       - if pagy.next
-        = link_to url_for(request.query_parameters.merge(page: pagy.next)), class: "relative ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline-offset-0" do
+        = link_to url_for(request.query_parameters.merge(page: pagy.next)),
+          class: "ml-3 #{pg.view_button} #{t.card_bg} #{cp_body_text}" do
           Next
       - else
-        %span.relative.ml-3.inline-flex.items-center.rounded-md.bg-white.px-3.py-2.text-sm.font-semibold.text-gray-300.ring-1.ring-inset.ring-gray-300.cursor-not-allowed
+        %span{ class: "ml-3 #{pg.view_disabled} #{t.card_bg}" }
           Next

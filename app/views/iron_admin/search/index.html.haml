@@ -1,13 +1,13 @@
-.p-8
-  %h1.text-2xl.font-bold.mb-6 Search results
+%div{ class: t.layout.page_wrapper }
+  %h1.text-2xl{ class: cp_heading } Search results
   - if @results&.any?
     - @results.each do |group|
       .mb-6
         %h2.text-lg.font-semibold.mb-2= group[:resource].label
-        .bg-white.rounded-lg.shadow.divide-y.divide-gray-200
+        %div{ class: "#{t.card_bg} #{t.border_radius} #{t.card_shadow} divide-y #{t.table_border}" }
           - group[:records].each do |record|
             = link_to resource_path(group[:resource].resource_name, record),
-              class: "block px-6 py-4 hover:bg-gray-50 text-sm text-gray-900" do
+              class: "#{t.display.search_result} #{t.table_row_hover} #{cp_body_text}" do
               = record.try(:name) || record.try(:email) || "##{record.id}"
   - elsif @query.present?
-    .text-center.text-gray-500.py-12 No results found.
+    .text-center.py-12{ class: cp_muted_text } No results found.

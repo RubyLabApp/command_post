@@ -42,7 +42,7 @@ module IronAdmin
       # @api private
       # @return [String] CSS classes for card container
       def card_classes
-        classes = ["overflow-hidden", theme.border_radius, theme.card_bg, "border", theme.card_border]
+        classes = [theme.card.overflow, theme.border_radius, theme.card_bg, "border", theme.card_border]
         classes << theme.card_shadow if shadow
         classes.join(" ")
       end
@@ -50,7 +50,7 @@ module IronAdmin
       # @api private
       # @return [String] CSS classes for card content area
       def content_classes
-        padding ? "p-6" : ""
+        padding ? theme.card.content_padding : ""
       end
     end
   end

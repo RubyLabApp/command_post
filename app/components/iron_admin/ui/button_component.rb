@@ -48,22 +48,11 @@ module IronAdmin
       # @return [Symbol] Button type (:button, :submit)
       attr_reader :type
 
-      # Variant style mappings (uses theme configuration).
-      # @return [Hash{Symbol => Proc}]
-      VARIANTS = {
-        primary: -> { IronAdmin.configuration.theme.btn_primary },
-        secondary: -> { IronAdmin.configuration.theme.btn_secondary },
-        danger: -> { IronAdmin.configuration.theme.btn_danger },
-        ghost: -> { IronAdmin.configuration.theme.btn_ghost },
-      }.freeze
-
-      # Size class mappings.
-      # @return [Hash{Symbol => String}]
-      SIZES = {
-        sm: "px-3 py-1.5 text-sm",
-        md: "px-4 py-2 text-sm",
-        lg: "px-5 py-2.5 text-base",
-      }.freeze
+      # @api private
+      # @return [IronAdmin::Configuration::Theme] Theme configuration
+      def self.theme
+        IronAdmin.configuration.theme
+      end
 
       # @param text [String, nil] Button text
       # @param variant [Symbol] Style variant (default: :primary)
@@ -90,21 +79,21 @@ module IronAdmin
       # @api private
       # @return [String] CSS classes for button variant
       def variant_classes
-        variant_proc = VARIANTS[@variant] || VARIANTS[:primary]
-        variant_proc.call
+        variants = self.class.theme.button.variants
+        variants[@variant] || variants[:primary]
       end
 
       # @api private
       # @return [String] CSS classes for button size
       def size_classes
-        SIZES[@size] || SIZES[:md]
+        sizes = self.class.theme.button.sizes
+        sizes[@size] || sizes[:md]
       end
 
       # @api private
       # @return [String] Base CSS classes for all button variants
       def base_classes
-        "inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-colors duration-150 " \
-          "focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+        self.class.theme.button.base
       end
 
       # @api private

@@ -81,6 +81,9 @@ module IronAdmin
     # @return [Boolean] Whether the actions column stays fixed on horizontal scroll (default: true)
     attr_accessor :sticky_actions_column
 
+    # @return [Symbol] Theme preset name (:tailwind by default)
+    attr_reader :theme_preset
+
     # @return [Proc, nil] Authentication block
     # @see #authenticate
     attr_reader :authenticate_block
@@ -103,6 +106,12 @@ module IronAdmin
     # @return [Proc, nil] Tenant scope block
     # @see #tenant_scope
     attr_reader :tenant_scope_block
+
+    # Registry of available theme presets.
+    # @return [Hash{Symbol => Module}]
+    THEME_PRESETS = {
+      tailwind: IronAdmin::Themes::Tailwind,
+    }.freeze
 
     # Maps color names to Tailwind CSS classes for badges.
     # @return [Hash{Symbol => String}]
@@ -166,11 +175,33 @@ module IronAdmin
       @default_sort_direction = :desc
       @search_engine = :default
       @badge_colors = DEFAULT_BADGE_COLORS.dup
+      @theme_preset = :tailwind
       @theme_config = Theme.new
       @components = Components.new
       @audit_enabled = false
       @audit_storage = :memory
       @sticky_actions_column = true
+    end
+
+    # Sets the theme preset and applies it to the theme configuration.
+    #
+    # @param name [Symbol] Preset name (e.g., :tailwind) or a Module responding to `.defaults`
+    # @raise [ArgumentError] If the preset name is not registered
+    #
+    # @example
+    #   config.theme_preset = :tailwind
+    def theme_preset=(name)
+      preset = if name.is_a?(Module)
+                 name
+               else
+                 THEME_PRESETS.fetch(name) do
+                   raise ArgumentError,
+                         "Unknown theme preset: #{name.inspect}. " \
+                         "Available: #{THEME_PRESETS.keys.inspect}"
+                 end
+               end
+      @theme_preset = name
+      @theme_config.apply_preset(preset)
     end
 
     # Defines the authentication check for admin access.

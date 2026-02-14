@@ -14,6 +14,12 @@ module IronAdmin
       end
 
       # @api private
+      # @return [IronAdmin::Configuration::Theme] Theme configuration
+      def theme
+        IronAdmin.configuration.theme
+      end
+
+      # @api private
       # Sets up default sidebar and navbar if not provided.
       # @return [void]
       def before_render

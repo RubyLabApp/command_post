@@ -6,7 +6,7 @@
       - if has_active_filters?
         %span.inline-flex.items-center.justify-center.h-5.min-w-5.px-1.text-xs.font-medium.rounded-full{ class: theme.badge_count }
           = active_count
-      = heroicon "chevron-down", variant: :mini, options: { class: "h-4 w-4 text-gray-400 transition-transform group-open:rotate-180" }
+      = heroicon "chevron-down", variant: :mini, options: { class: chevron_classes }
 
     %div{ class: dropdown_classes }
       = form_tag form_url, method: :get, class: "p-4" do

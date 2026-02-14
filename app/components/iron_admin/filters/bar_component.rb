@@ -45,16 +45,21 @@ module IronAdmin
       # @api private
       # @return [String] CSS classes for filter dropdown trigger button
       def trigger_classes
-        "inline-flex items-center gap-2 px-4 cursor-pointer select-none text-sm font-medium " \
-          "#{theme.border_radius} border shadow-sm transition duration-150 " \
-          "#{theme.label_text} #{theme.card_border} #{theme.card_bg} py-2.5 hover:bg-gray-50"
+        "#{theme.filter.trigger} #{theme.border_radius} " \
+          "#{theme.label_text} #{theme.card_border} #{theme.card_bg}"
       end
 
       # @api private
       # @return [String] CSS classes for filter dropdown panel
       def dropdown_classes
-        "absolute right-0 top-full mt-2 w-72 border z-20 #{theme.border_radius} " \
+        "#{theme.filter.panel} #{theme.border_radius} " \
           "#{theme.card_border} #{theme.card_bg} #{theme.card_shadow}-lg"
+      end
+
+      # @api private
+      # @return [String] CSS classes for filter chevron icon
+      def chevron_classes
+        "#{theme.filter.chevron_icon} #{theme.muted_text}"
       end
     end
   end

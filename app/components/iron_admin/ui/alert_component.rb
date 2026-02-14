@@ -25,34 +25,11 @@ module IronAdmin
       # @return [Boolean] Whether alert can be dismissed
       attr_reader :dismissible
 
-      # Type configurations with colors and icons.
-      # @return [Hash{Symbol => Hash}]
-      TYPES = {
-        success: {
-          bg: "bg-green-50",
-          border: "border-green-200",
-          text: "text-green-800",
-          icon: "check-circle",
-        },
-        error: {
-          bg: "bg-red-50",
-          border: "border-red-200",
-          text: "text-red-800",
-          icon: "x-circle",
-        },
-        warning: {
-          bg: "bg-yellow-50",
-          border: "border-yellow-200",
-          text: "text-yellow-800",
-          icon: "exclamation-triangle",
-        },
-        info: {
-          bg: "bg-blue-50",
-          border: "border-blue-200",
-          text: "text-blue-800",
-          icon: "information-circle",
-        },
-      }.freeze
+      # @api private
+      # @return [IronAdmin::Configuration::Theme] Theme configuration
+      def self.theme
+        IronAdmin.configuration.theme
+      end
 
       # @param message [String, nil] Alert message
       # @param type [Symbol] Alert type (default: :info)
@@ -66,13 +43,14 @@ module IronAdmin
       # @api private
       # @return [Hash] Configuration for the current alert type
       def type_config
-        TYPES[@type] || TYPES[:info]
+        variants = self.class.theme.alert.variants
+        variants[@type] || variants[:info]
       end
 
       # @api private
       # @return [String] CSS classes for alert container
       def alert_classes
-        "#{type_config[:bg]} #{type_config[:border]} #{type_config[:text]} border rounded-lg p-4"
+        "#{type_config[:bg]} #{type_config[:border]} #{type_config[:text]} #{self.class.theme.alert.base}"
       end
 
       # @api private

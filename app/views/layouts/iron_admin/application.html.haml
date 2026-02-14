@@ -16,6 +16,6 @@
       %script{ type: "module" }
         import "trix"
         import "@rails/actiontext"
-  %body.text-gray-900.antialiased{ class: IronAdmin.configuration.theme.main_bg }
+  %body{ class: "#{IronAdmin.configuration.theme.layout.body} #{IronAdmin.configuration.theme.main_bg}" }
     = render IronAdmin::Layout::ShellComponent.new(current_user: iron_admin_current_user) do
       = yield

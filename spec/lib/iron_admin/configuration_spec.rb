@@ -63,6 +63,10 @@ RSpec.describe IronAdmin::Configuration do
     it "sets sticky_actions_column to true" do
       expect(config.sticky_actions_column).to be true
     end
+
+    it "sets theme_preset to :tailwind" do
+      expect(config.theme_preset).to eq(:tailwind)
+    end
   end
 
   describe "#badge_colors" do
@@ -159,6 +163,36 @@ RSpec.describe IronAdmin::Configuration do
       allow(mock_scope).to receive(:where).with(active: true).and_return("filtered_scope")
 
       expect(config.tenant_scope_block.call(mock_scope)).to eq("filtered_scope")
+    end
+  end
+
+  describe "#theme_preset=" do
+    it "applies a registered preset by symbol" do
+      config.theme_preset = :tailwind
+
+      expect(config.theme.btn_primary).to include("bg-indigo-600")
+    end
+
+    it "raises ArgumentError for unknown preset name" do
+      expect { config.theme_preset = :unknown }.to raise_error(ArgumentError, /Unknown theme preset/)
+    end
+
+    it "accepts a custom preset module" do
+      custom = Module.new do
+        def self.defaults
+          IronAdmin::Themes::Tailwind.defaults.merge(
+            sidebar: { bg: "bg-blue-900", title: "text-white",
+                       link: "text-blue-200", link_hover: "hover:bg-blue-800",
+                       group_label: "text-blue-400", nav: "w-64",
+                       link_base: "flex", group_label_base: "px-3",
+                       logo_height: "h-8", section_padding: "p-6",
+                       nav_padding: "px-3", }
+          )
+        end
+      end
+      config.theme_preset = custom
+
+      expect(config.theme.sidebar_bg).to eq("bg-blue-900")
     end
   end
 
