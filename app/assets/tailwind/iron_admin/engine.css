@@ -1,0 +1,11 @@
+/* IronAdmin Engine - Tailwind CSS source scanning */
+/* This file tells Tailwind where to find classes used by IronAdmin. */
+/* Host apps using tailwindcss-rails (>= 4.3) can import this automatically. */
+
+@source "../../../views/**/*.haml";
+@source "../../../views/**/*.erb";
+@source "../../../components/**/*.rb";
+@source "../../../components/**/*.haml";
+@source "../../../components/**/*.erb";
+@source "../../../helpers/**/*.rb";
+@source "../../../../lib/iron_admin/**/*.rb";

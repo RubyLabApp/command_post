@@ -4,7 +4,12 @@ module IronAdmin
   class ToolsController < ApplicationController
     before_action :set_tool
 
-    def show; end
+    def show
+      tool_template = "iron_admin/tools/#{@tool_class.tool_name}/show"
+      if lookup_context.exists?(tool_template)
+        render tool_template
+      end
+    end
 
     def execute
       action = params[:action_name]

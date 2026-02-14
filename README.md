@@ -1,7 +1,7 @@
 # IronAdmin
 
 [![Gem Version](https://badge.fury.io/rb/iron_admin.svg)](https://badge.fury.io/rb/iron_admin)
-[![CI](https://github.com/RubyLabApp/iron_admin/actions/workflows/ci.yml/badge.svg)](https://github.com/RubyLabApp/iron_admin/actions/workflows/ci.yml)
+[![CI](https://github.com/rubylab-app/iron_admin/actions/workflows/ci.yml/badge.svg)](https://github.com/rubylab-app/iron_admin/actions/workflows/ci.yml)
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop)
 
 Convention-over-configuration admin panel engine for Ruby on Rails. Build beautiful admin interfaces with minimal code.
