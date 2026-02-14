@@ -44,22 +44,22 @@ RSpec.describe "IronAdmin::Audit", type: :request do
 
         # Create some audit entries
         IronAdmin::AuditLog.log(OpenStruct.new(
-                                    user: OpenStruct.new(email: "admin@example.com"),
-                                    action: :create,
-                                    resource: "UserResource",
-                                    record_id: 1,
-                                    changes: { name: [nil, "John Doe"] },
-                                    ip_address: "127.0.0.1"
-                                  ))
+                                  user: OpenStruct.new(email: "admin@example.com"),
+                                  action: :create,
+                                  resource: "UserResource",
+                                  record_id: 1,
+                                  changes: { name: [nil, "John Doe"] },
+                                  ip_address: "127.0.0.1"
+                                ))
 
         IronAdmin::AuditLog.log(OpenStruct.new(
-                                    user: OpenStruct.new(email: "admin@example.com"),
-                                    action: :update,
-                                    resource: "UserResource",
-                                    record_id: 1,
-                                    changes: { name: ["John Doe", "Jane Doe"] },
-                                    ip_address: "192.168.1.1"
-                                  ))
+                                  user: OpenStruct.new(email: "admin@example.com"),
+                                  action: :update,
+                                  resource: "UserResource",
+                                  record_id: 1,
+                                  changes: { name: ["John Doe", "Jane Doe"] },
+                                  ip_address: "192.168.1.1"
+                                ))
       end
 
       it "displays audit entries" do
@@ -80,13 +80,13 @@ RSpec.describe "IronAdmin::Audit", type: :request do
 
       it "filters by resource" do
         IronAdmin::AuditLog.log(OpenStruct.new(
-                                    user: OpenStruct.new(email: "admin@example.com"),
-                                    action: :create,
-                                    resource: "PostResource",
-                                    record_id: 10,
-                                    changes: {},
-                                    ip_address: "10.0.0.1"
-                                  ))
+                                  user: OpenStruct.new(email: "admin@example.com"),
+                                  action: :create,
+                                  resource: "PostResource",
+                                  record_id: 10,
+                                  changes: {},
+                                  ip_address: "10.0.0.1"
+                                ))
 
         get iron_admin.audit_path(resource: "UserResource")
 
