@@ -6,9 +6,7 @@ module IronAdmin
 
     def show
       tool_template = "iron_admin/tools/#{@tool_class.tool_name}/show"
-      if lookup_context.exists?(tool_template)
-        render tool_template
-      end
+      render tool_template if lookup_context.exists?(tool_template)
     end
 
     def execute
