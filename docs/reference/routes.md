@@ -1,6 +1,6 @@
 # Routes Reference
 
-Mount: `mount CommandPost::Engine => "/admin"`
+Mount: `mount IronAdmin::Engine => "/admin"`
 
 ## Routes
 

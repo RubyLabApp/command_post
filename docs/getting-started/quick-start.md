@@ -5,15 +5,15 @@ Get a full admin panel running in 5 steps.
 ## 1. Install
 
 ```bash
-bundle add command-post
-rails generate command_post:install
+bundle add iron_admin
+rails generate iron_admin:install
 ```
 
 ## 2. Configure Authentication
 
 ```ruby
-# config/initializers/command_post.rb
-CommandPost.configure do |config|
+# config/initializers/iron_admin.rb
+IronAdmin.configure do |config|
   config.title = "My App Admin"
 
   config.authenticate do |controller|
@@ -30,18 +30,18 @@ end
 ## 3. Generate Resources
 
 ```bash
-rails generate command_post:resource User
-rails generate command_post:resource Product
-rails generate command_post:resource Order
+rails generate iron_admin:resource User
+rails generate iron_admin:resource Product
+rails generate iron_admin:resource Order
 ```
 
-CommandPost infers all fields from your database schema automatically. No configuration needed for basic CRUD.
+IronAdmin infers all fields from your database schema automatically. No configuration needed for basic CRUD.
 
 ## 4. Customize a Resource
 
 ```ruby
-# app/command_post/resources/user_resource.rb
-class UserResource < CommandPost::Resource
+# app/iron_admin/resources/user_resource.rb
+class UserResource < IronAdmin::Resource
   field :role, type: :badge, colors: { admin: :purple, user: :blue }
   field :email, type: :text
 
@@ -66,8 +66,8 @@ end
 ## 5. Create a Dashboard
 
 ```ruby
-# app/command_post/dashboards/admin_dashboard.rb
-class AdminDashboard < CommandPost::Dashboard
+# app/iron_admin/dashboards/admin_dashboard.rb
+class AdminDashboard < IronAdmin::Dashboard
   metric :total_users, format: :number do
     User.count
   end

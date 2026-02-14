@@ -4,11 +4,11 @@ The dashboard is the landing page of your admin panel, displaying key metrics, c
 
 ## Creating a Dashboard
 
-Create a dashboard class in `app/command_post/dashboards/`:
+Create a dashboard class in `app/iron_admin/dashboards/`:
 
 ```ruby
-# app/command_post/dashboards/admin_dashboard.rb
-class AdminDashboard < CommandPost::Dashboard
+# app/iron_admin/dashboards/admin_dashboard.rb
+class AdminDashboard < IronAdmin::Dashboard
   metric :total_users, format: :number do
     User.count
   end
@@ -48,10 +48,10 @@ end
 
 ### Metric Component
 
-Metrics render using `CommandPost::Dashboards::MetricCardComponent`. Customize the display in your views:
+Metrics render using `IronAdmin::Dashboards::MetricCardComponent`. Customize the display in your views:
 
 ```haml
-= render CommandPost::Dashboards::MetricCardComponent.new(
+= render IronAdmin::Dashboards::MetricCardComponent.new(
   name: :total_users,
   value: User.count,
   format: :number
@@ -77,10 +77,10 @@ end
 
 ### Chart Component
 
-Charts render using `CommandPost::Dashboards::ChartComponent`:
+Charts render using `IronAdmin::Dashboards::ChartComponent`:
 
 ```haml
-= render CommandPost::Dashboards::ChartComponent.new(
+= render IronAdmin::Dashboards::ChartComponent.new(
   title: "Monthly Signups",
   type: :line,
   data: [45, 52, 38, 67, 89, 95],
@@ -101,10 +101,10 @@ The `resource_name` must match a registered resource's name (model's plural form
 
 ### Recent Table Component
 
-Recent records render using `CommandPost::Dashboards::RecentTableComponent`:
+Recent records render using `IronAdmin::Dashboards::RecentTableComponent`:
 
 ```haml
-= render CommandPost::Dashboards::RecentTableComponent.new(
+= render IronAdmin::Dashboards::RecentTableComponent.new(
   resource_name: :user,
   records: User.order(created_at: :desc).limit(5)
 )
@@ -115,7 +115,7 @@ Recent records render using `CommandPost::Dashboards::RecentTableComponent`:
 Display multiple metrics in a responsive grid:
 
 ```haml
-= render CommandPost::Dashboards::StatsGridComponent.new(columns: 4) do |grid|
+= render IronAdmin::Dashboards::StatsGridComponent.new(columns: 4) do |grid|
   - grid.with_stat(
     label: "Total Users",
     value: User.count,
@@ -138,7 +138,7 @@ Display multiple metrics in a responsive grid:
 Show recent activity timeline:
 
 ```haml
-= render CommandPost::Dashboards::ActivityFeedComponent.new(title: "Recent Activity") do |feed|
+= render IronAdmin::Dashboards::ActivityFeedComponent.new(title: "Recent Activity") do |feed|
   - @activities.each do |activity|
     - feed.with_item(
       description: activity.description,
@@ -154,7 +154,7 @@ Show recent activity timeline:
 Add shortcut links to common actions:
 
 ```haml
-= render CommandPost::Dashboards::QuickLinksComponent.new(title: "Quick Actions") do |links|
+= render IronAdmin::Dashboards::QuickLinksComponent.new(title: "Quick Actions") do |links|
   - links.with_link(label: "New User", href: new_user_path, icon: "user-plus")
   - links.with_link(label: "Export", href: export_path, icon: "arrow-down-tray")
   - links.with_link(label: "Settings", href: settings_path, icon: "cog-6-tooth")
@@ -162,7 +162,7 @@ Add shortcut links to common actions:
 
 ## Registration
 
-Only one dashboard can be active. The last class to inherit from `CommandPost::Dashboard` becomes the active dashboard. Place your dashboard in `app/command_post/dashboards/`.
+Only one dashboard can be active. The last class to inherit from `IronAdmin::Dashboard` becomes the active dashboard. Place your dashboard in `app/iron_admin/dashboards/`.
 
 ## Dashboard Components Reference
 

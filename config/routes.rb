@@ -1,4 +1,4 @@
-CommandPost::Engine.routes.draw do
+IronAdmin::Engine.routes.draw do
   root "dashboard#index"
 
   get "search", to: "search#index", as: :search

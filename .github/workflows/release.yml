@@ -40,7 +40,7 @@ jobs:
           bundler-cache: true
 
       - name: Build gem
-        run: gem build command_post.gemspec
+        run: gem build iron_admin.gemspec
 
       - name: Publish to GitHub Packages
         env:

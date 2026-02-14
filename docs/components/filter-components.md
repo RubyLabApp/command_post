@@ -7,7 +7,7 @@ Components for filtering and searching data.
 Search input with icon.
 
 ```ruby
-CommandPost::Filters::SearchComponent.new(
+IronAdmin::Filters::SearchComponent.new(
   form_url: "/admin/users",    # Required: form submit URL
   placeholder: "Search...",    # Optional: placeholder text
   value: nil,                  # Optional: current search query
@@ -18,7 +18,7 @@ CommandPost::Filters::SearchComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Filters::SearchComponent.new(
+= render IronAdmin::Filters::SearchComponent.new(
   form_url: resources_path,
   placeholder: "Search users...",
   value: params[:q],
@@ -33,7 +33,7 @@ CommandPost::Filters::SearchComponent.new(
 Dropdown filter for categorical data.
 
 ```ruby
-CommandPost::Filters::SelectFilterComponent.new(
+IronAdmin::Filters::SelectFilterComponent.new(
   name: :status,               # Required: filter parameter name
   options: options,            # Required: array of [label, value] pairs
   label: nil,                  # Optional: label text (auto-generated from name)
@@ -44,7 +44,7 @@ CommandPost::Filters::SelectFilterComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Filters::SelectFilterComponent.new(
+= render IronAdmin::Filters::SelectFilterComponent.new(
   name: :role,
   options: [["Admin", "admin"], ["User", "user"], ["Guest", "guest"]],
   label: "User Role",
@@ -59,7 +59,7 @@ CommandPost::Filters::SelectFilterComponent.new(
 Date range filter with from/to inputs.
 
 ```ruby
-CommandPost::Filters::DateRangeComponent.new(
+IronAdmin::Filters::DateRangeComponent.new(
   name: :created_at,           # Required: filter parameter name
   label: nil,                  # Optional: label text (auto-generated from name)
   from_value: nil,             # Optional: from date value
@@ -70,7 +70,7 @@ CommandPost::Filters::DateRangeComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Filters::DateRangeComponent.new(
+= render IronAdmin::Filters::DateRangeComponent.new(
   name: :created_at,
   label: "Created Between",
   from_value: params.dig(:filters, :created_at_from),
@@ -85,7 +85,7 @@ CommandPost::Filters::DateRangeComponent.new(
 Container for filter controls with dropdown behavior.
 
 ```ruby
-CommandPost::Filters::BarComponent.new(
+IronAdmin::Filters::BarComponent.new(
   form_url: "/admin/users",    # Required: form submit URL
   scope: nil,                  # Optional: current scope
   query: nil,                  # Optional: current search query
@@ -99,20 +99,20 @@ CommandPost::Filters::BarComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Filters::BarComponent.new(
+= render IronAdmin::Filters::BarComponent.new(
   form_url: resources_path,
   active_count: @active_filter_count
 ) do |bar|
 
   - bar.with_filter do
-    = render CommandPost::Filters::SelectFilterComponent.new(
+    = render IronAdmin::Filters::SelectFilterComponent.new(
       name: :status,
       options: status_options,
       selected: params.dig(:filters, :status)
     )
 
   - bar.with_filter do
-    = render CommandPost::Filters::DateRangeComponent.new(
+    = render IronAdmin::Filters::DateRangeComponent.new(
       name: :created_at,
       from_value: params.dig(:filters, :created_at_from),
       to_value: params.dig(:filters, :created_at_to)
@@ -128,25 +128,25 @@ Typical filter bar setup:
 ```haml
 .flex.items-center.gap-4
   -# Search
-  = render CommandPost::Filters::SearchComponent.new(
+  = render IronAdmin::Filters::SearchComponent.new(
     form_url: resources_path,
     value: params[:q]
   )
 
   -# Filter dropdown
-  = render CommandPost::Filters::BarComponent.new(
+  = render IronAdmin::Filters::BarComponent.new(
     form_url: resources_path,
     active_count: active_filter_count
   ) do |bar|
 
     - bar.with_filter do
-      = render CommandPost::Filters::SelectFilterComponent.new(
+      = render IronAdmin::Filters::SelectFilterComponent.new(
         name: :role,
         options: role_options
       )
 
     - bar.with_filter do
-      = render CommandPost::Filters::DateRangeComponent.new(
+      = render IronAdmin::Filters::DateRangeComponent.new(
         name: :created_at
       )
 ```

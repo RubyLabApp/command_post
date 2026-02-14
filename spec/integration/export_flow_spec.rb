@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe "Export Flow", type: :request do
   before do
-    CommandPost::ResourceRegistry.register(UserResource)
+    IronAdmin::ResourceRegistry.register(UserResource)
   end
 
   let!(:users) do
@@ -17,7 +17,7 @@ RSpec.describe "Export Flow", type: :request do
 
   describe "CSV export" do
     it "exports all records as CSV" do
-      get command_post.export_path("users"), params: { format: :csv }
+      get iron_admin.export_path("users"), params: { format: :csv }
 
       expect(response).to have_http_status(:ok)
       expect(response.content_type).to include("text/csv")
@@ -29,7 +29,7 @@ RSpec.describe "Export Flow", type: :request do
     end
 
     it "includes headers in CSV" do
-      get command_post.export_path("users"), params: { format: :csv }
+      get iron_admin.export_path("users"), params: { format: :csv }
 
       lines = response.body.lines
       header = lines.first
@@ -39,7 +39,7 @@ RSpec.describe "Export Flow", type: :request do
     end
 
     it "sets correct filename" do
-      get command_post.export_path("users"), params: { format: :csv }
+      get iron_admin.export_path("users"), params: { format: :csv }
 
       disposition = response.headers["Content-Disposition"]
       expect(disposition).to include("users_")
@@ -49,7 +49,7 @@ RSpec.describe "Export Flow", type: :request do
 
   describe "JSON export" do
     it "exports all records as JSON" do
-      get command_post.export_path("users"), params: { format: :json }
+      get iron_admin.export_path("users"), params: { format: :json }
 
       expect(response).to have_http_status(:ok)
       expect(response.content_type).to include("application/json")
@@ -60,7 +60,7 @@ RSpec.describe "Export Flow", type: :request do
     end
 
     it "includes all exported fields" do
-      get command_post.export_path("users"), params: { format: :json }
+      get iron_admin.export_path("users"), params: { format: :json }
 
       json = JSON.parse(response.body)
       first_user = json.first
@@ -73,7 +73,7 @@ RSpec.describe "Export Flow", type: :request do
 
   describe "export with tenant scoping" do
     before do
-      CommandPost.configure do |config|
+      IronAdmin.configure do |config|
         config.tenant_scope do |scope|
           scope.where(role: "user") # Only regular users
         end
@@ -81,7 +81,7 @@ RSpec.describe "Export Flow", type: :request do
     end
 
     it "only exports records within tenant scope" do
-      get command_post.export_path("users"), params: { format: :json }
+      get iron_admin.export_path("users"), params: { format: :json }
 
       json = JSON.parse(response.body)
       names = json.pluck("name")
@@ -93,7 +93,7 @@ RSpec.describe "Export Flow", type: :request do
 
   describe "export with field visibility" do
     let(:restricted_resource) do
-      Class.new(CommandPost::Resource) do
+      Class.new(IronAdmin::Resource) do
         def self.name
           "RestrictedUserResource"
         end
@@ -112,11 +112,11 @@ RSpec.describe "Export Flow", type: :request do
     end
 
     before do
-      CommandPost::ResourceRegistry.register(restricted_resource)
+      IronAdmin::ResourceRegistry.register(restricted_resource)
     end
 
     it "excludes non-visible fields from export" do
-      get command_post.export_path("restricted_users"), params: { format: :json }
+      get iron_admin.export_path("restricted_users"), params: { format: :json }
 
       json = JSON.parse(response.body)
       first_user = json.first

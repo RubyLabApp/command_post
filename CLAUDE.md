@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CommandPost is a Rails Engine gem that provides a convention-over-configuration admin panel. It auto-generates CRUD interfaces from ActiveRecord models with minimal setup.
+IronAdmin is a Rails Engine gem that provides a convention-over-configuration admin panel. It auto-generates CRUD interfaces from ActiveRecord models with minimal setup.
 
 ## Development Commands
 
@@ -16,10 +16,10 @@ bundle install
 bundle exec rspec
 
 # Run a single test file
-bundle exec rspec spec/lib/command_post/resource_spec.rb
+bundle exec rspec spec/lib/iron_admin/resource_spec.rb
 
 # Run a specific test by line number
-bundle exec rspec spec/lib/command_post/resource_spec.rb:42
+bundle exec rspec spec/lib/iron_admin/resource_spec.rb:42
 
 # Run tests with coverage report (outputs to coverage/)
 bundle exec rspec  # SimpleCov runs automatically
@@ -38,14 +38,14 @@ ruby -v
 
 ### Rails Engine Structure
 
-This is a mountable Rails Engine (`isolate_namespace CommandPost`). Host apps mount it at a path like `/admin`:
+This is a mountable Rails Engine (`isolate_namespace IronAdmin`). Host apps mount it at a path like `/admin`:
 
 ```ruby
 # Host app's config/routes.rb
-mount CommandPost::Engine, at: "/admin"
+mount IronAdmin::Engine, at: "/admin"
 ```
 
-### Core Domain Classes (lib/command_post/)
+### Core Domain Classes (lib/iron_admin/)
 
 - **Resource** - Base class for admin resources. Subclasses define field overrides, filters, scopes, actions, and menu options. Auto-registers with ResourceRegistry on inheritance.
 - **ResourceRegistry** - Singleton registry of all Resource subclasses. Resources self-register via `inherited` hook.
@@ -53,24 +53,24 @@ mount CommandPost::Engine, at: "/admin"
 - **Field** - Value object representing a displayable/editable field with type, visibility, and readonly options.
 - **Dashboard** - Base class for dashboard definitions with metrics, charts, and recent record listings.
 - **Policy** - DSL for per-resource authorization rules (allow/deny actions with conditions).
-- **Configuration** - Global settings (title, auth, theme, pagination). Access via `CommandPost.configuration`.
+- **Configuration** - Global settings (title, auth, theme, pagination). Access via `IronAdmin.configuration`.
 
 ### Resource Auto-Discovery
 
-Resources are placed in `app/command_post/` in the host app. The engine eager-loads this directory after Rails initialization (see `engine.rb`). Resources auto-register when their class is loaded via the `inherited` callback in Resource.
+Resources are placed in `app/iron_admin/` in the host app. The engine eager-loads this directory after Rails initialization (see `engine.rb`). Resources auto-register when their class is loaded via the `inherited` callback in Resource.
 
-### Controllers (app/controllers/command_post/)
+### Controllers (app/controllers/iron_admin/)
 
 - **ResourcesController** - Handles all CRUD operations for any registered resource. Uses dynamic routing (`:resource_name` param) to look up the correct Resource class.
 - **DashboardController** - Renders the configured Dashboard class.
 - **SearchController** - Global search across all searchable resources.
 - **ExportsController** - CSV/JSON export for resources.
 
-### ViewComponents (app/components/command_post/)
+### ViewComponents (app/components/iron_admin/)
 
 Uses ViewComponent gem. Components are in `layout/` (shell, sidebar, navbar) and `dashboard/` (metric cards, recent tables).
 
-### Configuration Classes (lib/command_post/configuration/)
+### Configuration Classes (lib/iron_admin/configuration/)
 
 - **Theme** - Tailwind CSS class customization for every UI element.
 - **Components** - Override default ViewComponent classes with custom implementations.
@@ -115,8 +115,8 @@ require_relative "dummy/config/environment"
 Each test resets configuration and registry:
 ```ruby
 config.before(:each) do
-  CommandPost.reset_configuration!
-  CommandPost::ResourceRegistry.reset!
+  IronAdmin.reset_configuration!
+  IronAdmin::ResourceRegistry.reset!
 end
 ```
 
@@ -126,7 +126,7 @@ end
 
 Resources use class-level DSL methods that modify `class_attribute` values:
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   field :status, type: :badge        # field_overrides
   searchable :name, :email           # _searchable_columns
   filter :role, type: :select        # defined_filters
@@ -142,7 +142,7 @@ Resource class name maps to model: `UserResource` → `User` model (strips "Reso
 
 ### Theme Customization
 
-All UI classes are configurable via `CommandPost.configure { |c| c.theme { |t| ... } }`. Theme properties return Tailwind CSS classes.
+All UI classes are configurable via `IronAdmin.configure { |c| c.theme { |t| ... } }`. Theme properties return Tailwind CSS classes.
 
 ## Important Guidelines
 

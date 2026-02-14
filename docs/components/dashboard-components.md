@@ -7,7 +7,7 @@ Widgets for building dashboard interfaces.
 Charts using Chart.js (line, bar, pie, doughnut).
 
 ```ruby
-CommandPost::Dashboards::ChartComponent.new(
+IronAdmin::Dashboards::ChartComponent.new(
   title: "Revenue",           # Required: chart title
   type: :line,                # Optional: :line, :bar, :pie, :doughnut
   data: [100, 200, 300],      # Optional: array of values
@@ -19,7 +19,7 @@ CommandPost::Dashboards::ChartComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Dashboards::ChartComponent.new(
+= render IronAdmin::Dashboards::ChartComponent.new(
   title: "Monthly Signups",
   type: :line,
   data: @monthly_signups.values,
@@ -27,7 +27,7 @@ CommandPost::Dashboards::ChartComponent.new(
   height: 250
 )
 
-= render CommandPost::Dashboards::ChartComponent.new(
+= render IronAdmin::Dashboards::ChartComponent.new(
   title: "Users by Role",
   type: :pie,
   data: @role_counts.values,
@@ -42,7 +42,7 @@ CommandPost::Dashboards::ChartComponent.new(
 Grid of metric cards.
 
 ```ruby
-CommandPost::Dashboards::StatsGridComponent.new(
+IronAdmin::Dashboards::StatsGridComponent.new(
   columns: 4    # Optional: 2, 3, or 4 columns
 )
 ```
@@ -60,7 +60,7 @@ CommandPost::Dashboards::StatsGridComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Dashboards::StatsGridComponent.new(columns: 4) do |grid|
+= render IronAdmin::Dashboards::StatsGridComponent.new(columns: 4) do |grid|
   - grid.with_stat(label: "Total Users", value: @total_users, change: "+12%", change_type: :positive)
   - grid.with_stat(label: "Revenue", value: number_to_currency(@revenue), change: "-3%", change_type: :negative)
   - grid.with_stat(label: "Active Sessions", value: @active_sessions)
@@ -74,7 +74,7 @@ CommandPost::Dashboards::StatsGridComponent.new(
 Timeline of recent activity.
 
 ```ruby
-CommandPost::Dashboards::ActivityFeedComponent.new(
+IronAdmin::Dashboards::ActivityFeedComponent.new(
   title: "Recent Activity"    # Optional: section title
 )
 ```
@@ -92,7 +92,7 @@ CommandPost::Dashboards::ActivityFeedComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Dashboards::ActivityFeedComponent.new(title: "Recent Activity") do |feed|
+= render IronAdmin::Dashboards::ActivityFeedComponent.new(title: "Recent Activity") do |feed|
   - @recent_activities.each do |activity|
     - feed.with_item(
       description: activity.description,
@@ -110,7 +110,7 @@ CommandPost::Dashboards::ActivityFeedComponent.new(
 Grid of shortcut links.
 
 ```ruby
-CommandPost::Dashboards::QuickLinksComponent.new(
+IronAdmin::Dashboards::QuickLinksComponent.new(
   title: "Quick Links"    # Optional: section title
 )
 ```
@@ -127,7 +127,7 @@ CommandPost::Dashboards::QuickLinksComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Dashboards::QuickLinksComponent.new(title: "Quick Actions") do |links|
+= render IronAdmin::Dashboards::QuickLinksComponent.new(title: "Quick Actions") do |links|
   - links.with_link(label: "New User", href: new_user_path, icon: "user-plus", description: "Create a new user account")
   - links.with_link(label: "Export Data", href: export_path, icon: "arrow-down-tray")
   - links.with_link(label: "Settings", href: settings_path, icon: "cog-6-tooth")
@@ -140,7 +140,7 @@ CommandPost::Dashboards::QuickLinksComponent.new(
 Single metric display card.
 
 ```ruby
-CommandPost::Dashboards::MetricCardComponent.new(
+IronAdmin::Dashboards::MetricCardComponent.new(
   name: :total_users,         # Required: metric name
   value: 1234,                # Required: metric value
   format: :number             # Optional: :number, :currency, :percentage
@@ -150,7 +150,7 @@ CommandPost::Dashboards::MetricCardComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Dashboards::MetricCardComponent.new(
+= render IronAdmin::Dashboards::MetricCardComponent.new(
   name: :monthly_revenue,
   value: 15000.50,
   format: :currency
@@ -164,7 +164,7 @@ CommandPost::Dashboards::MetricCardComponent.new(
 Table showing recent records from a resource.
 
 ```ruby
-CommandPost::Dashboards::RecentTableComponent.new(
+IronAdmin::Dashboards::RecentTableComponent.new(
   resource_name: :user,       # Required: resource name (singular)
   records: @recent_users      # Required: records to display
 )
@@ -173,7 +173,7 @@ CommandPost::Dashboards::RecentTableComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Dashboards::RecentTableComponent.new(
+= render IronAdmin::Dashboards::RecentTableComponent.new(
   resource_name: :order,
   records: Order.order(created_at: :desc).limit(5)
 )
@@ -188,7 +188,7 @@ Combine components to create a complete dashboard:
 ```haml
 .space-y-8
   -# Stats row
-  = render CommandPost::Dashboards::StatsGridComponent.new(columns: 4) do |grid|
+  = render IronAdmin::Dashboards::StatsGridComponent.new(columns: 4) do |grid|
     - grid.with_stat(label: "Users", value: User.count)
     - grid.with_stat(label: "Revenue", value: number_to_currency(Payment.sum(:amount)), format: :currency)
     - grid.with_stat(label: "Orders", value: Order.count)
@@ -196,7 +196,7 @@ Combine components to create a complete dashboard:
 
   .grid.grid-cols-1.lg:grid-cols-2.gap-8
     -# Chart
-    = render CommandPost::Dashboards::ChartComponent.new(
+    = render IronAdmin::Dashboards::ChartComponent.new(
       title: "Signups Over Time",
       type: :line,
       data: @signup_data,
@@ -204,18 +204,18 @@ Combine components to create a complete dashboard:
     )
 
     -# Activity feed
-    = render CommandPost::Dashboards::ActivityFeedComponent.new do |feed|
+    = render IronAdmin::Dashboards::ActivityFeedComponent.new do |feed|
       - @activities.each do |a|
         - feed.with_item(description: a.message, timestamp: a.created_at)
 
   -# Recent tables
   .grid.grid-cols-1.lg:grid-cols-2.gap-8
-    = render CommandPost::Dashboards::RecentTableComponent.new(
+    = render IronAdmin::Dashboards::RecentTableComponent.new(
       resource_name: :user,
       records: User.order(created_at: :desc).limit(5)
     )
 
-    = render CommandPost::Dashboards::RecentTableComponent.new(
+    = render IronAdmin::Dashboards::RecentTableComponent.new(
       resource_name: :order,
       records: Order.order(created_at: :desc).limit(5)
     )

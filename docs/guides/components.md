@@ -1,6 +1,6 @@
 # Components
 
-CommandPost uses [ViewComponent](https://viewcomponent.org/) for all UI elements. This guide covers how to override and extend components.
+IronAdmin uses [ViewComponent](https://viewcomponent.org/) for all UI elements. This guide covers how to override and extend components.
 
 For the complete component reference, see the [Components Library](../components/README.md).
 
@@ -10,74 +10,74 @@ For the complete component reference, see the [Components Library](../components
 
 | Component | Purpose |
 |-----------|---------|
-| `CommandPost::Layout::ShellComponent` | Main layout wrapper |
-| `CommandPost::Layout::NavbarComponent` | Top navigation bar |
-| `CommandPost::Layout::SidebarComponent` | Left sidebar navigation |
+| `IronAdmin::Layout::ShellComponent` | Main layout wrapper |
+| `IronAdmin::Layout::NavbarComponent` | Top navigation bar |
+| `IronAdmin::Layout::SidebarComponent` | Left sidebar navigation |
 
 ### UI Components
 
 | Component | Purpose |
 |-----------|---------|
-| `CommandPost::UI::BadgeComponent` | Status badges |
-| `CommandPost::UI::ButtonComponent` | Styled buttons |
-| `CommandPost::UI::CardComponent` | Card containers |
-| `CommandPost::UI::AlertComponent` | Flash messages |
-| `CommandPost::UI::ModalComponent` | Dialog overlays |
-| `CommandPost::UI::DropdownComponent` | Dropdown menus |
-| `CommandPost::UI::TooltipComponent` | Hover tooltips |
-| `CommandPost::UI::PaginationComponent` | Pagination controls |
-| `CommandPost::UI::ScopesComponent` | Scope tabs |
-| `CommandPost::UI::EmptyStateComponent` | Empty state placeholders |
+| `IronAdmin::UI::BadgeComponent` | Status badges |
+| `IronAdmin::UI::ButtonComponent` | Styled buttons |
+| `IronAdmin::UI::CardComponent` | Card containers |
+| `IronAdmin::UI::AlertComponent` | Flash messages |
+| `IronAdmin::UI::ModalComponent` | Dialog overlays |
+| `IronAdmin::UI::DropdownComponent` | Dropdown menus |
+| `IronAdmin::UI::TooltipComponent` | Hover tooltips |
+| `IronAdmin::UI::PaginationComponent` | Pagination controls |
+| `IronAdmin::UI::ScopesComponent` | Scope tabs |
+| `IronAdmin::UI::EmptyStateComponent` | Empty state placeholders |
 
 ### Form Components
 
 | Component | Purpose |
 |-----------|---------|
-| `CommandPost::Form::TextInputComponent` | Text inputs |
-| `CommandPost::Form::SelectComponent` | Select dropdowns |
-| `CommandPost::Form::CheckboxComponent` | Checkboxes |
-| `CommandPost::Form::TextareaComponent` | Multi-line text |
-| `CommandPost::Form::DatePickerComponent` | Date/time inputs |
-| `CommandPost::Form::BelongsToComponent` | Association selects |
-| `CommandPost::Form::FieldWrapperComponent` | Field wrapper with label/errors |
+| `IronAdmin::Form::TextInputComponent` | Text inputs |
+| `IronAdmin::Form::SelectComponent` | Select dropdowns |
+| `IronAdmin::Form::CheckboxComponent` | Checkboxes |
+| `IronAdmin::Form::TextareaComponent` | Multi-line text |
+| `IronAdmin::Form::DatePickerComponent` | Date/time inputs |
+| `IronAdmin::Form::BelongsToComponent` | Association selects |
+| `IronAdmin::Form::FieldWrapperComponent` | Field wrapper with label/errors |
 
 ### Filter Components
 
 | Component | Purpose |
 |-----------|---------|
-| `CommandPost::Filters::SearchComponent` | Search input |
-| `CommandPost::Filters::SelectFilterComponent` | Dropdown filter |
-| `CommandPost::Filters::DateRangeComponent` | Date range filter |
-| `CommandPost::Filters::BarComponent` | Filter container |
+| `IronAdmin::Filters::SearchComponent` | Search input |
+| `IronAdmin::Filters::SelectFilterComponent` | Dropdown filter |
+| `IronAdmin::Filters::DateRangeComponent` | Date range filter |
+| `IronAdmin::Filters::BarComponent` | Filter container |
 
 ### Resource Components
 
 | Component | Purpose |
 |-----------|---------|
-| `CommandPost::Resources::DataTableComponent` | Sortable data table |
-| `CommandPost::Resources::ShowFieldComponent` | Field display |
-| `CommandPost::Resources::ActionsComponent` | Record actions |
-| `CommandPost::Resources::BreadcrumbComponent` | Breadcrumb navigation |
-| `CommandPost::Resources::BulkActionsComponent` | Bulk selection actions |
-| `CommandPost::Resources::RelatedListComponent` | Has-many associations |
+| `IronAdmin::Resources::DataTableComponent` | Sortable data table |
+| `IronAdmin::Resources::ShowFieldComponent` | Field display |
+| `IronAdmin::Resources::ActionsComponent` | Record actions |
+| `IronAdmin::Resources::BreadcrumbComponent` | Breadcrumb navigation |
+| `IronAdmin::Resources::BulkActionsComponent` | Bulk selection actions |
+| `IronAdmin::Resources::RelatedListComponent` | Has-many associations |
 
 ### Dashboard Components
 
 | Component | Purpose |
 |-----------|---------|
-| `CommandPost::Dashboards::ChartComponent` | Charts (line, bar, pie) |
-| `CommandPost::Dashboards::StatsGridComponent` | Metric stats grid |
-| `CommandPost::Dashboards::ActivityFeedComponent` | Activity timeline |
-| `CommandPost::Dashboards::QuickLinksComponent` | Quick action links |
-| `CommandPost::Dashboards::MetricCardComponent` | Single metric card |
-| `CommandPost::Dashboards::RecentTableComponent` | Recent records table |
+| `IronAdmin::Dashboards::ChartComponent` | Charts (line, bar, pie) |
+| `IronAdmin::Dashboards::StatsGridComponent` | Metric stats grid |
+| `IronAdmin::Dashboards::ActivityFeedComponent` | Activity timeline |
+| `IronAdmin::Dashboards::QuickLinksComponent` | Quick action links |
+| `IronAdmin::Dashboards::MetricCardComponent` | Single metric card |
+| `IronAdmin::Dashboards::RecentTableComponent` | Recent records table |
 
 ## Global Overrides
 
 Override components globally in your initializer:
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.components.navbar = MyCustomNavbarComponent
   config.components.sidebar = MyCustomSidebarComponent
   config.components.shell = MyCustomShellComponent
@@ -93,7 +93,7 @@ end
 Override components for a specific resource:
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   component :table, CustomUserTableComponent
 end
 ```
@@ -103,7 +103,7 @@ end
 Register custom field type components:
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.components.fields[:color_picker] = MyColorPickerFieldComponent
   config.components.fields[:rich_text] = MyRichTextFieldComponent
 end
@@ -112,7 +112,7 @@ end
 Then use in resources:
 
 ```ruby
-class ProductResource < CommandPost::Resource
+class ProductResource < IronAdmin::Resource
   field :accent_color, type: :color_picker
 end
 ```
@@ -129,7 +129,7 @@ class CustomNavbarComponent < ViewComponent::Base
   end
 
   def theme
-    CommandPost.configuration.theme
+    IronAdmin.configuration.theme
   end
 end
 ```

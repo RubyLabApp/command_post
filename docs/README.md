@@ -1,4 +1,4 @@
-# CommandPost Documentation
+# IronAdmin Documentation
 
 Convention-over-configuration admin panel engine for Ruby on Rails.
 
@@ -6,7 +6,7 @@ Convention-over-configuration admin panel engine for Ruby on Rails.
 
 ### Getting Started
 
-- [Installation](getting-started/installation.md) - Add CommandPost to your Rails app
+- [Installation](getting-started/installation.md) - Add IronAdmin to your Rails app
 - [Quick Start](getting-started/quick-start.md) - Create your first admin panel in minutes
 
 ### Guides
@@ -46,7 +46,7 @@ Comprehensive documentation for all built-in ViewComponents:
 
 | Task | Documentation |
 |------|---------------|
-| Install CommandPost | [Installation Guide](getting-started/installation.md) |
+| Install IronAdmin | [Installation Guide](getting-started/installation.md) |
 | Create first resource | [Quick Start](getting-started/quick-start.md) |
 | Customize appearance | [Theming Guide](guides/theming.md) |
 | Override a component | [Components Guide](guides/components.md) |

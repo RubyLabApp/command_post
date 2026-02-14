@@ -1,6 +1,6 @@
-# Contributing to CommandPost
+# Contributing to IronAdmin
 
-Thank you for your interest in contributing to CommandPost! This document provides guidelines for contributing.
+Thank you for your interest in contributing to IronAdmin! This document provides guidelines for contributing.
 
 ## Development Setup
 
@@ -73,7 +73,7 @@ end
 When reporting issues, please include:
 - Ruby version
 - Rails version
-- CommandPost version
+- IronAdmin version
 - Steps to reproduce
 - Expected vs actual behavior
 

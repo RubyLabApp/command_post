@@ -8,14 +8,14 @@
 
 ## Step 1: Add the Gem
 
-Add CommandPost to your `Gemfile`:
+Add IronAdmin to your `Gemfile`:
 
 ```ruby
 # From a local path:
-gem "command-post", path: "/path/to/command_post"
+gem "iron_admin", path: "/path/to/iron_admin"
 
 # Or if published to a gem server:
-gem "command-post"
+gem "iron_admin"
 ```
 
 Then run:
@@ -27,17 +27,17 @@ bundle install
 ## Step 2: Run the Install Generator
 
 ```bash
-rails generate command_post:install
+rails generate iron_admin:install
 ```
 
 This creates:
 
 | File | Purpose |
 |------|---------|
-| `config/initializers/command_post.rb` | Main configuration (title, auth, theme) |
-| `app/command_post/dashboards/` | Directory for dashboard definitions |
-| `app/command_post/resources/` | Directory for resource definitions |
-| `app/command_post/dashboard.rb` | Default dashboard class |
+| `config/initializers/iron_admin.rb` | Main configuration (title, auth, theme) |
+| `app/iron_admin/dashboards/` | Directory for dashboard definitions |
+| `app/iron_admin/resources/` | Directory for resource definitions |
+| `app/iron_admin/dashboard.rb` | Default dashboard class |
 
 It also mounts the engine in `config/routes.rb`.
 
@@ -47,16 +47,16 @@ In `config/routes.rb`:
 
 ```ruby
 Rails.application.routes.draw do
-  mount CommandPost::Engine => "/admin"
+  mount IronAdmin::Engine => "/admin"
 end
 ```
 
 ## Step 4: Configure Authentication
 
-Edit `config/initializers/command_post.rb`:
+Edit `config/initializers/iron_admin.rb`:
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.title = "My App Admin"
 
   config.authenticate do |controller|
@@ -74,10 +74,10 @@ end
 ## Step 5: Create Your First Resource
 
 ```bash
-rails generate command_post:resource User
+rails generate iron_admin:resource User
 ```
 
-This creates `app/command_post/resources/user_resource.rb`. CommandPost automatically infers fields from your model's database schema.
+This creates `app/iron_admin/resources/user_resource.rb`. IronAdmin automatically infers fields from your model's database schema.
 
 ## Step 6: Visit the Admin Panel
 
@@ -85,7 +85,7 @@ Start your server and navigate to `/admin`.
 
 ## Dependencies
 
-CommandPost depends on the following gems (installed automatically):
+IronAdmin depends on the following gems (installed automatically):
 
 | Gem | Version | Purpose |
 |-----|---------|---------|
@@ -99,7 +99,7 @@ CommandPost depends on the following gems (installed automatically):
 
 ## Tailwind CSS Setup
 
-CommandPost uses Tailwind CSS classes for all styling. Ensure your Tailwind configuration includes the engine's view paths in the `content` array so that all CSS classes are properly compiled.
+IronAdmin uses Tailwind CSS classes for all styling. Ensure your Tailwind configuration includes the engine's view paths in the `content` array so that all CSS classes are properly compiled.
 
 Add the path to the engine's app directory in your `tailwind.config.js`:
 
@@ -107,9 +107,9 @@ Add the path to the engine's app directory in your `tailwind.config.js`:
 module.exports = {
   content: [
     // ... your app paths
-    "./path/to/command_post/app/**/*.{rb,haml}",
+    "./path/to/iron_admin/app/**/*.{rb,haml}",
   ],
 }
 ```
 
-If installed as a gem, use `bundle show command-post` to find the installed path and add it to your Tailwind content paths.
+If installed as a gem, use `bundle show iron_admin` to find the installed path and add it to your Tailwind content paths.

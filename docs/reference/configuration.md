@@ -1,9 +1,9 @@
 # Configuration Reference
 
-All configuration options for CommandPost.
+All configuration options for IronAdmin.
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   # --- General ---
   config.title = "Admin"
   config.logo = nil
@@ -98,7 +98,7 @@ The tenant scope is applied to:
 When `audit_storage: :database`, run the migration:
 
 ```bash
-rails generate command_post:audit_migration
+rails generate iron_admin:audit_migration
 rails db:migrate
 ```
 
@@ -132,5 +132,5 @@ Override global components:
 ## Reset
 
 ```ruby
-CommandPost.reset_configuration!
+IronAdmin.reset_configuration!
 ```

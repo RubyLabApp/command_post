@@ -1,11 +1,11 @@
 # Theming
 
-CommandPost provides a granular theme system with 40+ CSS class properties. All use Tailwind CSS classes.
+IronAdmin provides a granular theme system with 40+ CSS class properties. All use Tailwind CSS classes.
 
 ## Basic Configuration
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.theme do |t|
     t.btn_primary = "bg-blue-600 text-white hover:bg-blue-700"
     t.sidebar_bg = "bg-slate-900"
@@ -90,7 +90,7 @@ cp_link           # => "text-indigo-600 hover:text-indigo-900"
 ## Badge Colors
 
 ```ruby
-CommandPost.configure do |config|
+IronAdmin.configure do |config|
   config.badge_colors[:cyan] = "bg-cyan-100 text-cyan-800"
 end
 ```

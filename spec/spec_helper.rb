@@ -4,10 +4,10 @@ require "simplecov-console"
 SimpleCov.start "rails" do
   add_filter "/spec/"
   add_filter "/lib/generators/"
-  add_filter "/lib/command_post/version.rb"
-  add_filter "/app/components/command_post/ui/pagination_component.rb"
+  add_filter "/lib/iron_admin/version.rb"
+  add_filter "/app/components/iron_admin/ui/pagination_component.rb"
 
-  add_group "Lib", "lib/command_post"
+  add_group "Lib", "lib/iron_admin"
   add_group "Controllers", "app/controllers"
   add_group "Components", "app/components"
   add_group "Helpers", "app/helpers"

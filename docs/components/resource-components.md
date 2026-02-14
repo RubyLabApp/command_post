@@ -7,7 +7,7 @@ Components for displaying and managing resource data.
 Sortable data table with records.
 
 ```ruby
-CommandPost::Resources::DataTableComponent.new(
+IronAdmin::Resources::DataTableComponent.new(
   records: @users,                # Required: collection of records
   fields: fields,                 # Required: array of Field objects
   resource_class: UserResource,   # Required: resource class
@@ -20,7 +20,7 @@ CommandPost::Resources::DataTableComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Resources::DataTableComponent.new(
+= render IronAdmin::Resources::DataTableComponent.new(
   records: @users,
   fields: UserResource.resolved_fields.first(5),
   resource_class: UserResource,
@@ -37,7 +37,7 @@ CommandPost::Resources::DataTableComponent.new(
 Display a single field value (dt/dd format).
 
 ```ruby
-CommandPost::Resources::ShowFieldComponent.new(
+IronAdmin::Resources::ShowFieldComponent.new(
   field: field,      # Required: Field object
   record: @user      # Required: record to display
 )
@@ -48,7 +48,7 @@ CommandPost::Resources::ShowFieldComponent.new(
 ```haml
 %dl
   - @fields.each do |field|
-    = render CommandPost::Resources::ShowFieldComponent.new(
+    = render IronAdmin::Resources::ShowFieldComponent.new(
       field: field,
       record: @user
     )
@@ -61,7 +61,7 @@ CommandPost::Resources::ShowFieldComponent.new(
 Custom actions for a record.
 
 ```ruby
-CommandPost::Resources::ActionsComponent.new(
+IronAdmin::Resources::ActionsComponent.new(
   actions: actions,              # Required: array of action hashes
   record: @user,                 # Required: record for actions
   resource_class: UserResource   # Required: resource class
@@ -82,7 +82,7 @@ CommandPost::Resources::ActionsComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Resources::ActionsComponent.new(
+= render IronAdmin::Resources::ActionsComponent.new(
   actions: UserResource.defined_actions,
   record: @user,
   resource_class: UserResource
@@ -96,7 +96,7 @@ CommandPost::Resources::ActionsComponent.new(
 Navigation breadcrumbs.
 
 ```ruby
-CommandPost::Resources::BreadcrumbComponent.new
+IronAdmin::Resources::BreadcrumbComponent.new
 ```
 
 **Slots:**
@@ -110,7 +110,7 @@ CommandPost::Resources::BreadcrumbComponent.new
 **Example:**
 
 ```haml
-= render CommandPost::Resources::BreadcrumbComponent.new do |breadcrumb|
+= render IronAdmin::Resources::BreadcrumbComponent.new do |breadcrumb|
   - breadcrumb.with_item(label: "Dashboard", href: dashboard_path)
   - breadcrumb.with_item(label: "Users", href: users_path)
   - breadcrumb.with_item(label: @user.name, current: true)
@@ -123,7 +123,7 @@ CommandPost::Resources::BreadcrumbComponent.new
 Actions for selected records.
 
 ```ruby
-CommandPost::Resources::BulkActionsComponent.new(
+IronAdmin::Resources::BulkActionsComponent.new(
   actions: bulk_actions,         # Required: array of bulk action hashes
   resource_class: UserResource   # Required: resource class
 )
@@ -132,7 +132,7 @@ CommandPost::Resources::BulkActionsComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Resources::BulkActionsComponent.new(
+= render IronAdmin::Resources::BulkActionsComponent.new(
   actions: UserResource.defined_bulk_actions,
   resource_class: UserResource
 )
@@ -145,7 +145,7 @@ CommandPost::Resources::BulkActionsComponent.new(
 Display has_many associations.
 
 ```ruby
-CommandPost::Resources::RelatedListComponent.new(
+IronAdmin::Resources::RelatedListComponent.new(
   association: association,      # Required: association hash
   records: @user.posts,          # Required: related records
   limit: 20                      # Optional: max records to show
@@ -165,7 +165,7 @@ CommandPost::Resources::RelatedListComponent.new(
 **Example:**
 
 ```haml
-= render CommandPost::Resources::RelatedListComponent.new(
+= render IronAdmin::Resources::RelatedListComponent.new(
   association: { name: :orders, resource: OrderResource, display: :number },
   records: @user.orders,
   limit: 10

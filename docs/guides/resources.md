@@ -1,24 +1,24 @@
 # Resources
 
-Resources are the core building block of CommandPost. Each resource maps to an ActiveRecord model and defines how it appears in the admin panel.
+Resources are the core building block of IronAdmin. Each resource maps to an ActiveRecord model and defines how it appears in the admin panel.
 
 ## Generating a Resource
 
 ```bash
-rails generate command_post:resource User
+rails generate iron_admin:resource User
 ```
 
-Creates `app/command_post/resources/user_resource.rb`:
+Creates `app/iron_admin/resources/user_resource.rb`:
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
 end
 ```
 
 By convention, `UserResource` maps to the `User` model. To override:
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   self.model_class_override = Account
 end
 ```
@@ -28,7 +28,7 @@ end
 Fields are automatically inferred from the database schema. Override specific fields:
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   field :status, type: :badge, colors: { active: :green, suspended: :red }
   field :bio, type: :textarea
   field :role, type: :select, choices: %w[user admin]
@@ -52,7 +52,7 @@ end
 ### Controlling Field Visibility per View
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   index_fields :id, :name, :email, :role, :created_at
   form_fields :name, :email, :role
   export_fields :id, :name, :email, :role
@@ -62,7 +62,7 @@ end
 ## Search
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   searchable :name, :email
 end
 ```
@@ -71,7 +71,7 @@ If not specified, all `string` and `text` columns are searchable (excluding `*_d
 
 ### Advanced Search Syntax
 
-CommandPost supports field-specific search queries:
+IronAdmin supports field-specific search queries:
 
 ```
 email:john@example.com     # Search email field only
@@ -92,7 +92,7 @@ Search respects field visibility - users cannot search fields they don't have pe
 ## Filters
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   filter :role, type: :select, choices: User.roles.keys
   filter :created_at, type: :date_range
   filter :email_verified, type: :boolean
@@ -115,7 +115,7 @@ remove_filter :some_column
 
 ### Auto-Generated Enum Filters
 
-If your model uses Rails enums, CommandPost automatically creates select filters:
+If your model uses Rails enums, IronAdmin automatically creates select filters:
 
 ```ruby
 # app/models/order.rb
@@ -124,7 +124,7 @@ class Order < ApplicationRecord
 end
 
 # No filter definition needed - auto-generated from enum
-class OrderResource < CommandPost::Resource
+class OrderResource < IronAdmin::Resource
 end
 ```
 
@@ -135,7 +135,7 @@ The filter will display with humanized labels (Pending, Processing, Shipped, Del
 Scopes are predefined query filters shown as tabs:
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   scope :all, -> { all }, default: true
   scope :admins, -> { where(role: :admin) }
   scope :recent, -> { where("created_at > ?", 7.days.ago) }
@@ -145,14 +145,14 @@ end
 
 ## Soft Delete Support
 
-CommandPost auto-detects models with a `deleted_at` column and provides:
+IronAdmin auto-detects models with a `deleted_at` column and provides:
 
 - **Auto-registered scopes**: `with_deleted` and `only_deleted`
 - **Auto-registered restore action**: Restores soft-deleted records
 
 ```ruby
 # If your model has deleted_at column, these are auto-registered:
-class PostResource < CommandPost::Resource
+class PostResource < IronAdmin::Resource
   # Auto: scope :with_deleted, -> { unscoped }
   # Auto: scope :only_deleted, -> { only_deleted }
   # Auto: action :restore { |r| r.update!(deleted_at: nil) }
@@ -166,7 +166,7 @@ Works with gems like `paranoia`, `discard`, or custom soft delete implementation
 ### Record Actions
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   action :lock, icon: "lock-closed", confirm: true do |record|
     record.update!(locked_at: Time.current)
   end
@@ -189,7 +189,7 @@ end
 ### Bulk Actions
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   bulk_action :delete_many do |records|
     records.each(&:destroy!)
   end
@@ -205,7 +205,7 @@ Bulk actions validate that all selected records are accessible to the current us
 ## CRUD Restrictions
 
 ```ruby
-class AuditLogResource < CommandPost::Resource
+class AuditLogResource < IronAdmin::Resource
   deny_actions :create, :update, :delete
 end
 ```
@@ -213,7 +213,7 @@ end
 ## Associations
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   has_many :licenses, display: :license_key
   has_many :subscriptions
   belongs_to :organization
@@ -223,10 +223,10 @@ end
 
 ### Polymorphic Associations
 
-CommandPost auto-detects polymorphic `belongs_to` associations. You can also declare them explicitly with the `types` option to specify which models are allowed:
+IronAdmin auto-detects polymorphic `belongs_to` associations. You can also declare them explicitly with the `types` option to specify which models are allowed:
 
 ```ruby
-class CommentResource < CommandPost::Resource
+class CommentResource < IronAdmin::Resource
   belongs_to :commentable, polymorphic: true, types: [Article, Photo, Video]
 end
 ```
@@ -240,31 +240,31 @@ The `FieldInferrer` automatically detects polymorphic associations when a model 
 `has_and_belongs_to_many` associations are supported with a checkbox UI on forms and badge display on show pages:
 
 ```ruby
-class ArticleResource < CommandPost::Resource
+class ArticleResource < IronAdmin::Resource
   has_and_belongs_to_many :tags
 end
 ```
 
 ### Association Preloading
 
-CommandPost automatically preloads associations to prevent N+1 queries:
+IronAdmin automatically preloads associations to prevent N+1 queries:
 
 - `belongs_to` associations shown in index are preloaded
 - Related records displayed on show pages are preloaded
 - Custom preloads can be added:
 
 ```ruby
-class OrderResource < CommandPost::Resource
+class OrderResource < IronAdmin::Resource
   preload :customer, :line_items, :shipping_address
 end
 ```
 
 ### Large Association Handling
 
-For `belongs_to` fields with many options (>100 records), CommandPost automatically uses an autocomplete component instead of a dropdown:
+For `belongs_to` fields with many options (>100 records), IronAdmin automatically uses an autocomplete component instead of a dropdown:
 
 ```ruby
-class OrderResource < CommandPost::Resource
+class OrderResource < IronAdmin::Resource
   field :customer_id, type: :belongs_to,
         association: :customer,
         display: :name
@@ -275,7 +275,7 @@ end
 ## Menu Configuration
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   menu priority: 1, icon: "users", group: "People"
 end
 ```
@@ -283,7 +283,7 @@ end
 ## Exports
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   exports :csv, :json
   export_fields :id, :name, :email, :role, :created_at
 end
@@ -297,7 +297,7 @@ Exports respect:
 ## Policies
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   policy do
     allow :read, :update
     deny :delete, if: ->(record) { record.admin? }
@@ -310,7 +310,7 @@ See [Authentication & Authorization](authentication.md) for details.
 ## Component Overrides
 
 ```ruby
-class UserResource < CommandPost::Resource
+class UserResource < IronAdmin::Resource
   component :table, CustomUserTableComponent
 end
 ```

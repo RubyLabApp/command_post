@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-02-13
+
+### Changed
+
+- **Gem renamed from `command_post` to `iron_admin`** — The `command_post` name was taken on RubyGems by an abandoned gem (last updated 2013), and the hyphenated `command-post` implied an incorrect `Command::Post` namespace. The new name `iron_admin` (`IronAdmin`) is available on RubyGems and unambiguous.
+  - Ruby module: `CommandPost` → `IronAdmin`
+  - Gem name: `command_post` → `iron_admin`
+  - All file paths, require statements, config keys, and table names updated
+  - i18n namespace: `command_post:` → `iron_admin:`
+  - Generator names: `command_post:install` → `iron_admin:install`, `command_post:resource` → `iron_admin:resource`, `command_post:install_audit` → `iron_admin:install_audit`
+  - Audit table: `command_post_audit_entries` → `iron_admin_audit_entries`
+  - Removed `lib/command-post.rb` shim file (no longer needed)
+
+### Migration guide
+
+To upgrade from CommandPost 0.3.0:
+
+1. Update your Gemfile: `gem "iron_admin"` (was `gem "command_post"`)
+2. Rename `app/command_post/` → `app/iron_admin/`
+3. Rename `config/initializers/command_post.rb` → `config/initializers/iron_admin.rb`
+4. Replace `CommandPost` with `IronAdmin` in all resource and configuration files
+5. Update `require "command_post"` → `require "iron_admin"` if used explicitly
+6. Update mount point: `mount IronAdmin::Engine, at: "/admin"` (was `CommandPost::Engine`)
+7. If using audit logging with database storage, rename the table: `rename_table :command_post_audit_entries, :iron_admin_audit_entries`
+
 ## [0.3.0] - 2026-02-12
 
 ### Added
@@ -41,7 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Custom tools — `Tool` base class with `ToolRegistry`, `ToolsController`, routes, and sidebar integration
 
 - **i18n Support**
-  - All UI strings externalized to `config/locales/en.yml` under `command_post:` namespace
+  - All UI strings externalized to `config/locales/en.yml` (renamed to `iron_admin:` namespace in 0.4.0)
 
 - **Chart Improvements**
   - Per-chart and theme-level color customization
@@ -150,6 +175,7 @@ First public release.
 - Policy instances now cached at Resource class level
 - Field visibility filtering applied consistently in index, show, forms, exports, and search
 
-[Unreleased]: https://github.com/RubyLabApp/command_post/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/RubyLabApp/command_post/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/RubyLabApp/command_post/releases/tag/v0.2.0
+[Unreleased]: https://github.com/RubyLabApp/iron_admin/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/RubyLabApp/iron_admin/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/RubyLabApp/iron_admin/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/RubyLabApp/iron_admin/releases/tag/v0.2.0

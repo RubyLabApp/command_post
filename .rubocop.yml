@@ -101,12 +101,12 @@ RSpec/NestedGroups:
 RSpec/DescribeClass:
   Exclude:
     - "spec/requests/**/*"
-    - "spec/lib/command_post/soft_delete_spec.rb"
+    - "spec/lib/iron_admin/soft_delete_spec.rb"
 
 RSpec/BeforeAfterAll:
   Exclude:
-    - "spec/lib/command_post/soft_delete_spec.rb"
-    - "spec/requests/command_post/soft_delete_spec.rb"
+    - "spec/lib/iron_admin/soft_delete_spec.rb"
+    - "spec/requests/iron_admin/soft_delete_spec.rb"
 
 RSpec/RemoveConst:
   Enabled: false
@@ -143,10 +143,6 @@ Naming/PredicatePrefix:
     - has_active_filters?
     - has_action?
 
-Naming/FileName:
-  Exclude:
-    - "lib/command-post.rb"
-
 # Gemspec
 Gemspec/DevelopmentDependencies:
   Enabled: false
@@ -158,7 +154,7 @@ Lint/MissingSuper:
 
 Lint/SuppressedException:
   Exclude:
-    - "lib/command_post/resource.rb"
+    - "lib/iron_admin/resource.rb"
 
 Lint/DuplicateBranch:
   Exclude:

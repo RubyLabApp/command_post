@@ -111,7 +111,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_000005) do
     t.index [:record_type, :record_id, :name], name: "index_action_text_rich_texts_uniqueness", unique: true
   end
 
-  create_table :command_post_audit_entries, force: :cascade do |t|
+  create_table :iron_admin_audit_entries, force: :cascade do |t|
     t.string :user_identifier
     t.string :action, null: false
     t.string :resource, null: false

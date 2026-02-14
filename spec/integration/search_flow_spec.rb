@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe "Search Flow", type: :request do
   before do
-    CommandPost::ResourceRegistry.register(UserResource)
+    IronAdmin::ResourceRegistry.register(UserResource)
   end
 
   let!(:john) { create(:user, name: "John Smith", email: "john@example.com", role: "admin") }
@@ -13,7 +13,7 @@ RSpec.describe "Search Flow", type: :request do
 
   describe "general search" do
     it "finds records by name" do
-      get command_post.resources_path("users"), params: { q: "John" }
+      get iron_admin.resources_path("users"), params: { q: "John" }
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("John Smith")
@@ -22,7 +22,7 @@ RSpec.describe "Search Flow", type: :request do
     end
 
     it "finds records by email" do
-      get command_post.resources_path("users"), params: { q: "example.com" }
+      get iron_admin.resources_path("users"), params: { q: "example.com" }
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("John Smith")
@@ -31,7 +31,7 @@ RSpec.describe "Search Flow", type: :request do
     end
 
     it "returns all records with empty search" do
-      get command_post.resources_path("users"), params: { q: "" }
+      get iron_admin.resources_path("users"), params: { q: "" }
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("John Smith")
@@ -40,7 +40,7 @@ RSpec.describe "Search Flow", type: :request do
     end
 
     it "returns no records with non-matching search" do
-      get command_post.resources_path("users"), params: { q: "nonexistent_xyz_123" }
+      get iron_admin.resources_path("users"), params: { q: "nonexistent_xyz_123" }
 
       expect(response).to have_http_status(:ok)
       expect(response.body).not_to include("John Smith")
@@ -50,7 +50,7 @@ RSpec.describe "Search Flow", type: :request do
 
   describe "field-specific search" do
     it "searches by specific field" do
-      get command_post.resources_path("users"), params: { q: "email:john@example.com" }
+      get iron_admin.resources_path("users"), params: { q: "email:john@example.com" }
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("John Smith")
@@ -59,7 +59,7 @@ RSpec.describe "Search Flow", type: :request do
     end
 
     it "searches by name field" do
-      get command_post.resources_path("users"), params: { q: "name:Jane" }
+      get iron_admin.resources_path("users"), params: { q: "name:Jane" }
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Jane Doe")
@@ -69,7 +69,7 @@ RSpec.describe "Search Flow", type: :request do
 
   describe "search with special characters" do
     it "handles search with special characters safely" do
-      get command_post.resources_path("users"), params: { q: "test'; DROP TABLE users;--" }
+      get iron_admin.resources_path("users"), params: { q: "test'; DROP TABLE users;--" }
 
       expect(response).to have_http_status(:ok)
       expect(User.count).to eq(3) # Table not dropped
@@ -78,14 +78,14 @@ RSpec.describe "Search Flow", type: :request do
     it "handles unicode characters" do
       create(:user, name: "José García", email: "jose@example.com")
 
-      get command_post.resources_path("users"), params: { q: "José" }
+      get iron_admin.resources_path("users"), params: { q: "José" }
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("José García")
     end
 
     it "handles percent signs" do
-      get command_post.resources_path("users"), params: { q: "100%" }
+      get iron_admin.resources_path("users"), params: { q: "100%" }
 
       expect(response).to have_http_status(:ok)
       # Should not error
@@ -94,7 +94,7 @@ RSpec.describe "Search Flow", type: :request do
 
   describe "search combined with filters" do
     it "applies search and filter together" do
-      get command_post.resources_path("users"),
+      get iron_admin.resources_path("users"),
           params: { q: "example.com", filters: { role: "admin" } }
 
       expect(response).to have_http_status(:ok)
@@ -106,7 +106,7 @@ RSpec.describe "Search Flow", type: :request do
 
   describe "search combined with sorting" do
     it "applies search and sorting together" do
-      get command_post.resources_path("users"),
+      get iron_admin.resources_path("users"),
           params: { q: "example.com", sort: "name", direction: "asc" }
 
       expect(response).to have_http_status(:ok)
