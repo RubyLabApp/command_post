@@ -246,7 +246,7 @@ config.audit_storage = :database
 If you can't resolve your issue:
 
 1. Check the [FAQ](../FAQ.md)
-2. Search existing [GitHub Issues](https://github.com/RubyLabApp/iron_admin/issues)
+2. Search existing [GitHub Issues](https://github.com/rubylab-app/iron_admin/issues)
 3. Open a new issue with:
    - IronAdmin version
    - Rails version

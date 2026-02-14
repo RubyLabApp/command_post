@@ -8,12 +8,12 @@ Gem::Specification.new do |spec|
   spec.description = "IronAdmin is a convention-over-configuration admin panel engine for Ruby on Rails " \
                      "that automatically generates CRUD interfaces from your models with built-in support " \
                      "for search, filters, scopes, custom actions, theming, and policy-based authorization."
-  spec.homepage    = "https://github.com/RubyLabApp/iron_admin"
+  spec.homepage    = "https://github.com/rubylab-app/iron_admin"
   spec.license     = "MIT"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/RubyLabApp/iron_admin"
-  spec.metadata["changelog_uri"] = "https://github.com/RubyLabApp/iron_admin/blob/main/CHANGELOG.md"
+  spec.metadata["source_code_uri"] = "https://github.com/rubylab-app/iron_admin"
+  spec.metadata["changelog_uri"] = "https://github.com/rubylab-app/iron_admin/blob/main/CHANGELOG.md"
   spec.metadata["github_repo"] = "ssh://github.com/RubyLabApp/iron_admin"
 
   spec.required_ruby_version = ">= 3.2"
