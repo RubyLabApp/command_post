@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/rubylab-app/iron_admin"
   spec.metadata["changelog_uri"] = "https://github.com/rubylab-app/iron_admin/blob/main/CHANGELOG.md"
-  spec.metadata["github_repo"] = "ssh://github.com/RubyLabApp/iron_admin"
+  spec.metadata["github_repo"] = "ssh://github.com/rubylab-app/iron_admin"
 
   spec.required_ruby_version = ">= 3.2"
 
