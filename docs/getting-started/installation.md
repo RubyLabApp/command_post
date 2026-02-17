@@ -4,18 +4,15 @@
 
 - Ruby >= 3.2
 - Rails >= 7.1
-- Tailwind CSS (for default theme classes)
+- [tailwindcss-rails](https://github.com/rails/tailwindcss-rails) >= 4.0
 
-## Step 1: Add the Gem
+## Step 1: Add the Gems
 
-Add IronAdmin to your `Gemfile`:
+Add IronAdmin and `tailwindcss-rails` to your `Gemfile`:
 
 ```ruby
-# From a local path:
-gem "iron_admin", path: "/path/to/iron_admin"
-
-# Or if published to a gem server:
 gem "iron_admin"
+gem "tailwindcss-rails"
 ```
 
 Then run:
@@ -35,11 +32,13 @@ This creates:
 | File | Purpose |
 |------|---------|
 | `config/initializers/iron_admin.rb` | Main configuration (title, auth, theme) |
-| `app/iron_admin/dashboards/` | Directory for dashboard definitions |
 | `app/iron_admin/resources/` | Directory for resource definitions |
-| `app/iron_admin/dashboard.rb` | Default dashboard class |
+| `app/iron_admin/dashboards/` | Directory for dashboard definitions |
+| `app/iron_admin/dashboards/admin_dashboard.rb` | Default dashboard class |
 
-It also mounts the engine in `config/routes.rb`.
+It also:
+- Mounts the engine at `/admin` in `config/routes.rb`
+- Adds the IronAdmin CSS import to `app/assets/tailwind/application.css`
 
 ## Step 3: Mount the Engine (if not auto-mounted)
 
@@ -79,9 +78,100 @@ rails generate iron_admin:resource User
 
 This creates `app/iron_admin/resources/user_resource.rb`. IronAdmin automatically infers fields from your model's database schema.
 
-## Step 6: Visit the Admin Panel
+## Step 6: Build CSS and Start the Server
 
-Start your server and navigate to `/admin`.
+```bash
+rails tailwindcss:build
+bin/rails server
+```
+
+Visit `/admin` and your admin panel is ready.
+
+For development with live CSS recompilation, use `bin/dev` (which runs
+`tailwindcss:watch` alongside the Rails server).
+
+## Tailwind CSS Setup
+
+IronAdmin uses Tailwind CSS v4 for all styling via the `tailwindcss-rails` gem.
+Understanding how the CSS pipeline works will help you troubleshoot any styling issues.
+
+### How it works
+
+1. IronAdmin ships with `@source` directives at `app/assets/tailwind/iron_admin/engine.css`
+   inside the gem. These tell the Tailwind compiler where to scan for CSS utility classes
+   used by the engine's views, components, and helpers.
+
+2. When `tailwindcss:build` runs, it first executes `tailwindcss:engines`. This task
+   detects IronAdmin's engine CSS and creates a bridge file at
+   `app/assets/builds/tailwind/iron_admin.css` containing an `@import` that points
+   to the engine's CSS.
+
+3. Your `app/assets/tailwind/application.css` must import this bridge file:
+
+   ```css
+   @import "tailwindcss";
+   @import "../builds/tailwind/iron_admin";
+   ```
+
+4. The Tailwind compiler processes `application.css`, follows the imports, scans all
+   the engine's source files via the `@source` directives, and generates the final
+   `app/assets/builds/tailwind.css` with all necessary utility classes.
+
+5. The engine's layout references `stylesheet_link_tag "tailwind"`, which serves
+   this compiled CSS file.
+
+### Manual setup (without the generator)
+
+If you didn't use the install generator, or the import line is missing:
+
+1. Verify `tailwindcss-rails` is in your Gemfile and installed
+2. Add the import to `app/assets/tailwind/application.css`:
+
+   ```css
+   @import "tailwindcss";
+   @import "../builds/tailwind/iron_admin";
+   ```
+
+3. Build the CSS:
+
+   ```bash
+   rails tailwindcss:build
+   ```
+
+4. Verify the build output:
+
+   ```bash
+   ls -la app/assets/builds/tailwind.css
+   # Should be ~30KB+ (not ~6KB which indicates no utility classes)
+   ```
+
+### Troubleshooting
+
+**Styles not loading (unstyled admin panel)**
+
+This almost always means the Tailwind compiler didn't scan IronAdmin's source files.
+Check:
+
+1. The `@import "../builds/tailwind/iron_admin"` line exists in
+   `app/assets/tailwind/application.css`
+2. The bridge file exists at `app/assets/builds/tailwind/iron_admin.css`
+   (run `rails tailwindcss:build` to regenerate it)
+3. The compiled CSS at `app/assets/builds/tailwind.css` is large enough
+   (~30KB+, not ~6KB)
+
+**Bridge file not generated**
+
+If `app/assets/builds/tailwind/iron_admin.css` doesn't exist after running
+`rails tailwindcss:build`:
+
+- Ensure `tailwindcss-rails` >= 4.0 is installed (`bundle info tailwindcss-rails`)
+- Ensure `iron_admin` is properly loaded (check `bundle info iron_admin`)
+- Try running `rails tailwindcss:engines` directly
+
+**Styles disappear after bundle update**
+
+The bridge file uses an absolute path to the gem's CSS. After updating the gem
+(which changes the gem path), run `rails tailwindcss:build` to regenerate it.
 
 ## Dependencies
 
@@ -97,19 +187,8 @@ IronAdmin depends on the following gems (installed automatically):
 | `haml-rails` | >= 2.0 | Template engine |
 | `heroicon` | >= 1.0 | SVG icons |
 
-## Tailwind CSS Setup
+**Peer dependency** (must be added to your Gemfile manually):
 
-IronAdmin uses Tailwind CSS classes for all styling. Ensure your Tailwind configuration includes the engine's view paths in the `content` array so that all CSS classes are properly compiled.
-
-Add the path to the engine's app directory in your `tailwind.config.js`:
-
-```js
-module.exports = {
-  content: [
-    // ... your app paths
-    "./path/to/iron_admin/app/**/*.{rb,haml}",
-  ],
-}
-```
-
-If installed as a gem, use `bundle show iron_admin` to find the installed path and add it to your Tailwind content paths.
+| Gem | Version | Purpose |
+|-----|---------|---------|
+| `tailwindcss-rails` | >= 4.0 | Tailwind CSS compilation |

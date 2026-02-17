@@ -20,6 +20,7 @@ Convention-over-configuration admin panel engine for Ruby on Rails. Build beauti
 
 - Ruby >= 3.2
 - Rails >= 7.1
+- [tailwindcss-rails](https://github.com/rails/tailwindcss-rails) >= 4.0
 
 ## Installation
 
@@ -27,6 +28,7 @@ Add to your Gemfile:
 
 ```ruby
 gem "iron_admin"
+gem "tailwindcss-rails"
 ```
 
 Then run:
@@ -36,13 +38,39 @@ bundle install
 rails generate iron_admin:install
 ```
 
-Mount the engine in your `config/routes.rb`:
+The install generator will:
+- Create `app/iron_admin/resources/` and `app/iron_admin/dashboards/` directories
+- Add a configuration initializer at `config/initializers/iron_admin.rb`
+- Create a sample dashboard
+- Mount the engine at `/admin` in your routes
+- Add the IronAdmin Tailwind CSS import to your `app/assets/tailwind/application.css`
 
-```ruby
-Rails.application.routes.draw do
-  mount IronAdmin::Engine, at: "/admin"
-end
+### Tailwind CSS Setup
+
+IronAdmin uses Tailwind CSS v4 for all styling. The `tailwindcss-rails` gem handles
+compilation. After running the install generator, your `app/assets/tailwind/application.css`
+should include:
+
+```css
+@import "tailwindcss";
+@import "../builds/tailwind/iron_admin";
 ```
+
+The second line imports IronAdmin's `@source` directives so the Tailwind compiler
+scans the engine's views and components for CSS classes. Without it, the admin panel
+will render unstyled.
+
+If you're setting up manually (without the generator), run:
+
+```bash
+rails tailwindcss:build
+```
+
+Then verify that `app/assets/builds/tailwind/iron_admin.css` was created. If not,
+check that `tailwindcss-rails` >= 4.0 is installed and that the engine gem is properly
+loaded.
+
+For development, use `bin/dev` or `rails tailwindcss:watch` to recompile CSS on changes.
 
 ## Quick Start
 
