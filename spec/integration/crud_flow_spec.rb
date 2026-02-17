@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe "CRUD Flow", type: :request do
   before do
-    IronAdmin::ResourceRegistry.register(UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
   end
 
   describe "complete CRUD lifecycle" do

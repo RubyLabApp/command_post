@@ -5,8 +5,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
   before do
     IronAdmin.reset_configuration!
     IronAdmin::ResourceRegistry.reset!
-    IronAdmin::ResourceRegistry.register(UserResource)
-    IronAdmin::ResourceRegistry.register(LicenseResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
   end
 
   describe "GET /:resource_name" do
@@ -444,8 +444,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
         after do
           IronAdmin::ResourceRegistry.reset!
-          IronAdmin::ResourceRegistry.register(UserResource)
-          IronAdmin::ResourceRegistry.register(LicenseResource)
+          IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+          IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
         end
 
         it "handles boolean filter with string 'true'" do
@@ -512,8 +512,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
         after do
           IronAdmin::ResourceRegistry.reset!
-          IronAdmin::ResourceRegistry.register(UserResource)
-          IronAdmin::ResourceRegistry.register(LicenseResource)
+          IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+          IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
         end
 
         it "applies custom scope filter correctly" do
@@ -546,7 +546,7 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
     context "with has_one association" do
       before do
-        IronAdmin::ResourceRegistry.register(ProfileResource)
+        IronAdmin::ResourceRegistry.register(IronAdmin::Resources::ProfileResource)
       end
 
       it "displays has_one associated record" do
@@ -572,8 +572,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
   describe "HABTM associations" do
     before do
-      IronAdmin::ResourceRegistry.register(PostResource)
-      IronAdmin::ResourceRegistry.register(TagResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::PostResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::TagResource)
     end
 
     context "on show page" do
@@ -866,8 +866,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
       after do
         IronAdmin::ResourceRegistry.reset!
-        IronAdmin::ResourceRegistry.register(UserResource)
-        IronAdmin::ResourceRegistry.register(LicenseResource)
+        IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+        IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
       end
 
       it "rolls back changes when action raises an error" do
@@ -969,8 +969,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
       after do
         IronAdmin::ResourceRegistry.reset!
-        IronAdmin::ResourceRegistry.register(UserResource)
-        IronAdmin::ResourceRegistry.register(LicenseResource)
+        IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+        IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
       end
 
       it "rolls back changes when bulk action raises an error" do
@@ -1121,8 +1121,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
     after do
       IronAdmin::ResourceRegistry.reset!
-      IronAdmin::ResourceRegistry.register(UserResource)
-      IronAdmin::ResourceRegistry.register(LicenseResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
     end
 
     context "when user does not have permission to see a field" do
@@ -1317,8 +1317,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
     after do
       IronAdmin::ResourceRegistry.reset!
-      IronAdmin::ResourceRegistry.register(UserResource)
-      IronAdmin::ResourceRegistry.register(LicenseResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
     end
 
     it "caches the policy instance within a request" do
@@ -1381,8 +1381,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
     after do
       IronAdmin::ResourceRegistry.reset!
-      IronAdmin::ResourceRegistry.register(UserResource)
-      IronAdmin::ResourceRegistry.register(LicenseResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
     end
 
     context "when policy denies action based on user context" do
@@ -1511,8 +1511,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
     after do
       IronAdmin::ResourceRegistry.reset!
-      IronAdmin::ResourceRegistry.register(UserResource)
-      IronAdmin::ResourceRegistry.register(LicenseResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
     end
 
     context "when policy denies custom action" do
@@ -1575,7 +1575,7 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
       it "allows custom actions by default" do
         # Using the regular LicenseResource which has no policy
-        IronAdmin::ResourceRegistry.register(LicenseResource)
+        IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
         post iron_admin.resource_action_path("licenses", license, "revoke"), as: :html
         expect(response).to redirect_to(iron_admin.resource_path("licenses", license))
         expect(license.reload.status).to eq("revoked")
@@ -1620,8 +1620,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
     after do
       IronAdmin::ResourceRegistry.reset!
-      IronAdmin::ResourceRegistry.register(UserResource)
-      IronAdmin::ResourceRegistry.register(LicenseResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
     end
 
     context "when policy denies bulk action" do
@@ -1698,7 +1698,7 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
       it "allows bulk actions by default" do
         # Using the regular LicenseResource which has no policy
-        IronAdmin::ResourceRegistry.register(LicenseResource)
+        IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
         post iron_admin.resource_bulk_action_path("licenses", "export"),
              params: { ids: licenses.map(&:id) },
              as: :html
@@ -1815,8 +1815,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
     after do
       IronAdmin::ResourceRegistry.reset!
-      IronAdmin::ResourceRegistry.register(UserResource)
-      IronAdmin::ResourceRegistry.register(LicenseResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
     end
 
     context "with any user" do
@@ -1886,8 +1886,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
     after do
       IronAdmin::ResourceRegistry.reset!
-      IronAdmin::ResourceRegistry.register(UserResource)
-      IronAdmin::ResourceRegistry.register(LicenseResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
     end
 
     context "when action is forbidden" do
@@ -2008,8 +2008,8 @@ RSpec.describe "IronAdmin::Resources", type: :request do
 
       after do
         IronAdmin::ResourceRegistry.reset!
-        IronAdmin::ResourceRegistry.register(UserResource)
-        IronAdmin::ResourceRegistry.register(LicenseResource)
+        IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+        IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
       end
 
       it "uses the display_attribute for searching and labeling" do

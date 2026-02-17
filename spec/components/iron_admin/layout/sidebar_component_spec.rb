@@ -2,8 +2,8 @@ require "rails_helper"
 
 RSpec.describe IronAdmin::Layout::SidebarComponent, type: :component do
   before do
-    IronAdmin::ResourceRegistry.register(UserResource)
-    IronAdmin::ResourceRegistry.register(LicenseResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
 
     vc_test_controller.view_context.class.define_method(:heroicon) do |name, **_opts|
       "<svg class=\"heroicon-#{name}\"></svg>".html_safe

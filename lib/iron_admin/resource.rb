@@ -86,7 +86,7 @@ module IronAdmin
       def model
         return model_class_override if model_class_override
 
-        name.sub(/Resource\z/, "").constantize
+        name.sub(/Resource\z/, "").sub(/\AIronAdmin::Resources::/, "").constantize
       end
 
       # Configures display and behavior options for a field.

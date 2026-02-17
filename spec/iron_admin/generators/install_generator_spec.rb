@@ -13,6 +13,9 @@ RSpec.describe IronAdmin::Generators::InstallGenerator, type: :generator do
     FileUtils.mkdir_p(File.join(destination, "config"))
     # Create a minimal routes file for the generator to modify
     File.write(File.join(destination, "config/routes.rb"), "Rails.application.routes.draw do\nend\n")
+    # Create a minimal Tailwind application stylesheet
+    FileUtils.mkdir_p(File.join(destination, "app/assets/tailwind"))
+    File.write(File.join(destination, "app/assets/tailwind/application.css"), "@import \"tailwindcss\";\n")
   end
 
   after do
@@ -26,8 +29,12 @@ RSpec.describe IronAdmin::Generators::InstallGenerator, type: :generator do
   describe "running the install generator" do
     before { run_generator }
 
-    it "creates the app/iron_admin directory" do
-      expect(Dir.exist?(File.join(destination, "app/iron_admin"))).to be true
+    it "creates the app/iron_admin/resources directory" do
+      expect(Dir.exist?(File.join(destination, "app/iron_admin/resources"))).to be true
+    end
+
+    it "creates the app/iron_admin/dashboards directory" do
+      expect(Dir.exist?(File.join(destination, "app/iron_admin/dashboards"))).to be true
     end
 
     it "creates the initializer" do
@@ -42,18 +49,50 @@ RSpec.describe IronAdmin::Generators::InstallGenerator, type: :generator do
     end
 
     it "creates the default dashboard" do
-      dashboard_path = File.join(destination, "app/iron_admin/dashboard.rb")
+      dashboard_path = File.join(destination, "app/iron_admin/dashboards/admin_dashboard.rb")
       expect(File.exist?(dashboard_path)).to be true
     end
 
     it "creates dashboard with correct class" do
-      content = File.read(File.join(destination, "app/iron_admin/dashboard.rb"))
+      content = File.read(File.join(destination, "app/iron_admin/dashboards/admin_dashboard.rb"))
       expect(content).to include("class AdminDashboard < IronAdmin::Dashboard")
+      expect(content).to include("module IronAdmin")
+      expect(content).to include("module Dashboards")
     end
 
     it "adds route to routes.rb" do
       content = File.read(File.join(destination, "config/routes.rb"))
       expect(content).to include('mount IronAdmin::Engine => "/admin"')
+    end
+
+    it "adds the Tailwind CSS import to application.css" do
+      content = File.read(File.join(destination, "app/assets/tailwind/application.css"))
+      expect(content).to include('@import "../builds/tailwind/iron_admin";')
+    end
+
+    it "preserves existing content in application.css" do
+      content = File.read(File.join(destination, "app/assets/tailwind/application.css"))
+      expect(content).to include('@import "tailwindcss";')
+    end
+  end
+
+  describe "tailwind import idempotency" do
+    it "does not duplicate the import when run twice" do
+      run_generator
+      run_generator
+      content = File.read(File.join(destination, "app/assets/tailwind/application.css"))
+      expect(content.scan('@import "../builds/tailwind/iron_admin";').length).to eq(1)
+    end
+  end
+
+  context "when application.css does not exist" do
+    before do
+      FileUtils.rm_f(File.join(destination, "app/assets/tailwind/application.css"))
+      run_generator
+    end
+
+    it "skips the Tailwind import without error" do
+      expect(File.exist?(File.join(destination, "app/assets/tailwind/application.css"))).to be false
     end
   end
 end

@@ -57,7 +57,7 @@ mount IronAdmin::Engine, at: "/admin"
 
 ### Resource Auto-Discovery
 
-Resources are placed in `app/iron_admin/` in the host app. The engine eager-loads this directory after Rails initialization (see `engine.rb`). Resources auto-register when their class is loaded via the `inherited` callback in Resource.
+Resources are placed in `app/iron_admin/resources/` in the host app, and dashboards in `app/iron_admin/dashboards/`. The engine uses `push_dir` with `namespace: IronAdmin` so Zeitwerk maps these to `IronAdmin::Resources::*` and `IronAdmin::Dashboards::*` respectively. The directory is eager-loaded after Rails initialization (see `engine.rb`), triggering the `inherited` callback that auto-registers resources.
 
 ### Controllers (app/controllers/iron_admin/)
 
@@ -126,19 +126,23 @@ end
 
 Resources use class-level DSL methods that modify `class_attribute` values:
 ```ruby
-class UserResource < IronAdmin::Resource
-  field :status, type: :badge        # field_overrides
-  searchable :name, :email           # _searchable_columns
-  filter :role, type: :select        # defined_filters
-  scope :active, -> { where(active: true) }  # defined_scopes
-  index_fields :id, :name, :email    # index_field_names
-  menu priority: 1, group: "Users"   # menu_options
+module IronAdmin
+  module Resources
+    class UserResource < IronAdmin::Resource
+      field :status, type: :badge        # field_overrides
+      searchable :name, :email           # _searchable_columns
+      filter :role, type: :select        # defined_filters
+      scope :active, -> { where(active: true) }  # defined_scopes
+      index_fields :id, :name, :email    # index_field_names
+      menu priority: 1, group: "Users"   # menu_options
+    end
+  end
 end
 ```
 
 ### Model Inference
 
-Resource class name maps to model: `UserResource` → `User` model (strips "Resource" suffix, constantizes).
+Resource class name maps to model: `IronAdmin::Resources::UserResource` → `User` model (strips "IronAdmin::Resources::" prefix and "Resource" suffix, then constantizes).
 
 ### Theme Customization
 

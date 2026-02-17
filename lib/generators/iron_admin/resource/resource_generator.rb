@@ -20,7 +20,7 @@ module IronAdmin
       # Creates the resource file from template.
       # @return [void]
       def create_resource_file
-        template "resource.rb.tt", File.join("app/iron_admin", class_path, "#{file_name}_resource.rb")
+        template "resource.rb.tt", File.join("app/iron_admin/resources", class_path, "#{file_name}_resource.rb")
       end
     end
   end

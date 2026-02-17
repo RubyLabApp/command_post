@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe "i18n support", type: :request do
   before do
-    IronAdmin::ResourceRegistry.register(UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
   end
 
   describe "flash messages" do

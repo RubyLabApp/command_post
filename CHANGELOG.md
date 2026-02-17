@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-02-16
+
+### Changed
+
+- **Namespaced resources and dashboards** — Resource and dashboard classes are now organized under `IronAdmin::Resources` and `IronAdmin::Dashboards` modules respectively. This prevents namespace pollution in host applications and provides better code organization.
+  - Resource files: `app/iron_admin/user_resource.rb` → `app/iron_admin/resources/user_resource.rb`
+  - Dashboard files: `app/iron_admin/admin_dashboard.rb` → `app/iron_admin/dashboards/admin_dashboard.rb`
+  - Resource classes: `UserResource` → `IronAdmin::Resources::UserResource`
+  - Dashboard classes: `AdminDashboard` → `IronAdmin::Dashboards::AdminDashboard`
+  - Engine autoloading uses Zeitwerk `push_dir` with `namespace: IronAdmin` for correct constant resolution
+  - Model inference updated to strip `IronAdmin::Resources::` prefix automatically
+  - Generators (`iron_admin:install`, `iron_admin:resource`) output files to the new directory structure with proper namespacing
+
+### Migration guide
+
+See [UPGRADING.md](UPGRADING.md) for detailed step-by-step migration instructions.
+
+- 1155 tests with 95%+ coverage
+
 ## [0.4.0] - 2026-02-13
 
 ### Changed
@@ -175,7 +194,8 @@ First public release.
 - Policy instances now cached at Resource class level
 - Field visibility filtering applied consistently in index, show, forms, exports, and search
 
-[Unreleased]: https://github.com/rubylab-app/iron_admin/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/rubylab-app/iron_admin/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/rubylab-app/iron_admin/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/rubylab-app/iron_admin/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/rubylab-app/iron_admin/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/rubylab-app/iron_admin/releases/tag/v0.2.0

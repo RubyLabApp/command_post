@@ -4,15 +4,15 @@ require "rails_helper"
 
 RSpec.describe "Custom field types", type: :request do
   around do |example|
-    original_field_overrides = UserResource.field_overrides.dup
-    original_index_field_names = UserResource.index_field_names&.dup
-    original_form_field_names = UserResource.form_field_names&.dup
-    IronAdmin::ResourceRegistry.register(UserResource)
+    original_field_overrides = IronAdmin::Resources::UserResource.field_overrides.dup
+    original_index_field_names = IronAdmin::Resources::UserResource.index_field_names&.dup
+    original_form_field_names = IronAdmin::Resources::UserResource.form_field_names&.dup
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
     example.run
   ensure
-    UserResource.field_overrides = original_field_overrides
-    UserResource.index_field_names = original_index_field_names
-    UserResource.form_field_names = original_form_field_names
+    IronAdmin::Resources::UserResource.field_overrides = original_field_overrides
+    IronAdmin::Resources::UserResource.index_field_names = original_index_field_names
+    IronAdmin::Resources::UserResource.form_field_names = original_form_field_names
   end
 
   describe "display on show page" do
@@ -21,7 +21,7 @@ RSpec.describe "Custom field types", type: :request do
         display { |record, field| record.public_send(field.name) ? "★★★★★" : "☆☆☆☆☆" }
       end
 
-      UserResource.field :active, type: :star_rating
+      IronAdmin::Resources::UserResource.field :active, type: :star_rating
 
       user = User.create!(name: "Test", email: "test@example.com", active: true)
       get iron_admin.resource_path("users", user)
@@ -37,8 +37,8 @@ RSpec.describe "Custom field types", type: :request do
         index_display { |_record, _field| "short" }
       end
 
-      UserResource.field :name, type: :custom_text
-      UserResource.index_fields :name
+      IronAdmin::Resources::UserResource.field :name, type: :custom_text
+      IronAdmin::Resources::UserResource.index_fields :name
 
       User.create!(name: "Test", email: "test@example.com")
       get iron_admin.resources_path("users")
@@ -49,8 +49,8 @@ RSpec.describe "Custom field types", type: :request do
 
   describe "fallback for unregistered types" do
     it "displays raw value for unknown types" do
-      UserResource.field :name, type: :totally_unknown
-      UserResource.index_fields :name
+      IronAdmin::Resources::UserResource.field :name, type: :totally_unknown
+      IronAdmin::Resources::UserResource.index_fields :name
 
       User.create!(name: "RawValue", email: "raw@example.com")
       get iron_admin.resources_path("users")
@@ -66,8 +66,8 @@ RSpec.describe "Custom field types", type: :request do
         form_partial "iron_admin/fields/custom_input"
       end
 
-      UserResource.field :name, type: :custom_input
-      UserResource.form_fields :name
+      IronAdmin::Resources::UserResource.field :name, type: :custom_input
+      IronAdmin::Resources::UserResource.form_fields :name
 
       user = User.create!(name: "Test", email: "form@example.com")
       get iron_admin.edit_resource_path("users", user)
@@ -80,8 +80,8 @@ RSpec.describe "Custom field types", type: :request do
         display { |record, field| "custom: #{record.public_send(field.name)}" }
       end
 
-      UserResource.field :name, type: :display_only
-      UserResource.form_fields :name
+      IronAdmin::Resources::UserResource.field :name, type: :display_only
+      IronAdmin::Resources::UserResource.form_fields :name
 
       user = User.create!(name: "Test", email: "fallback@example.com")
       get iron_admin.edit_resource_path("users", user)

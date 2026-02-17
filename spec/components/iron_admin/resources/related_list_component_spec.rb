@@ -3,11 +3,11 @@ require_relative "../../../../app/components/iron_admin/resources/related_list_c
 
 RSpec.describe IronAdmin::Resources::RelatedListComponent, type: :component do
   before do
-    IronAdmin::ResourceRegistry.register(UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
   end
 
   let(:association) do
-    { name: :posts, resource: UserResource, display: :name }
+    { name: :posts, resource: IronAdmin::Resources::UserResource, display: :name }
   end
 
   describe "#initialize" do
@@ -42,7 +42,7 @@ RSpec.describe IronAdmin::Resources::RelatedListComponent, type: :component do
     it "returns association resource name" do
       records = User.none
       component = described_class.new(association: association, records: records)
-      expect(component.resource_name).to eq(UserResource.resource_name)
+      expect(component.resource_name).to eq(IronAdmin::Resources::UserResource.resource_name)
     end
   end
 

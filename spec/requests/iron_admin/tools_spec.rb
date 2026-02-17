@@ -13,7 +13,7 @@ end
 
 RSpec.describe "Custom tools", type: :request do
   before do
-    IronAdmin::ResourceRegistry.register(UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
     IronAdmin::ToolRegistry.register(SampleTool)
   end
 

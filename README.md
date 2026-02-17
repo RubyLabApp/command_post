@@ -20,6 +20,7 @@ Convention-over-configuration admin panel engine for Ruby on Rails. Build beauti
 
 - Ruby >= 3.2
 - Rails >= 7.1
+- [tailwindcss-rails](https://github.com/rails/tailwindcss-rails) >= 4.0
 
 ## Installation
 
@@ -27,6 +28,7 @@ Add to your Gemfile:
 
 ```ruby
 gem "iron_admin"
+gem "tailwindcss-rails"
 ```
 
 Then run:
@@ -36,13 +38,39 @@ bundle install
 rails generate iron_admin:install
 ```
 
-Mount the engine in your `config/routes.rb`:
+The install generator will:
+- Create `app/iron_admin/resources/` and `app/iron_admin/dashboards/` directories
+- Add a configuration initializer at `config/initializers/iron_admin.rb`
+- Create a sample dashboard
+- Mount the engine at `/admin` in your routes
+- Add the IronAdmin Tailwind CSS import to your `app/assets/tailwind/application.css`
 
-```ruby
-Rails.application.routes.draw do
-  mount IronAdmin::Engine, at: "/admin"
-end
+### Tailwind CSS Setup
+
+IronAdmin uses Tailwind CSS v4 for all styling. The `tailwindcss-rails` gem handles
+compilation. After running the install generator, your `app/assets/tailwind/application.css`
+should include:
+
+```css
+@import "tailwindcss";
+@import "../builds/tailwind/iron_admin";
 ```
+
+The second line imports IronAdmin's `@source` directives so the Tailwind compiler
+scans the engine's views and components for CSS classes. Without it, the admin panel
+will render unstyled.
+
+If you're setting up manually (without the generator), run:
+
+```bash
+rails tailwindcss:build
+```
+
+Then verify that `app/assets/builds/tailwind/iron_admin.css` was created. If not,
+check that `tailwindcss-rails` >= 4.0 is installed and that the engine gem is properly
+loaded.
+
+For development, use `bin/dev` or `rails tailwindcss:watch` to recompile CSS on changes.
 
 ## Quick Start
 
@@ -75,26 +103,30 @@ rails generate iron_admin:resource Order
 ### 3. Customize Resources
 
 ```ruby
-# app/iron_admin/user_resource.rb
-class UserResource < IronAdmin::Resource
-  field :role, type: :badge, colors: { admin: :purple, user: :blue }
-  field :email, type: :text
+# app/iron_admin/resources/user_resource.rb
+module IronAdmin
+  module Resources
+    class UserResource < IronAdmin::Resource
+      field :role, type: :badge, colors: { admin: :purple, user: :blue }
+      field :email, type: :text
 
-  searchable :name, :email
+      searchable :name, :email
 
-  filter :role, type: :select, choices: User.roles.keys
-  filter :created_at, type: :date_range
+      filter :role, type: :select, choices: User.roles.keys
+      filter :created_at, type: :date_range
 
-  scope :admins, -> { where(role: :admin) }
-  scope :recent, -> { where("created_at > ?", 7.days.ago) }
+      scope :admins, -> { where(role: :admin) }
+      scope :recent, -> { where("created_at > ?", 7.days.ago) }
 
-  index_fields :id, :name, :email, :role, :created_at
-  form_fields :name, :email, :role
+      index_fields :id, :name, :email, :role, :created_at
+      form_fields :name, :email, :role
 
-  menu priority: 1, icon: "users", group: "People"
+      menu priority: 1, icon: "users", group: "People"
 
-  action :lock, icon: "lock-closed", confirm: true do |record|
-    record.update!(locked_at: Time.current)
+      action :lock, icon: "lock-closed", confirm: true do |record|
+        record.update!(locked_at: Time.current)
+      end
+    end
   end
 end
 ```
@@ -102,18 +134,22 @@ end
 ### 4. Create a Dashboard
 
 ```ruby
-# app/iron_admin/admin_dashboard.rb
-class AdminDashboard < IronAdmin::Dashboard
-  metric :total_users, format: :number do
-    User.count
-  end
+# app/iron_admin/dashboards/admin_dashboard.rb
+module IronAdmin
+  module Dashboards
+    class AdminDashboard < IronAdmin::Dashboard
+      metric :total_users, format: :number do
+        User.count
+      end
 
-  metric :monthly_revenue, format: :currency do
-    Payment.where("created_at > ?", 30.days.ago).sum(:amount)
-  end
+      metric :monthly_revenue, format: :currency do
+        Payment.where("created_at > ?", 30.days.ago).sum(:amount)
+      end
 
-  recent :users, limit: 5, scope: -> { order(created_at: :desc) }
-  recent :payments, limit: 5
+      recent :users, limit: 5, scope: -> { order(created_at: :desc) }
+      recent :payments, limit: 5
+    end
+  end
 end
 ```
 

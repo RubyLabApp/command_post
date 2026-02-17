@@ -197,12 +197,12 @@ RSpec.describe IronAdmin::Resource do
     it "resolves has_one associations with resource and reflection" do
       IronAdmin::ResourceRegistry.reset!
       IronAdmin::ResourceRegistry.register(TestUserResource)
-      IronAdmin::ResourceRegistry.register(ProfileResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::ProfileResource)
 
       associations = TestUserResource.has_one_associations
       profile_assoc = associations.find { |a| a[:name] == :profile }
       expect(profile_assoc).to be_present
-      expect(profile_assoc[:resource]).to eq(ProfileResource)
+      expect(profile_assoc[:resource]).to eq(IronAdmin::Resources::ProfileResource)
     end
 
     it "returns empty for has_one when no associations defined" do
@@ -213,19 +213,19 @@ RSpec.describe IronAdmin::Resource do
     end
 
     it "stores has_and_belongs_to_many declarations" do
-      assoc = PostResource.defined_associations[:tags]
+      assoc = IronAdmin::Resources::PostResource.defined_associations[:tags]
       expect(assoc[:kind]).to eq(:has_and_belongs_to_many)
     end
 
     it "resolves habtm associations with reflection" do
       IronAdmin::ResourceRegistry.reset!
-      IronAdmin::ResourceRegistry.register(PostResource)
-      IronAdmin::ResourceRegistry.register(TagResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::PostResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::TagResource)
 
-      associations = PostResource.habtm_associations
+      associations = IronAdmin::Resources::PostResource.habtm_associations
       tags_assoc = associations.find { |a| a[:name] == :tags }
       expect(tags_assoc).to be_present
-      expect(tags_assoc[:resource]).to eq(TagResource)
+      expect(tags_assoc[:resource]).to eq(IronAdmin::Resources::TagResource)
     end
 
     it "returns empty for habtm when no associations defined" do

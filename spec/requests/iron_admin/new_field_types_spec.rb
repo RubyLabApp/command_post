@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe "New Field Types", type: :request do
   before do
-    IronAdmin::ResourceRegistry.register(DocumentResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::DocumentResource)
   end
 
   describe "GET /:resource_name (index)" do
@@ -171,8 +171,8 @@ RSpec.describe "New Field Types", type: :request do
 
   describe "markdown field type" do
     before do
-      IronAdmin::ResourceRegistry.register(PostResource)
-      IronAdmin::ResourceRegistry.register(TagResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::PostResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::TagResource)
     end
 
     describe "GET /:resource_name/:id (show)" do
@@ -255,8 +255,8 @@ RSpec.describe "New Field Types", type: :request do
 
   describe "tags field type" do
     before do
-      IronAdmin::ResourceRegistry.register(PostResource)
-      IronAdmin::ResourceRegistry.register(TagResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::PostResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::TagResource)
     end
 
     describe "GET /:resource_name/:id (show)" do

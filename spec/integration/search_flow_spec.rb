@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe "Search Flow", type: :request do
   before do
-    IronAdmin::ResourceRegistry.register(UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
   end
 
   let!(:john) { create(:user, name: "John Smith", email: "john@example.com", role: "admin") }

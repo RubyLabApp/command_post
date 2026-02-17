@@ -4,11 +4,11 @@ require_relative "../../../../app/components/iron_admin/resources/show_field_com
 
 RSpec.describe IronAdmin::Resources::ShowFieldComponent, type: :component do
   before do
-    IronAdmin::ResourceRegistry.register(UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
   end
 
   let(:user) { create(:user, name: "John Doe") }
-  let(:field) { UserResource.resolved_fields.find { |f| f.name == :name } }
+  let(:field) { IronAdmin::Resources::UserResource.resolved_fields.find { |f| f.name == :name } }
 
   describe "#initialize" do
     it "stores field" do
