@@ -64,5 +64,17 @@ module IronAdmin
       resource_path = Rails.root.join("app/iron_admin")
       Rails.autoloaders.main.push_dir(resource_path, namespace: IronAdmin) if resource_path.exist?
     end
+
+    # Eager load the iron_admin directory so resource classes are registered
+    # via the inherited hook. In development, to_prepare runs before each
+    # request (and after code reloads), so resources are always discovered.
+    # In production, eager_load_all handles this, making eager_load_dir a no-op.
+    config.to_prepare do
+      resource_path = Rails.root.join("app/iron_admin")
+      if resource_path.exist?
+        IronAdmin::ResourceRegistry.reset!
+        Rails.autoloaders.main.eager_load_dir(resource_path)
+      end
+    end
   end
 end
