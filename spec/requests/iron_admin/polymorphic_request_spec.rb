@@ -4,9 +4,9 @@ require "rails_helper"
 
 RSpec.describe "Polymorphic associations requests", type: :request do
   before do
-    IronAdmin::ResourceRegistry.register(UserResource)
-    IronAdmin::ResourceRegistry.register(LicenseResource)
-    IronAdmin::ResourceRegistry.register(NoteResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::NoteResource)
   end
 
   describe "show page" do

@@ -2,8 +2,8 @@ require "rails_helper"
 
 RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
   before do
-    IronAdmin::ResourceRegistry.register(UserResource)
-    IronAdmin::ResourceRegistry.register(LicenseResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
   end
 
   describe "#display_field_value" do
@@ -173,7 +173,7 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
       let(:filter) { { name: :status, type: :select } }
 
       it "returns enum options" do
-        options = helper.filter_options_for(LicenseResource, filter)
+        options = helper.filter_options_for(IronAdmin::Resources::LicenseResource, filter)
 
         expect(options).to include(%w[Active active])
         expect(options).to include(%w[Expired expired])
@@ -184,7 +184,7 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
       let(:filter) { { name: :role, type: :select, options: [%w[Admin admin], %w[User user]] } }
 
       it "returns custom options" do
-        options = helper.filter_options_for(UserResource, filter)
+        options = helper.filter_options_for(IronAdmin::Resources::UserResource, filter)
 
         expect(options).to eq([%w[Admin admin], %w[User user]])
       end
@@ -199,7 +199,7 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
       let(:filter) { { name: :role, type: :select } }
 
       it "returns distinct values" do
-        options = helper.filter_options_for(UserResource, filter)
+        options = helper.filter_options_for(IronAdmin::Resources::UserResource, filter)
 
         expect(options).to include(%w[Admin admin])
         expect(options).to include(%w[User user])
@@ -210,7 +210,7 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
       let(:filter) { { name: :active, type: :boolean } }
 
       it "returns yes/no options" do
-        options = helper.filter_options_for(UserResource, filter)
+        options = helper.filter_options_for(IronAdmin::Resources::UserResource, filter)
 
         expect(options).to eq([%w[Yes true], %w[No false]])
       end
@@ -220,7 +220,7 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
       let(:filter) { { name: :name, type: :unknown } }
 
       it "returns empty array" do
-        expect(helper.filter_options_for(UserResource, filter)).to eq([])
+        expect(helper.filter_options_for(IronAdmin::Resources::UserResource, filter)).to eq([])
       end
     end
   end

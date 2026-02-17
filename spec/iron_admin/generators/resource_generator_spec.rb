@@ -24,40 +24,44 @@ RSpec.describe IronAdmin::Generators::ResourceGenerator, type: :generator do
     it "creates a resource file with the correct name" do
       run_generator(["User"])
 
-      expect(File.exist?(File.join(destination, "app/iron_admin/user_resource.rb"))).to be true
+      expect(File.exist?(File.join(destination, "app/iron_admin/resources/user_resource.rb"))).to be true
     end
 
     it "creates a resource file with correct content" do
       run_generator(["Product"])
 
-      content = File.read(File.join(destination, "app/iron_admin/product_resource.rb"))
+      content = File.read(File.join(destination, "app/iron_admin/resources/product_resource.rb"))
       expect(content).to include("class ProductResource < IronAdmin::Resource")
+      expect(content).to include("module IronAdmin")
+      expect(content).to include("module Resources")
     end
 
     it "handles namespaced models" do
       run_generator(["Admin::User"])
 
-      expect(File.exist?(File.join(destination, "app/iron_admin/admin/user_resource.rb"))).to be true
+      expect(File.exist?(File.join(destination, "app/iron_admin/resources/admin/user_resource.rb"))).to be true
 
-      content = File.read(File.join(destination, "app/iron_admin/admin/user_resource.rb"))
+      content = File.read(File.join(destination, "app/iron_admin/resources/admin/user_resource.rb"))
       expect(content).to include("class Admin::UserResource < IronAdmin::Resource")
+      expect(content).to include("module IronAdmin")
+      expect(content).to include("module Resources")
     end
 
     it "handles snake_case names" do
       run_generator(["order_item"])
 
-      expect(File.exist?(File.join(destination, "app/iron_admin/order_item_resource.rb"))).to be true
+      expect(File.exist?(File.join(destination, "app/iron_admin/resources/order_item_resource.rb"))).to be true
 
-      content = File.read(File.join(destination, "app/iron_admin/order_item_resource.rb"))
+      content = File.read(File.join(destination, "app/iron_admin/resources/order_item_resource.rb"))
       expect(content).to include("class OrderItemResource < IronAdmin::Resource")
     end
 
     it "handles CamelCase names" do
       run_generator(["OrderItem"])
 
-      expect(File.exist?(File.join(destination, "app/iron_admin/order_item_resource.rb"))).to be true
+      expect(File.exist?(File.join(destination, "app/iron_admin/resources/order_item_resource.rb"))).to be true
 
-      content = File.read(File.join(destination, "app/iron_admin/order_item_resource.rb"))
+      content = File.read(File.join(destination, "app/iron_admin/resources/order_item_resource.rb"))
       expect(content).to include("class OrderItemResource < IronAdmin::Resource")
     end
   end

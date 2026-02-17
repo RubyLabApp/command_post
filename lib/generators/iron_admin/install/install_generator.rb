@@ -18,10 +18,11 @@ module IronAdmin
     class InstallGenerator < Rails::Generators::Base
       source_root File.expand_path("templates", __dir__)
 
-      # Creates the directory for resource definitions.
+      # Creates the directory structure for resource and dashboard definitions.
       # @return [void]
-      def create_iron_admin_directory
-        empty_directory "app/iron_admin"
+      def create_iron_admin_directories
+        empty_directory "app/iron_admin/resources"
+        empty_directory "app/iron_admin/dashboards"
       end
 
       # Copies the initializer template with default configuration.
@@ -33,7 +34,7 @@ module IronAdmin
       # Copies the dashboard template.
       # @return [void]
       def copy_dashboard
-        template "dashboard.rb.tt", "app/iron_admin/dashboard.rb"
+        template "dashboard.rb.tt", "app/iron_admin/dashboards/admin_dashboard.rb"
       end
 
       # Adds the engine mount to config/routes.rb.

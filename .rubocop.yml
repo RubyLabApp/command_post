@@ -13,6 +13,7 @@ AllCops:
     - "tmp/**/*"
     - "vendor/**/*"
     - "coverage/**/*"
+    - "examples/**/*"
 
 # Layout
 Layout/LineLength:

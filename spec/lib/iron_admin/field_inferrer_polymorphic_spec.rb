@@ -4,9 +4,9 @@ require "rails_helper"
 
 RSpec.describe IronAdmin::FieldInferrer do
   before do
-    IronAdmin::ResourceRegistry.register(UserResource)
-    IronAdmin::ResourceRegistry.register(LicenseResource)
-    IronAdmin::ResourceRegistry.register(NoteResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::NoteResource)
   end
 
   describe "polymorphic detection" do
@@ -37,19 +37,19 @@ RSpec.describe IronAdmin::FieldInferrer do
 
   describe "Resource DSL" do
     it "stores polymorphic: true in association config" do
-      config = NoteResource.defined_associations[:notable]
+      config = IronAdmin::Resources::NoteResource.defined_associations[:notable]
       expect(config[:polymorphic]).to be true
     end
 
     it "stores types list" do
-      config = NoteResource.defined_associations[:notable]
+      config = IronAdmin::Resources::NoteResource.defined_associations[:notable]
       expect(config[:types]).to eq([User, License])
     end
   end
 
   describe "resolved_fields" do
     it "includes polymorphic field with types from DSL" do
-      fields = NoteResource.resolved_fields
+      fields = IronAdmin::Resources::NoteResource.resolved_fields
       notable_field = fields.find { |f| f.name == :notable }
 
       expect(notable_field.type).to eq(:polymorphic_belongs_to)

@@ -25,7 +25,7 @@ require "iron_admin/engine"
 # 1. Add the gem to your Gemfile and run bundle install
 # 2. Run the install generator: `rails generate iron_admin:install`
 # 3. Mount the engine in config/routes.rb: `mount IronAdmin::Engine => "/admin"`
-# 4. Create resources in app/iron_admin/ for each model you want to manage
+# 4. Create resources in app/iron_admin/resources/ for each model you want to manage
 #
 # == Key Concepts
 #
@@ -34,22 +34,30 @@ require "iron_admin/engine"
 # that inherits from {IronAdmin::Resource} and provides a DSL for configuring
 # fields, filters, actions, and authorization.
 #
-#   class UserResource < IronAdmin::Resource
-#     field :email, readonly: true
-#     field :password_digest, visible: false
-#     searchable :name, :email
-#     filter :role, type: :select, options: %w[admin user]
+#   module IronAdmin
+#     module Resources
+#       class UserResource < IronAdmin::Resource
+#         field :email, readonly: true
+#         field :password_digest, visible: false
+#         searchable :name, :email
+#         filter :role, type: :select, options: %w[admin user]
+#       end
+#     end
 #   end
 #
 # === Dashboard
 # The dashboard is the admin panel home page. Create a class inheriting from
 # {IronAdmin::Dashboard} to define metrics, charts, and recent record lists.
 #
-#   class AdminDashboard < IronAdmin::Dashboard
-#     metric :total_users do
-#       User.count
+#   module IronAdmin
+#     module Dashboards
+#       class AdminDashboard < IronAdmin::Dashboard
+#         metric :total_users do
+#           User.count
+#         end
+#         recent :orders, limit: 10
+#       end
 #     end
-#     recent :orders, limit: 10
 #   end
 #
 # === Configuration

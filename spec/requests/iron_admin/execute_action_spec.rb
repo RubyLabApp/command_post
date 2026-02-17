@@ -4,8 +4,8 @@ RSpec.describe "IronAdmin::Resources#execute_action error handling", type: :requ
   before do
     IronAdmin.reset_configuration!
     IronAdmin::ResourceRegistry.reset!
-    IronAdmin::ResourceRegistry.register(UserResource)
-    IronAdmin::ResourceRegistry.register(LicenseResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
   end
 
   describe "POST /:resource_name/:id/actions/:action_name" do

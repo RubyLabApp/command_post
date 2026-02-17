@@ -43,7 +43,7 @@ module IronAdmin
         engine_css = root.join("app/assets/tailwind/iron_admin/engine.css")
 
         Rails.application.config.after_initialize do
-          if defined?(Rake) && Rake::Task.task_defined?("tailwindcss:engines")
+          if defined?(Rake::Task) && Rake::Task.task_defined?("tailwindcss:engines")
             Rake::Task["tailwindcss:engines"].enhance do
               tailwind_dir = Rails.root.join("app/assets/tailwind")
               bridge_file = tailwind_dir.join("iron_admin.css")
@@ -62,7 +62,10 @@ module IronAdmin
 
     config.after_initialize do
       resource_path = Rails.root.join("app/iron_admin")
-      Rails.autoloaders.main.eager_load_dir(resource_path.to_s) if resource_path.exist?
+      if resource_path.exist?
+        Rails.autoloaders.main.push_dir(resource_path, namespace: IronAdmin)
+        Rails.autoloaders.main.eager_load_dir(resource_path.to_s)
+      end
     end
   end
 end

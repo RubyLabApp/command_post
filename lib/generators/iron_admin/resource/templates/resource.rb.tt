@@ -1,4 +1,8 @@
+module IronAdmin
+  module Resources
 <% module_namespacing do -%>
-class <%= class_name %>Resource < IronAdmin::Resource
-end
+    class <%= class_name %>Resource < IronAdmin::Resource
+    end
 <% end -%>
+  end
+end

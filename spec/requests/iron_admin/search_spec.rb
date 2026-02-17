@@ -5,7 +5,7 @@ RSpec.describe "IronAdmin::Search", type: :request do
   before do
     IronAdmin.reset_configuration!
     IronAdmin::ResourceRegistry.reset!
-    IronAdmin::ResourceRegistry.register(UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
   end
 
   describe "GET /search" do

@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe "Display Formatting", type: :request do
   before do
-    IronAdmin::ResourceRegistry.register(ProfileResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::ProfileResource)
   end
 
   describe "URL field type" do

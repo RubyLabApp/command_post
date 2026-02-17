@@ -8,20 +8,20 @@ require "rspec/rails"
 require "factory_bot_rails"
 require "view_component/test_helpers"
 
-Dir[File.join(__dir__, "support/**/*.rb")].each { |f| require f }
-
 # Load schema before tests run
 ActiveRecord::Schema.verbose = false
 load File.expand_path("dummy/db/schema.rb", __dir__)
 
-# Load test resources
-require_relative "dummy/app/iron_admin/user_resource"
-require_relative "dummy/app/iron_admin/license_resource"
-require_relative "dummy/app/iron_admin/post_resource"
-require_relative "dummy/app/iron_admin/document_resource"
-require_relative "dummy/app/iron_admin/profile_resource"
-require_relative "dummy/app/iron_admin/tag_resource"
-require_relative "dummy/app/iron_admin/note_resource"
+# Load test resources (before support files, since test_resources.rb aliases depend on these)
+require_relative "dummy/app/iron_admin/resources/user_resource"
+require_relative "dummy/app/iron_admin/resources/license_resource"
+require_relative "dummy/app/iron_admin/resources/post_resource"
+require_relative "dummy/app/iron_admin/resources/document_resource"
+require_relative "dummy/app/iron_admin/resources/profile_resource"
+require_relative "dummy/app/iron_admin/resources/tag_resource"
+require_relative "dummy/app/iron_admin/resources/note_resource"
+
+Dir[File.join(__dir__, "support/**/*.rb")].each { |f| require f }
 
 RSpec.configure do |config|
   config.use_transactional_fixtures = true
@@ -43,16 +43,16 @@ RSpec.configure do |config|
 
   config.before(:each, type: :request) do
     # Re-register resources for request specs
-    IronAdmin::ResourceRegistry.register(UserResource)
-    IronAdmin::ResourceRegistry.register(LicenseResource)
-    IronAdmin::ResourceRegistry.register(NoteResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::NoteResource)
   end
 
   config.before(:each, type: :component) do
     # Re-register resources for component specs
-    IronAdmin::ResourceRegistry.register(UserResource)
-    IronAdmin::ResourceRegistry.register(LicenseResource)
-    IronAdmin::ResourceRegistry.register(NoteResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::NoteResource)
 
     # Set up route helpers for component tests
     vc_test_controller.view_context.class.define_method(:iron_admin) do

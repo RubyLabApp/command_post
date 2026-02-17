@@ -6,8 +6,8 @@ RSpec.describe "IronAdmin::Exports", type: :request do
   before do
     IronAdmin.reset_configuration!
     IronAdmin::ResourceRegistry.reset!
-    IronAdmin::ResourceRegistry.register(UserResource)
-    IronAdmin::ResourceRegistry.register(LicenseResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
   end
 
   describe "field visibility enforcement" do
@@ -35,8 +35,8 @@ RSpec.describe "IronAdmin::Exports", type: :request do
 
     after do
       IronAdmin::ResourceRegistry.reset!
-      IronAdmin::ResourceRegistry.register(UserResource)
-      IronAdmin::ResourceRegistry.register(LicenseResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
+      IronAdmin::ResourceRegistry.register(IronAdmin::Resources::LicenseResource)
     end
 
     context "when user does not have permission to see a field" do
@@ -187,7 +187,7 @@ RSpec.describe "IronAdmin::Exports", type: :request do
         create(:user, name: "John", email: "john@test.com")
         # Stub resolved_fields to include a non-existent field
         fake_field = IronAdmin::Field.new(:nonexistent_field, type: :text)
-        allow(UserResource).to receive(:resolved_fields).and_return([fake_field])
+        allow(IronAdmin::Resources::UserResource).to receive(:resolved_fields).and_return([fake_field])
 
         get iron_admin.export_path("users", format: :csv)
 
@@ -240,7 +240,7 @@ RSpec.describe "IronAdmin::Exports", type: :request do
         create(:user, name: "John", email: "john@test.com")
         # Stub resolved_fields to include a non-existent field
         fake_field = IronAdmin::Field.new(:nonexistent_field, type: :text)
-        allow(UserResource).to receive(:resolved_fields).and_return([fake_field])
+        allow(IronAdmin::Resources::UserResource).to receive(:resolved_fields).and_return([fake_field])
 
         get iron_admin.export_path("users", format: :json)
 

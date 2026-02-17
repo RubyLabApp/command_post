@@ -3,7 +3,7 @@ require_relative "../../../../app/components/iron_admin/dashboards/recent_table_
 
 RSpec.describe IronAdmin::Dashboards::RecentTableComponent, type: :component do
   before do
-    IronAdmin::ResourceRegistry.register(UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
   end
 
   describe "#initialize" do

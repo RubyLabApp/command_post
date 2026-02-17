@@ -75,26 +75,30 @@ rails generate iron_admin:resource Order
 ### 3. Customize Resources
 
 ```ruby
-# app/iron_admin/user_resource.rb
-class UserResource < IronAdmin::Resource
-  field :role, type: :badge, colors: { admin: :purple, user: :blue }
-  field :email, type: :text
+# app/iron_admin/resources/user_resource.rb
+module IronAdmin
+  module Resources
+    class UserResource < IronAdmin::Resource
+      field :role, type: :badge, colors: { admin: :purple, user: :blue }
+      field :email, type: :text
 
-  searchable :name, :email
+      searchable :name, :email
 
-  filter :role, type: :select, choices: User.roles.keys
-  filter :created_at, type: :date_range
+      filter :role, type: :select, choices: User.roles.keys
+      filter :created_at, type: :date_range
 
-  scope :admins, -> { where(role: :admin) }
-  scope :recent, -> { where("created_at > ?", 7.days.ago) }
+      scope :admins, -> { where(role: :admin) }
+      scope :recent, -> { where("created_at > ?", 7.days.ago) }
 
-  index_fields :id, :name, :email, :role, :created_at
-  form_fields :name, :email, :role
+      index_fields :id, :name, :email, :role, :created_at
+      form_fields :name, :email, :role
 
-  menu priority: 1, icon: "users", group: "People"
+      menu priority: 1, icon: "users", group: "People"
 
-  action :lock, icon: "lock-closed", confirm: true do |record|
-    record.update!(locked_at: Time.current)
+      action :lock, icon: "lock-closed", confirm: true do |record|
+        record.update!(locked_at: Time.current)
+      end
+    end
   end
 end
 ```
@@ -102,18 +106,22 @@ end
 ### 4. Create a Dashboard
 
 ```ruby
-# app/iron_admin/admin_dashboard.rb
-class AdminDashboard < IronAdmin::Dashboard
-  metric :total_users, format: :number do
-    User.count
-  end
+# app/iron_admin/dashboards/admin_dashboard.rb
+module IronAdmin
+  module Dashboards
+    class AdminDashboard < IronAdmin::Dashboard
+      metric :total_users, format: :number do
+        User.count
+      end
 
-  metric :monthly_revenue, format: :currency do
-    Payment.where("created_at > ?", 30.days.ago).sum(:amount)
-  end
+      metric :monthly_revenue, format: :currency do
+        Payment.where("created_at > ?", 30.days.ago).sum(:amount)
+      end
 
-  recent :users, limit: 5, scope: -> { order(created_at: :desc) }
-  recent :payments, limit: 5
+      recent :users, limit: 5, scope: -> { order(created_at: :desc) }
+      recent :payments, limit: 5
+    end
+  end
 end
 ```
 

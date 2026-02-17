@@ -4,18 +4,18 @@ require_relative "../../../../app/components/iron_admin/resources/data_table_com
 
 RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
   before do
-    IronAdmin::ResourceRegistry.register(UserResource)
+    IronAdmin::ResourceRegistry.register(IronAdmin::Resources::UserResource)
   end
 
   let(:users) { create_list(:user, 3) }
-  let(:fields) { UserResource.resolved_fields.first(3) }
+  let(:fields) { IronAdmin::Resources::UserResource.resolved_fields.first(3) }
 
   describe "#initialize" do
     it "stores records" do
       component = described_class.new(
         records: users,
         fields: fields,
-        resource_class: UserResource,
+        resource_class: IronAdmin::Resources::UserResource,
         base_url: "/admin/users?"
       )
       expect(component.records).to eq(users)
@@ -25,7 +25,7 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
       component = described_class.new(
         records: users,
         fields: fields,
-        resource_class: UserResource,
+        resource_class: IronAdmin::Resources::UserResource,
         base_url: "/admin/users?"
       )
       expect(component.fields).to eq(fields)
@@ -35,10 +35,10 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
       component = described_class.new(
         records: users,
         fields: fields,
-        resource_class: UserResource,
+        resource_class: IronAdmin::Resources::UserResource,
         base_url: "/admin/users?"
       )
-      expect(component.resource_class).to eq(UserResource)
+      expect(component.resource_class).to eq(IronAdmin::Resources::UserResource)
     end
   end
 
@@ -47,7 +47,7 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
       component = described_class.new(
         records: [],
         fields: fields,
-        resource_class: UserResource,
+        resource_class: IronAdmin::Resources::UserResource,
         base_url: "/admin/users?"
       )
       expect(component.empty?).to be true
@@ -57,7 +57,7 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
       component = described_class.new(
         records: users,
         fields: fields,
-        resource_class: UserResource,
+        resource_class: IronAdmin::Resources::UserResource,
         base_url: "/admin/users?"
       )
       expect(component.empty?).to be false
@@ -69,7 +69,7 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
       component = described_class.new(
         records: users,
         fields: fields,
-        resource_class: UserResource,
+        resource_class: IronAdmin::Resources::UserResource,
         base_url: "/admin/users?"
       )
       expect(component.sort_url(:name)).to include("sort=name")
@@ -80,7 +80,7 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
       component = described_class.new(
         records: users,
         fields: fields,
-        resource_class: UserResource,
+        resource_class: IronAdmin::Resources::UserResource,
         current_sort: "name",
         current_direction: "asc",
         base_url: "/admin/users?"
@@ -94,7 +94,7 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
       component = described_class.new(
         records: users,
         fields: fields,
-        resource_class: UserResource,
+        resource_class: IronAdmin::Resources::UserResource,
         current_sort: "name",
         base_url: "/admin/users?"
       )
@@ -105,7 +105,7 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
       component = described_class.new(
         records: users,
         fields: fields,
-        resource_class: UserResource,
+        resource_class: IronAdmin::Resources::UserResource,
         current_sort: "email",
         base_url: "/admin/users?"
       )
@@ -125,7 +125,7 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
       component = described_class.new(
         records: users,
         fields: mixed_fields,
-        resource_class: UserResource,
+        resource_class: IronAdmin::Resources::UserResource,
         current_user: current_user,
         base_url: "/admin/users?"
       )
@@ -137,7 +137,7 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
       component = described_class.new(
         records: users,
         fields: all_visible,
-        resource_class: UserResource,
+        resource_class: IronAdmin::Resources::UserResource,
         current_user: current_user,
         base_url: "/admin/users?"
       )
@@ -149,7 +149,7 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
       component = described_class.new(
         records: users,
         fields: no_visible,
-        resource_class: UserResource,
+        resource_class: IronAdmin::Resources::UserResource,
         current_user: current_user,
         base_url: "/admin/users?"
       )
@@ -162,7 +162,7 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
       component = described_class.new(
         records: users,
         fields: [visible_field, conditional_field],
-        resource_class: UserResource,
+        resource_class: IronAdmin::Resources::UserResource,
         base_url: "/admin/users?"
       )
       expect(component.visible_fields).to contain_exactly(visible_field, conditional_field)
@@ -183,7 +183,7 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
         component = described_class.new(
           records: users,
           fields: [visible_field, field_with_visibility],
-          resource_class: UserResource,
+          resource_class: IronAdmin::Resources::UserResource,
           current_user: admin_user,
           base_url: "/admin/users?"
         )
@@ -194,7 +194,7 @@ RSpec.describe IronAdmin::Resources::DataTableComponent, type: :component do
         component = described_class.new(
           records: users,
           fields: [visible_field, field_with_visibility],
-          resource_class: UserResource,
+          resource_class: IronAdmin::Resources::UserResource,
           current_user: regular_user,
           base_url: "/admin/users?"
         )
