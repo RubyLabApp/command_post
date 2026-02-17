@@ -60,12 +60,9 @@ module IronAdmin
       end
     end
 
-    config.after_initialize do
+    initializer "iron_admin.autoload", before: :set_autoload_paths do
       resource_path = Rails.root.join("app/iron_admin")
-      if resource_path.exist?
-        Rails.autoloaders.main.push_dir(resource_path, namespace: IronAdmin)
-        Rails.autoloaders.main.eager_load_dir(resource_path.to_s)
-      end
+      Rails.autoloaders.main.push_dir(resource_path, namespace: IronAdmin) if resource_path.exist?
     end
   end
 end
