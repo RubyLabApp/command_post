@@ -88,7 +88,14 @@ bin/rails server
 Visit `/admin` and your admin panel is ready.
 
 For development with live CSS recompilation, use `bin/dev` (which runs
-`tailwindcss:watch` alongside the Rails server).
+`tailwindcss:watch` alongside the Rails server via foreman).
+
+> **Note:** There is a [known issue](https://github.com/rails/tailwindcss-rails/issues/602)
+> in `tailwindcss-rails` v4 where `bin/dev` exits immediately after
+> starting. If this happens, edit `Procfile.dev` and change the CSS line
+> to `css: bin/rails tailwindcss:watch[always]`. See
+> [Troubleshooting](../guides/troubleshooting.md#bindev-exits-immediately-after-starting)
+> for details.
 
 ## Tailwind CSS Setup
 
