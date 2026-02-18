@@ -10,6 +10,13 @@ module IronAdmin
       nil
     end
 
+    def display_radio(record, field)
+      value = record.public_send(field.name)
+      return if value.blank?
+
+      content_tag(:span, value.to_s.humanize, class: "text-sm #{cp_body_text}")
+    end
+
     def display_belongs_to(record, field)
       associated = record.public_send(field.name)
       return if associated.nil?

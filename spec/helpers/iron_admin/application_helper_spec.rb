@@ -115,6 +115,22 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
       end
     end
 
+    context "with radio field" do
+      let(:widget) { create(:widget, status: "active") }
+      let(:field) { IronAdmin::Field.new(:status, type: :radio, choices: %w[active inactive draft]) }
+
+      it "returns humanized value" do
+        result = helper.display_field_value(widget, field)
+
+        expect(result).to include("Active")
+      end
+
+      it "returns nil when value is blank" do
+        widget.status = nil
+        expect(helper.display_field_value(widget, field)).to be_nil
+      end
+    end
+
     context "with rich_text field" do
       let(:document) { create(:document) }
       let(:field) { IronAdmin::Field.new(:content, type: :rich_text) }

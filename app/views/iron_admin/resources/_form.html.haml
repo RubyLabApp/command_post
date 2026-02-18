@@ -183,6 +183,17 @@
                 btn.addEventListener("click", function() { btn.closest("[data-tag]").remove(); updateHidden(); });
               });
             })();
+        - when :radio
+          - layout = field.options[:layout] == :vertical ? "flex-col space-y-2" : "flex flex-wrap gap-4"
+          - choices = field.options[:choices] || []
+          .flex{ class: layout }
+            - choices.each do |choice|
+              - label_text, choice_value = choice.is_a?(Array) ? choice : [choice.to_s.humanize, choice]
+              %label.inline-flex.items-center.gap-2.cursor-pointer
+                %input{ type: "radio", name: "record[#{field.name}]",
+                        value: choice_value,
+                        checked: @record.public_send(field.name).to_s == choice_value.to_s }
+                %span.text-sm= label_text
         - else
           - custom_config = IronAdmin::FieldTypeRegistry.find(field.type) if IronAdmin::FieldTypeRegistry.registered?(field.type)
           - if custom_config&.form_component_class
