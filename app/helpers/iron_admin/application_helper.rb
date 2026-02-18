@@ -17,6 +17,9 @@ module IronAdmin
     # Field types that should be truncated on index pages.
     TRUNCATABLE_TYPES = %i[text textarea].freeze
 
+    # Field types that show compact summaries on index pages.
+    INDEX_COMPACT_TYPES = %i[key_value boolean_group].freeze
+
     # Maps field types to their display method names.
     # @return [Hash{Symbol => Symbol}]
     FIELD_DISPLAY_METHODS = {
@@ -41,6 +44,7 @@ module IronAdmin
       code: :display_code,
       progress_bar: :display_progress_bar,
       external_image: :display_external_image,
+      boolean_group: :display_boolean_group,
     }.freeze
 
     # Displays a field value with appropriate formatting.
@@ -66,15 +70,9 @@ module IronAdmin
     # @return [String, nil] Formatted value (truncated for text fields)
     def display_index_field_value(record, field)
       if TRUNCATABLE_TYPES.include?(field.type)
-        value = record.public_send(field.name)
-        return if value.blank?
-
-        truncated = truncate(value.to_s, length: INDEX_TRUNCATION_LENGTH)
-        if value.to_s.length > INDEX_TRUNCATION_LENGTH
-          content_tag(:span, truncated, title: value.to_s)
-        else
-          truncated
-        end
+        display_truncated_index_value(record, field)
+      elsif INDEX_COMPACT_TYPES.include?(field.type)
+        display_compact_field_value(record, field)
       elsif (custom = IronAdmin::FieldTypeRegistry.find(field.type))
         custom.render_index_display(record, field)
       else

@@ -231,6 +231,21 @@ module IronAdmin
       end
     end
 
+    def display_boolean_group(record, field)
+      values = parse_array_value(record.public_send(field.name))
+      return if values.empty?
+
+      safe_join(values.map { |v| boolean_group_pill(v) })
+    end
+
+    def boolean_group_pill(value)
+      content_tag(
+        :span,
+        value.to_s.humanize,
+        class: "inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-50 text-indigo-700 mr-1 mb-1"
+      )
+    end
+
     def display_external_image(record, field)
       url = record.public_send(field.name)
       return if url.blank?
@@ -257,6 +272,65 @@ module IronAdmin
         progress_bar_track(pct, color) +
           content_tag(:span, "#{value.to_i}%", class: "text-xs tabular-nums #{cp_muted_text}")
       end
+    end
+
+    def display_truncated_index_value(record, field)
+      value = record.public_send(field.name)
+      return if value.blank?
+
+      truncated = truncate(value.to_s, length: ApplicationHelper::INDEX_TRUNCATION_LENGTH)
+      if value.to_s.length > ApplicationHelper::INDEX_TRUNCATION_LENGTH
+        content_tag(:span, truncated, title: value.to_s)
+      else
+        truncated
+      end
+    end
+
+    def display_compact_field_value(record, field)
+      case field.type
+      when :key_value
+        pairs = parse_hash_value(record.public_send(field.name))
+        content_tag(:span, "#{pairs.size} keys", class: "text-xs #{cp_muted_text}")
+      when :boolean_group
+        items = parse_array_value(record.public_send(field.name))
+        content_tag(:span, "#{items.size} selected", class: "text-xs #{cp_muted_text}")
+      end
+    end
+
+    def parse_hash_value(value)
+      return value if value.is_a?(Hash)
+      return {} if value.nil?
+
+      safe_json_parse_hash(value.to_s)
+    end
+
+    def safe_json_parse_hash(value)
+      result = JSON.parse(value)
+      result.is_a?(Hash) ? result : {}
+    rescue JSON::ParserError
+      {}
+    end
+
+    def parse_array_value(value)
+      case value
+      when Array then value
+      when String then parse_array_string(value)
+      else []
+      end
+    end
+
+    def parse_array_string(value)
+      parsed = safe_json_parse_array(value)
+      return parsed if parsed
+
+      value.split(",").map(&:strip).compact_blank
+    end
+
+    def safe_json_parse_array(value)
+      result = JSON.parse(value)
+      result.is_a?(Array) ? result : nil
+    rescue JSON::ParserError
+      nil
     end
 
     def calculate_progress_percentage(value, field)

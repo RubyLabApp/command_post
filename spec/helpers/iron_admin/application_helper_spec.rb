@@ -188,6 +188,32 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
       end
     end
 
+    context "with boolean_group field" do
+      let(:widget) { create(:widget, permissions: "read,write,delete") }
+      let(:field) { IronAdmin::Field.new(:permissions, type: :boolean_group, choices: %w[read write delete admin]) }
+
+      it "renders each value as a pill badge" do
+        result = helper.display_field_value(widget, field)
+
+        expect(result).to include("Read")
+        expect(result).to include("Write")
+        expect(result).to include("Delete")
+        expect(result).to include("rounded-full")
+        expect(result).to include("bg-indigo-50")
+      end
+
+      it "does not render unselected values" do
+        result = helper.display_field_value(widget, field)
+
+        expect(result).not_to include("Admin")
+      end
+
+      it "returns nil when value results in empty array" do
+        widget.permissions = ""
+        expect(helper.display_field_value(widget, field)).to be_nil
+      end
+    end
+
     context "with external_image field" do
       let(:widget) { create(:widget, image_url: "https://example.com/photo.jpg") }
       let(:field) { IronAdmin::Field.new(:image_url, type: :external_image, height: "h-32") }
@@ -283,6 +309,45 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
       it "returns fallback label" do
         expect(helper.display_record_label(minimal_record)).to eq("Item #123")
       end
+    end
+  end
+
+  describe "#display_index_field_value" do
+    context "with boolean_group field (compact display)" do
+      let(:widget) { create(:widget, permissions: "read,write,delete") }
+      let(:field) { IronAdmin::Field.new(:permissions, type: :boolean_group, choices: %w[read write delete admin]) }
+
+      it "shows compact summary on index" do
+        result = helper.display_index_field_value(widget, field)
+
+        expect(result).to include("3 selected")
+      end
+    end
+  end
+
+  describe "#parse_array_value (private)" do
+    it "returns array as-is" do
+      expect(helper.send(:parse_array_value, %w[a b c])).to eq(%w[a b c])
+    end
+
+    it "parses JSON array string" do
+      expect(helper.send(:parse_array_value, '["read","write"]')).to eq(%w[read write])
+    end
+
+    it "splits CSV string" do
+      expect(helper.send(:parse_array_value, "read, write, delete")).to eq(%w[read write delete])
+    end
+
+    it "returns empty array for nil" do
+      expect(helper.send(:parse_array_value, nil)).to eq([])
+    end
+
+    it "returns empty array for non-string non-array" do
+      expect(helper.send(:parse_array_value, 42)).to eq([])
+    end
+
+    it "rejects blank entries from CSV" do
+      expect(helper.send(:parse_array_value, "read,,write, ")).to eq(%w[read write])
     end
   end
 

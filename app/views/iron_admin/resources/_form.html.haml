@@ -183,6 +183,33 @@
                 btn.addEventListener("click", function() { btn.closest("[data-tag]").remove(); updateHidden(); });
               });
             })();
+        - when :boolean_group
+          - choices = field.options[:choices] || []
+          - current_values = @record.public_send(field.name).to_s.split(",").map(&:strip)
+          - container_id = "boolean-group-#{field.name}"
+          %div{ id: container_id, data: { boolean_group_field: true } }
+            = f.hidden_field field.name, value: current_values.join(","), id: "boolean-group-hidden-#{field.name}"
+            .flex.flex-wrap.gap-3
+              - choices.each do |choice|
+                - label_text, choice_value = choice.is_a?(Array) ? choice : [choice.to_s.humanize, choice]
+                %label.inline-flex.items-center.gap-2.cursor-pointer
+                  %input{ type: "checkbox", value: choice_value,
+                          checked: current_values.include?(choice_value.to_s),
+                          class: cp_checkbox_class,
+                          data: { boolean_group_checkbox: true } }
+                  %span.text-sm= label_text
+            :javascript
+              (function() {
+                var container = document.getElementById("#{container_id}");
+                var hidden = document.getElementById("boolean-group-hidden-#{field.name}");
+                var checkboxes = container.querySelectorAll("[data-boolean-group-checkbox]");
+                function update() {
+                  var vals = [];
+                  checkboxes.forEach(function(cb) { if (cb.checked) vals.push(cb.value); });
+                  hidden.value = vals.join(",");
+                }
+                checkboxes.forEach(function(cb) { cb.addEventListener("change", update); });
+              })();
         - when :external_image
           = f.url_field field.name, placeholder: I18n.t("iron_admin.fields.url_placeholder"),
             class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
