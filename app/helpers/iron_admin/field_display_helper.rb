@@ -231,6 +231,25 @@ module IronAdmin
       end
     end
 
+    def display_key_value(record, field)
+      value = record.public_send(field.name)
+      return if value.blank?
+
+      pairs = parse_hash_value(value)
+      return if pairs.empty?
+
+      content_tag(:dl, class: "divide-y divide-gray-100 rounded border border-gray-200 text-sm") do
+        safe_join(pairs.map { |k, v| key_value_pair_row(k, v) })
+      end
+    end
+
+    def key_value_pair_row(key, value)
+      content_tag(:div, class: "flex gap-4 px-3 py-2") do
+        content_tag(:dt, key, class: "font-medium w-1/3 #{cp_body_text}") +
+          content_tag(:dd, value.to_s, class: "flex-1 #{cp_muted_text}")
+      end
+    end
+
     def display_boolean_group(record, field)
       values = parse_array_value(record.public_send(field.name))
       return if values.empty?

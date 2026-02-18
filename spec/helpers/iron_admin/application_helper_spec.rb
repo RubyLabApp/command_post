@@ -188,6 +188,31 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
       end
     end
 
+    context "with key_value field" do
+      let(:widget) { create(:widget, config_json: '{"host":"localhost","port":"5432"}') }
+      let(:field) { IronAdmin::Field.new(:config_json, type: :key_value) }
+
+      it "renders a definition list with key-value pairs" do
+        result = helper.display_field_value(widget, field)
+
+        expect(result).to include("<dl")
+        expect(result).to include("host")
+        expect(result).to include("localhost")
+        expect(result).to include("port")
+        expect(result).to include("5432")
+      end
+
+      it "returns nil when value is blank" do
+        widget.config_json = nil
+        expect(helper.display_field_value(widget, field)).to be_nil
+      end
+
+      it "returns nil when JSON parses to empty hash" do
+        widget.config_json = "{}"
+        expect(helper.display_field_value(widget, field)).to be_nil
+      end
+    end
+
     context "with boolean_group field" do
       let(:widget) { create(:widget, permissions: "read,write,delete") }
       let(:field) { IronAdmin::Field.new(:permissions, type: :boolean_group, choices: %w[read write delete admin]) }
@@ -322,6 +347,35 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
 
         expect(result).to include("3 selected")
       end
+    end
+
+    context "with key_value field (compact display)" do
+      let(:widget) { create(:widget, config_json: '{"host":"localhost","port":"5432"}') }
+      let(:field) { IronAdmin::Field.new(:config_json, type: :key_value) }
+
+      it "shows compact summary on index" do
+        result = helper.display_index_field_value(widget, field)
+
+        expect(result).to include("2 keys")
+      end
+    end
+  end
+
+  describe "#parse_hash_value (private)" do
+    it "returns hash as-is" do
+      expect(helper.send(:parse_hash_value, { "a" => 1 })).to eq({ "a" => 1 })
+    end
+
+    it "parses JSON object string" do
+      expect(helper.send(:parse_hash_value, '{"key":"val"}')).to eq({ "key" => "val" })
+    end
+
+    it "returns empty hash for invalid JSON" do
+      expect(helper.send(:parse_hash_value, "not json")).to eq({})
+    end
+
+    it "returns empty hash for nil" do
+      expect(helper.send(:parse_hash_value, nil)).to eq({})
     end
   end
 

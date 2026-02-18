@@ -45,6 +45,7 @@ module IronAdmin
       progress_bar: :display_progress_bar,
       external_image: :display_external_image,
       boolean_group: :display_boolean_group,
+      key_value: :display_key_value,
     }.freeze
 
     # Displays a field value with appropriate formatting.
