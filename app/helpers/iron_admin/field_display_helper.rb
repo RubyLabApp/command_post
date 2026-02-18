@@ -6,6 +6,10 @@ module IronAdmin
   module FieldDisplayHelper # rubocop:disable Metrics/ModuleLength
     private
 
+    def display_hidden(_record, _field)
+      nil
+    end
+
     def display_belongs_to(record, field)
       associated = record.public_send(field.name)
       return if associated.nil?

@@ -36,6 +36,7 @@ module IronAdmin
       date: :display_date,
       datetime: :display_datetime,
       polymorphic_belongs_to: :display_polymorphic_belongs_to,
+      hidden: :display_hidden,
     }.freeze
 
     # Displays a field value with appropriate formatting.

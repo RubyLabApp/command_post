@@ -106,6 +106,15 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
       end
     end
 
+    context "with hidden field" do
+      let(:widget) { create(:widget, secret_token: "abc123") }
+      let(:field) { IronAdmin::Field.new(:secret_token, type: :hidden) }
+
+      it "returns nil" do
+        expect(helper.display_field_value(widget, field)).to be_nil
+      end
+    end
+
     context "with rich_text field" do
       let(:document) { create(:document) }
       let(:field) { IronAdmin::Field.new(:content, type: :rich_text) }

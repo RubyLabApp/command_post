@@ -3,6 +3,9 @@
 = form_with model: @record, url: form_url, scope: :record, html: { multipart: true } do |f|
   .grid.grid-cols-1.md:grid-cols-2.2xl:grid-cols-3.gap-x-6.gap-y-5
     - @fields.each do |field|
+      - if field.type == :hidden
+        = f.hidden_field field.name
+        - next
       - next unless field.visible?(iron_admin_current_user)
       - next if field.readonly?(iron_admin_current_user)
       - span_full = field.type.in?(%i[textarea json file files rich_text tags markdown])
