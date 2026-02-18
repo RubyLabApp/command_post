@@ -183,6 +183,9 @@
                 btn.addEventListener("click", function() { btn.closest("[data-tag]").remove(); updateHidden(); });
               });
             })();
+        - when :external_image
+          = f.url_field field.name, placeholder: I18n.t("iron_admin.fields.url_placeholder"),
+            class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
         - when :progress_bar
           = f.number_field field.name, min: field.options[:min] || 0, max: field.options[:max] || 100,
             placeholder: "0",

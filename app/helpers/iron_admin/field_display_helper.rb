@@ -231,6 +231,21 @@ module IronAdmin
       end
     end
 
+    def display_external_image(record, field)
+      url = record.public_send(field.name)
+      return if url.blank?
+      return if url.to_s.match?(/\Ajavascript:/i)
+
+      height = field.options[:height] || "h-32"
+      tag.img(
+        src: url,
+        alt: "",
+        class: "#{height} w-auto object-cover rounded border border-gray-200",
+        loading: "lazy",
+        onerror: "this.style.display='none'"
+      )
+    end
+
     def display_progress_bar(record, field)
       value = record.public_send(field.name)
       return if value.nil?

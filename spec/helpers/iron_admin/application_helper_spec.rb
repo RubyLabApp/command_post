@@ -188,6 +188,42 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
       end
     end
 
+    context "with external_image field" do
+      let(:widget) { create(:widget, image_url: "https://example.com/photo.jpg") }
+      let(:field) { IronAdmin::Field.new(:image_url, type: :external_image, height: "h-32") }
+
+      it "renders an img tag with the URL" do
+        result = helper.display_field_value(widget, field)
+
+        expect(result).to include("<img")
+        expect(result).to include("https://example.com/photo.jpg")
+        expect(result).to include("h-32")
+        expect(result).to include('loading="lazy"')
+      end
+
+      it "returns nil when URL is blank" do
+        widget.image_url = nil
+        expect(helper.display_field_value(widget, field)).to be_nil
+      end
+
+      it "rejects javascript: URIs for XSS prevention" do
+        widget.image_url = "javascript:alert(1)"
+        expect(helper.display_field_value(widget, field)).to be_nil
+      end
+
+      it "rejects case-insensitive javascript: URIs" do
+        widget.image_url = "JavaScript:alert(1)"
+        expect(helper.display_field_value(widget, field)).to be_nil
+      end
+
+      it "uses default height when none specified" do
+        default_field = IronAdmin::Field.new(:image_url, type: :external_image)
+        result = helper.display_field_value(widget, default_field)
+
+        expect(result).to include("h-32")
+      end
+    end
+
     context "with rich_text field" do
       let(:document) { create(:document) }
       let(:field) { IronAdmin::Field.new(:content, type: :rich_text) }

@@ -40,6 +40,7 @@ module IronAdmin
       radio: :display_radio,
       code: :display_code,
       progress_bar: :display_progress_bar,
+      external_image: :display_external_image,
     }.freeze
 
     # Displays a field value with appropriate formatting.
