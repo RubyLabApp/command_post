@@ -39,6 +39,7 @@ module IronAdmin
       hidden: :display_hidden,
       radio: :display_radio,
       code: :display_code,
+      progress_bar: :display_progress_bar,
     }.freeze
 
     # Displays a field value with appropriate formatting.

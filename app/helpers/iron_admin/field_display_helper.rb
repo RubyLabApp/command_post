@@ -230,5 +230,30 @@ module IronAdmin
         "#{type_value}##{id_value}"
       end
     end
+
+    def display_progress_bar(record, field)
+      value = record.public_send(field.name)
+      return if value.nil?
+
+      pct = calculate_progress_percentage(value, field)
+      color = field.options[:color] || "bg-indigo-600"
+
+      content_tag(:div, class: "flex items-center gap-2") do
+        progress_bar_track(pct, color) +
+          content_tag(:span, "#{value.to_i}%", class: "text-xs tabular-nums #{cp_muted_text}")
+      end
+    end
+
+    def calculate_progress_percentage(value, field)
+      min = (field.options[:min] || 0).to_f
+      max = (field.options[:max] || 100).to_f
+      ((value.to_f - min) / (max - min) * 100.0).clamp(0.0, 100.0)
+    end
+
+    def progress_bar_track(pct, color)
+      content_tag(:div, class: "flex-1 h-2 rounded-full bg-gray-200 overflow-hidden") do
+        content_tag(:div, "", class: "h-2 rounded-full #{color}", style: "width: #{pct.round(1)}%")
+      end
+    end
   end
 end

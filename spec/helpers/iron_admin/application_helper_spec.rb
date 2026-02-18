@@ -156,6 +156,38 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
       end
     end
 
+    context "with progress_bar field" do
+      let(:widget) { create(:widget, completion: 75) }
+      let(:field) { IronAdmin::Field.new(:completion, type: :progress_bar, color: "bg-green-500") }
+
+      it "renders a progress bar with percentage" do
+        result = helper.display_field_value(widget, field)
+
+        expect(result).to include("75%")
+        expect(result).to include("bg-green-500")
+        expect(result).to include("width: 75.0%")
+      end
+
+      it "clamps percentage between 0 and 100" do
+        widget.completion = 150
+        result = helper.display_field_value(widget, field)
+
+        expect(result).to include("width: 100.0%")
+      end
+
+      it "returns nil when value is nil" do
+        widget.completion = nil
+        expect(helper.display_field_value(widget, field)).to be_nil
+      end
+
+      it "uses default color when none specified" do
+        default_field = IronAdmin::Field.new(:completion, type: :progress_bar)
+        result = helper.display_field_value(widget, default_field)
+
+        expect(result).to include("bg-indigo-600")
+      end
+    end
+
     context "with rich_text field" do
       let(:document) { create(:document) }
       let(:field) { IronAdmin::Field.new(:content, type: :rich_text) }

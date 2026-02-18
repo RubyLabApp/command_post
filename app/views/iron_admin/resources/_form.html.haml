@@ -183,6 +183,10 @@
                 btn.addEventListener("click", function() { btn.closest("[data-tag]").remove(); updateHidden(); });
               });
             })();
+        - when :progress_bar
+          = f.number_field field.name, min: field.options[:min] || 0, max: field.options[:max] || 100,
+            placeholder: "0",
+            class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
         - when :code
           = f.text_area field.name, rows: field.options[:rows] || 10,
             class: ["font-mono text-sm", cp_textarea_class, (error_input_class if has_error)].compact.join(" ")
