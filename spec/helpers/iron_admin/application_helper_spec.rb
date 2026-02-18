@@ -131,6 +131,31 @@ RSpec.describe IronAdmin::ApplicationHelper, type: :helper do
       end
     end
 
+    context "with code field" do
+      let(:widget) { create(:widget, source_code: "puts 'hello'") }
+      let(:field) { IronAdmin::Field.new(:source_code, type: :code, language: "ruby") }
+
+      it "renders code in pre/code block" do
+        result = helper.display_field_value(widget, field)
+
+        expect(result).to include("<pre")
+        expect(result).to include("<code")
+        expect(result).to include("puts &#39;hello&#39;")
+        expect(result).to include("font-mono")
+      end
+
+      it "includes language class" do
+        result = helper.display_field_value(widget, field)
+
+        expect(result).to include("language-ruby")
+      end
+
+      it "returns nil when value is blank" do
+        widget.source_code = nil
+        expect(helper.display_field_value(widget, field)).to be_nil
+      end
+    end
+
     context "with rich_text field" do
       let(:document) { create(:document) }
       let(:field) { IronAdmin::Field.new(:content, type: :rich_text) }

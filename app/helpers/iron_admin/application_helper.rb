@@ -38,6 +38,7 @@ module IronAdmin
       polymorphic_belongs_to: :display_polymorphic_belongs_to,
       hidden: :display_hidden,
       radio: :display_radio,
+      code: :display_code,
     }.freeze
 
     # Displays a field value with appropriate formatting.

@@ -17,6 +17,16 @@ module IronAdmin
       content_tag(:span, value.to_s.humanize, class: "text-sm #{cp_body_text}")
     end
 
+    def display_code(record, field)
+      value = record.public_send(field.name)
+      return if value.blank?
+
+      lang = field.options[:language].presence || ""
+      content_tag(:pre, class: "overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm") do
+        content_tag(:code, value, class: "text-gray-100 font-mono language-#{lang}")
+      end
+    end
+
     def display_belongs_to(record, field)
       associated = record.public_send(field.name)
       return if associated.nil?

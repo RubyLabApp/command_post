@@ -8,7 +8,7 @@
         - next
       - next unless field.visible?(iron_admin_current_user)
       - next if field.readonly?(iron_admin_current_user)
-      - span_full = field.type.in?(%i[textarea json file files rich_text tags markdown])
+      - span_full = field.type.in?(%i[textarea json file files rich_text tags markdown code key_value boolean_group])
       - has_error = @record.errors[field.name].any?
       %div{ class: span_full ? "md:col-span-2 2xl:col-span-3" : nil }
         = f.label field.name, field.name.to_s.humanize,
@@ -183,6 +183,9 @@
                 btn.addEventListener("click", function() { btn.closest("[data-tag]").remove(); updateHidden(); });
               });
             })();
+        - when :code
+          = f.text_area field.name, rows: field.options[:rows] || 10,
+            class: ["font-mono text-sm", cp_textarea_class, (error_input_class if has_error)].compact.join(" ")
         - when :radio
           - layout = field.options[:layout] == :vertical ? "flex-col space-y-2" : "flex flex-wrap gap-4"
           - choices = field.options[:choices] || []
