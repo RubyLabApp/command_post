@@ -79,6 +79,15 @@ RSpec.describe IronAdmin::Resources::ShowFieldComponent, type: :component do
       end
     end
 
+    context "when field type is hidden" do
+      let(:hidden_field) { IronAdmin::Field.new(:secret_token, type: :hidden) }
+
+      it "does not render the component" do
+        component = described_class.new(field: hidden_field, record: user, current_user: current_user)
+        expect(component.render?).to be false
+      end
+    end
+
     context "when field is not visible to user" do
       let(:admin_only_field) do
         IronAdmin::Field.new(

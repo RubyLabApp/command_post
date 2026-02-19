@@ -6,6 +6,27 @@ module IronAdmin
   module FieldDisplayHelper # rubocop:disable Metrics/ModuleLength
     private
 
+    def display_hidden(_record, _field)
+      nil
+    end
+
+    def display_radio(record, field)
+      value = record.public_send(field.name)
+      return if value.blank?
+
+      content_tag(:span, value.to_s.humanize, class: "text-sm #{cp_body_text}")
+    end
+
+    def display_code(record, field)
+      value = record.public_send(field.name)
+      return if value.blank?
+
+      lang = field.options[:language].presence || ""
+      content_tag(:pre, class: "overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm") do
+        content_tag(:code, value, class: "text-gray-100 font-mono language-#{lang}")
+      end
+    end
+
     def display_belongs_to(record, field)
       associated = record.public_send(field.name)
       return if associated.nil?
@@ -207,6 +228,139 @@ module IronAdmin
         end
       rescue NameError
         "#{type_value}##{id_value}"
+      end
+    end
+
+    def display_key_value(record, field)
+      value = record.public_send(field.name)
+      return if value.blank?
+
+      pairs = parse_hash_value(value)
+      return if pairs.empty?
+
+      content_tag(:dl, class: "divide-y divide-gray-100 rounded border border-gray-200 text-sm") do
+        safe_join(pairs.map { |k, v| key_value_pair_row(k, v) })
+      end
+    end
+
+    def key_value_pair_row(key, value)
+      content_tag(:div, class: "flex gap-4 px-3 py-2") do
+        content_tag(:dt, key, class: "font-medium w-1/3 #{cp_body_text}") +
+          content_tag(:dd, value.to_s, class: "flex-1 #{cp_muted_text}")
+      end
+    end
+
+    def display_boolean_group(record, field)
+      values = parse_array_value(record.public_send(field.name))
+      return if values.empty?
+
+      safe_join(values.map { |v| boolean_group_pill(v) })
+    end
+
+    def boolean_group_pill(value)
+      content_tag(
+        :span,
+        value.to_s.humanize,
+        class: "inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-50 text-indigo-700 mr-1 mb-1"
+      )
+    end
+
+    def display_external_image(record, field)
+      url = record.public_send(field.name)
+      return if url.blank?
+      return if url.to_s.match?(/\Ajavascript:/i)
+
+      height = field.options[:height] || "h-32"
+      tag.img(
+        src: url,
+        alt: "",
+        class: "#{height} w-auto object-cover rounded border border-gray-200",
+        loading: "lazy",
+        onerror: "this.style.display='none'"
+      )
+    end
+
+    def display_progress_bar(record, field)
+      value = record.public_send(field.name)
+      return if value.nil?
+
+      pct = calculate_progress_percentage(value, field)
+      color = field.options[:color] || "bg-indigo-600"
+
+      content_tag(:div, class: "flex items-center gap-2") do
+        progress_bar_track(pct, color) +
+          content_tag(:span, "#{value.to_i}%", class: "text-xs tabular-nums #{cp_muted_text}")
+      end
+    end
+
+    def display_truncated_index_value(record, field)
+      value = record.public_send(field.name)
+      return if value.blank?
+
+      truncated = truncate(value.to_s, length: ApplicationHelper::INDEX_TRUNCATION_LENGTH)
+      if value.to_s.length > ApplicationHelper::INDEX_TRUNCATION_LENGTH
+        content_tag(:span, truncated, title: value.to_s)
+      else
+        truncated
+      end
+    end
+
+    def display_compact_field_value(record, field)
+      case field.type
+      when :key_value
+        pairs = parse_hash_value(record.public_send(field.name))
+        content_tag(:span, "#{pairs.size} keys", class: "text-xs #{cp_muted_text}")
+      when :boolean_group
+        items = parse_array_value(record.public_send(field.name))
+        content_tag(:span, "#{items.size} selected", class: "text-xs #{cp_muted_text}")
+      end
+    end
+
+    def parse_hash_value(value)
+      return value if value.is_a?(Hash)
+      return {} if value.nil?
+
+      safe_json_parse_hash(value.to_s)
+    end
+
+    def safe_json_parse_hash(value)
+      result = JSON.parse(value)
+      result.is_a?(Hash) ? result : {}
+    rescue JSON::ParserError
+      {}
+    end
+
+    def parse_array_value(value)
+      case value
+      when Array then value
+      when String then parse_array_string(value)
+      else []
+      end
+    end
+
+    def parse_array_string(value)
+      parsed = safe_json_parse_array(value)
+      return parsed if parsed
+
+      value.split(",").map(&:strip).compact_blank
+    end
+
+    def safe_json_parse_array(value)
+      result = JSON.parse(value)
+      result.is_a?(Array) ? result : nil
+    rescue JSON::ParserError
+      nil
+    end
+
+    def calculate_progress_percentage(value, field)
+      min = (field.options[:min] || 0).to_f
+      max = (field.options[:max] || 100).to_f
+      ((value.to_f - min) / (max - min) * 100.0).clamp(0.0, 100.0)
+    end
+
+    def progress_bar_track(pct, color)
+      content_tag(:div, class: "flex-1 h-2 rounded-full bg-gray-200 overflow-hidden") do
+        content_tag(:div, "", class: "h-2 rounded-full #{color}", style: "width: #{pct.round(1)}%")
       end
     end
   end

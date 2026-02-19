@@ -23,6 +23,8 @@ module IronAdmin
       end
 
       def render?
+        return false if field.type == :hidden
+
         field.visible?(@current_user)
       end
 

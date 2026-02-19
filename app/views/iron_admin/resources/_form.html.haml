@@ -3,9 +3,12 @@
 = form_with model: @record, url: form_url, scope: :record, html: { multipart: true } do |f|
   .grid.grid-cols-1.md:grid-cols-2.2xl:grid-cols-3.gap-x-6.gap-y-5
     - @fields.each do |field|
+      - if field.type == :hidden
+        = f.hidden_field field.name
+        - next
       - next unless field.visible?(iron_admin_current_user)
       - next if field.readonly?(iron_admin_current_user)
-      - span_full = field.type.in?(%i[textarea json file files rich_text tags markdown])
+      - span_full = field.type.in?(%i[textarea json file files rich_text tags markdown code key_value boolean_group])
       - has_error = @record.errors[field.name].any?
       %div{ class: span_full ? "md:col-span-2 2xl:col-span-3" : nil }
         = f.label field.name, field.name.to_s.humanize,
@@ -180,6 +183,58 @@
                 btn.addEventListener("click", function() { btn.closest("[data-tag]").remove(); updateHidden(); });
               });
             })();
+        - when :key_value
+          = f.text_area field.name, rows: field.options[:rows] || 6,
+            placeholder: '{"key": "value"}',
+            class: ["font-mono text-sm", cp_textarea_class, (error_input_class if has_error)].compact.join(" ")
+        - when :boolean_group
+          - choices = field.options[:choices] || []
+          - current_values = @record.public_send(field.name).to_s.split(",").map(&:strip)
+          - container_id = "boolean-group-#{field.name}"
+          %div{ id: container_id, data: { boolean_group_field: true } }
+            = f.hidden_field field.name, value: current_values.join(","), id: "boolean-group-hidden-#{field.name}"
+            .flex.flex-wrap.gap-3
+              - choices.each do |choice|
+                - label_text, choice_value = choice.is_a?(Array) ? choice : [choice.to_s.humanize, choice]
+                %label.inline-flex.items-center.gap-2.cursor-pointer
+                  %input{ type: "checkbox", value: choice_value,
+                          checked: current_values.include?(choice_value.to_s),
+                          class: cp_checkbox_class,
+                          data: { boolean_group_checkbox: true } }
+                  %span.text-sm= label_text
+            :javascript
+              (function() {
+                var container = document.getElementById("#{container_id}");
+                var hidden = document.getElementById("boolean-group-hidden-#{field.name}");
+                var checkboxes = container.querySelectorAll("[data-boolean-group-checkbox]");
+                function update() {
+                  var vals = [];
+                  checkboxes.forEach(function(cb) { if (cb.checked) vals.push(cb.value); });
+                  hidden.value = vals.join(",");
+                }
+                checkboxes.forEach(function(cb) { cb.addEventListener("change", update); });
+              })();
+        - when :external_image
+          = f.url_field field.name, placeholder: I18n.t("iron_admin.fields.url_placeholder"),
+            class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
+        - when :progress_bar
+          = f.number_field field.name, min: field.options[:min] || 0, max: field.options[:max] || 100,
+            placeholder: "0",
+            class: [cp_input_class, (error_input_class if has_error)].compact.join(" ")
+        - when :code
+          = f.text_area field.name, rows: field.options[:rows] || 10,
+            class: ["font-mono text-sm", cp_textarea_class, (error_input_class if has_error)].compact.join(" ")
+        - when :radio
+          - layout = field.options[:layout] == :vertical ? "flex-col space-y-2" : "flex flex-wrap gap-4"
+          - choices = field.options[:choices] || []
+          .flex{ class: layout }
+            - choices.each do |choice|
+              - label_text, choice_value = choice.is_a?(Array) ? choice : [choice.to_s.humanize, choice]
+              %label.inline-flex.items-center.gap-2.cursor-pointer
+                %input{ type: "radio", name: "record[#{field.name}]",
+                        value: choice_value,
+                        checked: @record.public_send(field.name).to_s == choice_value.to_s }
+                %span.text-sm= label_text
         - else
           - custom_config = IronAdmin::FieldTypeRegistry.find(field.type) if IronAdmin::FieldTypeRegistry.registered?(field.type)
           - if custom_config&.form_component_class

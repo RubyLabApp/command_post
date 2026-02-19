@@ -60,6 +60,18 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_000005) do
     t.timestamps
   end
 
+  create_table :widgets, force: :cascade do |t|
+    t.string :name, null: false
+    t.string :status               # :radio
+    t.string :permissions          # :boolean_group (CSV)
+    t.string :image_url            # :external_image
+    t.integer :completion          # :progress_bar
+    t.text :config_json            # :key_value
+    t.text :source_code            # :code
+    t.string :secret_token         # :hidden
+    t.timestamps
+  end
+
   create_table :notes, force: :cascade do |t|
     t.string :title, null: false
     t.text :body
