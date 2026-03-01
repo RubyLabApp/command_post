@@ -47,6 +47,10 @@ en:
       color_placeholder: "#000000"
       number_placeholder: "0"
       currency_placeholder: "0.00"
+      radio_placeholder: "Select an option"
+      code_placeholder: "Enter code..."
+      key_value_placeholder: '{"key": "value"}'
+      progress_placeholder: "0"
     form:
       cancel_button: "Cancel"
     navigation:
